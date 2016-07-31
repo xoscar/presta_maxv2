@@ -1,0 +1,94 @@
+extends ./layout
+
+block content
+  .row
+    nav.grey.lighten-3
+      .nav-wrapper
+        a.red-text.text-darken-2(href="#" class="brand-logo center") Prestamax
+        a.red-text.button-collapse(href="#" data-activates="mobile-demo")
+          i.material-icons menu
+        ul#nav-mobile.right.hide-on-med-and-down
+          li
+            a.red-text.text-darken-2(href="/") 
+              i.material-icons.right home
+              | Inicio
+          li
+            a.red-text.text-darken-2(href="/")
+              i.material-icons.right account_box
+              | Perfil
+          li
+            a.red-text.text-darken-2(href="/")
+              i.material-icons.right power_settings_new
+              | Cerrar Sesión
+        ul#mobile-demo.side-nav
+          li
+            a.red-text.text-darken-2(href="/") 
+              | Inicio
+          li
+            a.red-text.text-darken-2(href="/")
+              | Perfil
+          li
+            a.red-text.text-darken-2(href="/")
+              | Cerrar Sesión
+  .row
+    .col.m3.s12(style="height:80%;position:fixed")
+      .col.s12.z-depth-1.grey.lighten-3(style="height:100%")
+        .row
+          .col.s12.center.green.darken-2.white-text.center-align(style="margin-top:10%;")
+            h5 Menú
+              i.material-icons.right more_vert
+        .row
+          .collection
+            a.collection-item(href='#!')
+              i.material-icons.right supervisor_account
+              b Clientes
+            a.collection-item.active(href='#!') 
+              i.material-icons.right thumbs_up_down
+              b Prestamos
+            a.collection-item(href='#!') 
+              i.material-icons.right attach_money
+              b Pagos
+    .col.s9.offset-s3
+      .col.s12.z-depth-1.grey.lighten-3
+        .row
+          .col.s12.red.darken-2.white-text.center-align(style="margin-top:2%;")
+            h4 Clientes
+        .row
+          .col.s12.grey-text.darken-2
+             .row
+                .col.s12.m4
+                  .card
+                    .card-content.grey-text.text-darken-2
+                      span.card-title Ely Kedward
+                      p Prestamos activos: 4.
+                      p Ultimo abono: Ayer.
+                      p Adeudo actual: $500.00.
+                      p Estado: este cliente tiene al menos un prestamo vencido.
+                    .card-action
+                      a.green-text.darken-2(href='#') Más
+                      a.green-text.darken-2(href='#') Prestamos
+                      a.green-text.darken-2(href='#') Pagos
+                .col.s12.m4
+                  .card
+                    .card-content.grey-text.text-darken-2
+                      span.card-title Ely Kedward
+                      p Prestamos activos: 4.
+                      p Ultimo abono: Ayer.
+                      p Adeudo actual: $500.00.
+                      p Estado: este cliente tiene al menos un prestamo vencido.
+                    .card-action
+                      a.green-text.darken-2(href='#') Más
+                      a.green-text.darken-2(href='#') Prestamos
+                      a.green-text.darken-2(href='#') Pagos
+                .col.s12.m4
+                  .card
+                    .card-content.grey-text.text-darken-2
+                      span.card-title Ely Kedward
+                      p Prestamos activos: 4.
+                      p Ultimo abono: Ayer.
+                      p Adeudo actual: $500.00.
+                      p Estado: este cliente tiene al menos un prestamo vencido.
+                    .card-action
+                      a.green-text.darken-2(href='#') Más
+                      a.green-text.darken-2(href='#') Prestamos
+                      a.green-text.darken-2(href='#') Pagos
