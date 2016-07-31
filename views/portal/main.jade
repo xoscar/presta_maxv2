@@ -1,8 +1,8 @@
 extends ./layout
 
 block content
-  .row
-    nav.grey.lighten-3
+  .row.navbar-fixed
+    nav.grey.lighten-4
       .nav-wrapper
         a.red-text.text-darken-2(href="#" class="brand-logo center") Prestamax
         a.red-text.button-collapse(href="#" data-activates="mobile-demo")
@@ -32,7 +32,7 @@ block content
               | Cerrar Sesión
   .row
     .col.m3.s12(style="height:80%;position:fixed")
-      .col.s12.z-depth-1.grey.lighten-3(style="height:100%")
+      .col.s12.z-depth-1.grey.lighten-4(style="height:100%")
         .row
           .col.s12.center.green.darken-2.white-text.center-align(style="margin-top:10%;")
             h5 Menú
@@ -49,21 +49,33 @@ block content
               i.material-icons.right attach_money
               b Pagos
     .col.s9.offset-s3
-      .col.s12.z-depth-1.grey.lighten-3
+      .col.s12.z-depth-1.grey.lighten-4
         .row
-          .col.s12.red.darken-2.white-text.center-align(style="margin-top:2%;")
+          .col.s12.red-text.text-darken-2(style="margin-top:2%;")
             h4 Clientes
+          .col.s12
+            nav.search.red.darken-2
+              .nav-wrapper
+                form
+                  .input-field
+                    input#search(type='search' placeholder="ID de usuario, nombre o apellido." required='')
+                    label(for='search')
+                      i.material-icons search
+                    i.material-icons close
         .row
           .col.s12.grey-text.darken-2
              .row
                 .col.s12.m4
                   .card
                     .card-content.grey-text.text-darken-2
-                      span.card-title Ely Kedward
+                      span.card-title 
+                        | Ely Kedward
+                        
+                      p ID: ELKE1
                       p Prestamos activos: 4.
                       p Ultimo abono: Ayer.
                       p Adeudo actual: $500.00.
-                      p Estado: este cliente tiene al menos un prestamo vencido.
+                      p.red-text.text-darken-2 Estado: este cliente tiene al menos un prestamo vencido.
                     .card-action
                       a.green-text.darken-2(href='#') Más
                       a.green-text.darken-2(href='#') Prestamos

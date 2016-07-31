@@ -62,7 +62,7 @@ mongoose.connection.on('connected', () => {
   }));
   app.use(flash());
   app.use((req, res, next) => {
-    if (req.path === '/api/upload') {
+    if (req.path === '/signup') {
       next();
     } else {
       lusca.csrf()(req, res, next);

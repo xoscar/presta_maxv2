@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../models/User');
 
 function authUser(user, token, callback) {
   User.findOne({
@@ -14,7 +14,7 @@ function authUser(user, token, callback) {
   });
 }
 
-function authMiddleware(req, res, next) {
+function middleware(req, res, next) {
   var user = req.headers.user;
   var token = req.headers.token;
 
@@ -35,6 +35,6 @@ function authMiddleware(req, res, next) {
 ////////////
 
 module.exports = {
-  authUser: authUser,
-  auth: authMiddleware,
+  authUser,
+  middleware,
 };
