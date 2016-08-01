@@ -3,6 +3,7 @@ const common = require('../utils/common');
 const Loan = require('./Loan').Loan;
 const Async = require('async');
 const moment = require('moment');
+const Response = require('../utils/response');
 
 moment.locale('es');
 
@@ -23,10 +24,21 @@ var clientSchema = new mongoose.Schema({
 const availableRequests = [{
   fields: '_id'.split(' '),
   params: 'id'.split(' '),
-}, {
-  fields: 'client_id'.split(' '),
-  params: 'client'.split(' '),
 }, ];
+
+function validateData(query) {
+  var errors = new Response('error');
+  if (!query) errors.push('query', 'Invalid request.');
+  if (!query.name)
+    errors.push('name', 'Not a valid name.');
+  if (!query.surname)
+    errors.push('surname', 'Not a valid surname.');
+  if (!query.address)
+    errors.push('address', 'Not a valid address.');
+  if (!query.phone)
+    errors.push('phone', 'Not a valid phone.');
+  return errors;
+}
 
 function prepareQuery(terms) {
   var query = [];
@@ -98,12 +110,57 @@ clientSchema.methods.getLoans = function (callback) {
     });
 };
 
+clientSchema.methods.update = function (query, callback) {
+  var errors = validateData(query);
+  if (errors.messages.length === 0) {
+    this.name = query.name;
+    this.surname = query.surname;
+    this.address = query.address;
+    this.phone = query.phone;
+    this.save(callback);
+  } else callback(errors);
+};
+
+clientSchema.statics.create = function (user, query, callback) {
+  var errors = validateData(query);
+  if (errors.messages.length === 0) {
+    var clientId = query.name.slice(0, 2).toUpperCase() +
+      query.surname.slice(0, 2).toUpperCase();
+    this
+      .find({
+        client_id: { $regex: new RegExp(clientId + '[0-9]') },
+        user_id: user.id,
+      })
+      .select('client_id')
+      .exec((err, docs) => {
+        if (err) {
+          errors.push('application', 'Processing error.');
+          callback(errors);
+        } else {
+          var number = 1;
+          docs.forEach((doc, index) => {
+            number = index + 2;
+          });
+
+          var newClient = new this({
+            name: query.name,
+            surname: query.surname,
+            address: query.address,
+            phone: query.phone,
+            user_id: user.id,
+            client_id: clientId + number,
+          });
+          newClient.save(callback);
+        }
+      });
+  } else callback(errors);
+};
+
 clientSchema.statics.getFromRequest = function (req, res, next) {
   var query = common.getQueryFromRequest(availableRequests, req);
-  if (req.headers.user) query.user = req.headers.user;
   if (!query) return res.status(400).send('Invalid request.');
-
-  mongoose.model('clients', clientSchema).find(query, function (err, doc) {
+  if (req.user) query.user_id = req.user.id;
+  mongoose.model('clients', clientSchema).findOne(query, function (err, doc) {
     if (err || !doc) return res.status(400).send('Not found.');
     req.client = doc;
     next();

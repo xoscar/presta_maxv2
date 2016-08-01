@@ -124,7 +124,7 @@ function validatePagination(page, pageSize) {
 function getQueryFromRequest(availableRequests, req) {
   var query = null;
   var found = false;
-  var search = 'body query'.split(' ');
+  var search = 'body query params'.split(' ');
   search.forEach(function (s) {
     availableRequests.forEach(function (request) {
       var qAux = {};

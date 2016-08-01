@@ -64,8 +64,6 @@ loanSchema.methods.getCurrentBalance = function () {
     this.payments.forEach(function (a) {
       totalPayments += parseInt(a.amount);
     });
-
-  console.log(this.amount, totalPayments);
   return this.amount - totalPayments;
 };
 

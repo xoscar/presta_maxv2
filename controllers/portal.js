@@ -17,8 +17,8 @@ module.exports.getSignUp = function (req, res) {
 };
 
 module.exports.postSignUp = function (req, res) {
-  User.validateData(req.body, (err, user) => {
-    if (err && err.length > 0) res.status(400).json(err);
+  User.create(req.body, (err, user) => {
+    if (err) res.status(400).json(err);
     else
       user.save((err, user) => {
         res.json(user.getInfo());

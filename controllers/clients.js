@@ -34,15 +34,30 @@ module.exports.search = function (req, res) {
 };
 
 module.exports.info = function (req, res) {
-  res.send('Hola');
+  req.client.getInfo((err, info) => {
+    if (err) res.status(500).send('Error getting information.');
+    else res.status(200).json(info);
+  });
 };
 
 module.exports.create = function (req, res) {
-  res.send('Hola');
+  Client.create(req.user, req.body, (err, client) => {
+    if (err) res.status(500).send(err);
+    else client.getInfo((err, info) => {
+      if (err) res.status(500).send('Error creating client.');
+      else res.status(500).json(info);
+    });
+  });
 };
 
 module.exports.update = function (req, res) {
-  res.send('Hola');
+  req.client.update(req.body, (err, client) => {
+    if (err) res.status(500).send(err);
+    else client.getInfo((err, info) => {
+      if (err) res.status(500).send('Error updating client.');
+      else res.status(500).json(info);
+    });
+  });
 };
 
 module.exports.delete = function (req, res) {
