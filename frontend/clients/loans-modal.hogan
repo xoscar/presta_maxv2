@@ -8,18 +8,18 @@
     		<div class="collection loans">
     			{{#active_loans}}
     					{{^expired}}
-		        		<a href="{{id}}" class="collection-item white green-text text-darken-2 hoverable">
+		        		<a href="{{id}}" class="collection-item white green-text  avatar text-darken-2 hoverable">
 		        	{{/expired}}
 		        	{{#expired}}
-		        		<a href="{{id}}" class="collection-item white red-text text-darken-2 hoverable">
+		        		<a href="{{id}}" class="collection-item white red-text avatar text-darken-2 hoverable">
 		        	{{/expired}}
-		        	<span>Cantidad: ${{amount}}.00 </span>
-		        	<span>| Adeudo: ${{current_balance}}.00 </span>
+		        	<span>Cantidad: ${{amount}}.00 | Adeudo: ${{current_balance}}.00 </span>
+		        	<span class="secondary-content grey-text text-darken-1"><i class="material-icons">expand_more</i></span>
 		        	{{#last_payment}}
-		        		<span>| Ultimo pago: {{last_payment_from_now}} </span>
+		        		<p>Ultimo pago: {{last_payment_from_now}} </p>
 		        	{{/last_payment}}
 		        	{{^last_payment}}
-		        		<span>| No ha habido pagos.</span>
+		        		<p>No se han realizado pagos.</p>
 		        	{{/last_payment}}
 		        </a>
        		{{/active_loans}}

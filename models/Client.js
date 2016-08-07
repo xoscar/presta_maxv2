@@ -111,6 +111,7 @@ clientSchema.methods.getCharges = function (callback) {
       client_id: this.id,
       paid: false,
     })
+    .sort({ created: -1 })
     .exec((err, charges) => {
       if (err) return callback(err);
       Async.map(charges, (charge, mapaCallback) => {
@@ -133,6 +134,7 @@ clientSchema.methods.getLoans = function (callback) {
     .find({
       client_id: _this.id,
     })
+    .sort({ created: -1 })
     .exec((err, docs) => {
       if (err) return callback(err);
       Async.map(docs, (loan, mapaCallback) => {

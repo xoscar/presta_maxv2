@@ -8008,6 +8008,10 @@ nav.search {
 .collection.loans .collection-item:hover {
   opacity: .8; }
 
+.collection.loans .collection-item.avatar {
+  padding-left: 10px;
+  min-height: auto; }
+
 .modal {
   width: 80%;
   max-height: 80%; }

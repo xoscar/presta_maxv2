@@ -23,6 +23,10 @@ nav.search {
         &:hover {
             opacity: .8;
         }
+        &.avatar {
+          padding-left: 10px;
+          min-height: auto;
+        }
     }
 }
 
