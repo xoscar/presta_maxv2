@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const common = require('../utils/common');
 const Loan = require('./Loan').Loan;
+const Charge = require('./Charge');
 const Async = require('async');
 const moment = require('moment');
 const Response = require('../utils/response');
@@ -12,6 +13,10 @@ var clientSchema = new mongoose.Schema({
   name: String,
   surname: String,
   created: {
+    type: Date,
+    default: Date.now,
+  },
+  updated: {
     type: Date,
     default: Date.now,
   },
@@ -58,22 +63,60 @@ clientSchema.pre('save', function (next) {
   var _this = this;
   var searchFields = 'name client_id surname'.split(' ');
   _this.search = common.generateArrayFromObject(_this, searchFields);
-
+  _this.updated = Date.now();
   next();
 });
 
 clientSchema.methods.getInfo = function (callback) {
   var _this = this;
-  var result = _this.toObject();
-  result.created = moment(_this.created).fromNow();
-  _this.getLoans((err, loans, extra) => {
-    result.active_loans = loans;
-    result.total_depth = extra.total;
-    result.last_payment = extra.last_payment;
-    result.last_loan = extra.last_loan;
-    result.expired_loans = extra.expired ? 'Si' : 'No';
-    callback(err, result);
-  });
+  var result = {
+    name: this.name.split(' ')[0].toLowerCase(),
+    name_complete: this.name.toLowerCase(),
+    surname: this.surname.toLowerCase(),
+    created: moment(_this.created).fromNow(),
+    updated: this.updated,
+    address: this.address,
+    phone: this.phone,
+    id: this._id,
+    client_id: this.client_id,
+  };
+
+  Async.waterfall([
+    function getLoans(wfaCallback) {
+      _this.getLoans((err, loans, extra) => {
+        if (err) return wfaCallback(err);
+        result.active_loans = loans;
+        result.total_depth = extra.total;
+        result.last_payment = extra.last_payment;
+        result.last_loan = extra.last_loan;
+        result.expired_loans = extra.expired;
+        wfaCallback();
+      });
+    },
+
+    function getCharges(wfaCallback) {
+      _this.getCharges((err, charges) => {
+        if (err) return wfaCallback(err);
+        result.charges = charges;
+        wfaCallback();
+      });
+    },
+
+  ], (err) => callback(err, result));
+};
+
+clientSchema.methods.getCharges = function (callback) {
+  Charge
+    .find({
+      client_id: this.id,
+      paid: false,
+    })
+    .exec((err, charges) => {
+      if (err) return callback(err);
+      Async.map(charges, (charge, mapaCallback) => {
+        mapaCallback(null, charge.getInfo());
+      }, callback);
+    });
 };
 
 clientSchema.methods.getLoans = function (callback) {
@@ -89,7 +132,6 @@ clientSchema.methods.getLoans = function (callback) {
   Loan
     .find({
       client_id: _this.id,
-      finished: false,
     })
     .exec((err, docs) => {
       if (err) return callback(err);
@@ -110,6 +152,10 @@ clientSchema.methods.getLoans = function (callback) {
     });
 };
 
+clientSchema.methods.deleteLoans = function (callback) {
+  Loan.delete(this.id, callback);
+};
+
 clientSchema.methods.update = function (query, callback) {
   var errors = validateData(query);
   if (errors.messages.length === 0) {
@@ -119,6 +165,14 @@ clientSchema.methods.update = function (query, callback) {
     this.phone = query.phone;
     this.save(callback);
   } else callback(errors);
+};
+
+clientSchema.methods.delete = function (callback) {
+  var _this = this;
+  this.deleteLoans((err) => {
+    if (err) callback(err);
+    else _this.remove(callback);
+  });
 };
 
 clientSchema.statics.create = function (user, query, callback) {

@@ -1,0 +1,35 @@
+<div class="modal loans-modal">
+  <div class="modal-content">
+  	<div class ="row">
+    	<h5>Prestamos de <span class="capitalize">{{name_complete}}</span> ({{client_id}})</h5>
+    </div>
+    <div class="row">
+    	<div class ="col s6 z-depth-1">
+    		<div class="collection loans">
+    			{{#active_loans}}
+    					{{^expired}}
+		        		<a href="{{id}}" class="collection-item white green-text text-darken-2 hoverable">
+		        	{{/expired}}
+		        	{{#expired}}
+		        		<a href="{{id}}" class="collection-item white red-text text-darken-2 hoverable">
+		        	{{/expired}}
+		        	<span>Cantidad: ${{amount}}.00 </span>
+		        	<span>| Adeudo: ${{current_balance}}.00 </span>
+		        	{{#last_payment}}
+		        		<span>| Ultimo pago: {{last_payment_from_now}} </span>
+		        	{{/last_payment}}
+		        	{{^last_payment}}
+		        		<span>| No ha habido pagos.</span>
+		        	{{/last_payment}}
+		        </a>
+       		{{/active_loans}}
+       	</div>
+  		</div>
+  	</div>
+  	<div class="col s6">
+  	</div>
+  </div>
+ 	<div class="modal-footer">
+    <a class=" modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+  </div>
+</div>

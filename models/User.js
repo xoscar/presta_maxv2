@@ -20,6 +20,18 @@ function validateData(query) {
   return errors;
 }
 
+function validateLogIn(query) {
+  var errors = new Response('error');
+  if (Object.keys(query) === 0) errors.push('request', 'Emtpy request');
+
+  if (!select(query, 'username'))
+    errors.push('username', 'El usuario no puede estar vacío.');
+
+  if (!select(query, 'password'))
+    errors.push('password', 'La contraseña no puede estar vacía.');
+  return errors;
+}
+
 var userSchema = new mongoose.Schema({
   name: String,
   username: String,
@@ -84,6 +96,27 @@ userSchema.methods.getInfo = function () {
     token: this.token,
     role: this.role,
   };
+};
+
+userSchema.statics.login = function (query, callback) {
+  var errors = validateLogIn(query);
+  if (errors.messages.length === 0) {
+    this.findOne({
+      username: query.username,
+    }, (err, user) => {
+      if (err || !user) {
+        errors.push('missmatch', 'Error en el usuario o la contraseña.');
+        return callback(errors);
+      } else {
+        user.comparePassword(query.password, function (err, isMatch) {
+          if (err || !isMatch) {
+            errors.push('missmatch', 'Error en el usuario o la contraseña.');
+            return callback(errors);
+          } else return callback(null, user);
+        });
+      }
+    });
+  } else callback(errors);
 };
 
 userSchema.statics.create = function (query, callback) {

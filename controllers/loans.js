@@ -1,4 +1,4 @@
-const Client = require('../models/Client');
+const Loan = require('../models/Loan').Loan;
 const common = require('../utils/common');
 const Async = require('async');
 
@@ -7,8 +7,10 @@ module.exports.search = function (req, res) {
   var searchRequest = req.query.s;
   if (!searchRequest) searchRequest = ' ';
 
-  var page = req.query.page || '0';
+  var page = req.query.p || '0';
   var pageSize = req.query.pSize || '12';
+
+  var finished = req.query.finished || false;
 
   //get pagination
   var pagination = common.validatePagination(page, pageSize);
@@ -20,12 +22,12 @@ module.exports.search = function (req, res) {
   // prepare full text search
   var searchTerms = searchRequest.trim().split(' ');
 
-  Client
-    .search(searchTerms, userId, pagination.limit, pagination.skip,
+  Loan
+    .search(searchTerms, finished, userId, pagination.limit, pagination.skip,
       function (err, docs) {
         if (err) return res.status(500).send('Internal error.');
-        Async.map(docs, (client, mapaCallback) => {
-          client.getInfo(mapaCallback);
+        Async.map(docs, (loan, mapaCallback) => {
+          mapaCallback(null, loan.getInfo());
         }, (err, result) => {
           if (err) return res.status(500).send('Internal error.');
           else res.status(200).json(result);
@@ -34,35 +36,41 @@ module.exports.search = function (req, res) {
 };
 
 module.exports.info = function (req, res) {
-  req.client.getInfo((err, info) => {
-    if (err) res.status(400).send('Error getting information.');
-    else res.json(info);
-  });
+  res.status(200).json(req.loan.getInfo());
 };
 
 module.exports.create = function (req, res) {
-  Client.create(req.user, req.body, (err, client) => {
+  Loan.create(req.user, req.body, (err, loan) => {
     if (err) res.status(400).send(err);
-    else client.getInfo((err, info) => {
-      if (err) res.status(500).send('Error creating client.');
-      else res.json(info);
-    });
+    else
+      res.status(200).json(loan.getInfo());
   });
 };
 
 module.exports.update = function (req, res) {
-  req.client.update(req.body, (err, client) => {
+  req.loan.update(req.body, (err, loan) => {
     if (err) res.status(400).send(err);
-    else client.getInfo((err, info) => {
-      if (err) res.status(500).send('Error updating client.');
-      else res.json(info);
-    });
+    res.json(loan.getInfo());
   });
 };
 
 module.exports.delete = function (req, res) {
-  req.client.delete((err) => {
-    if (err) res.status(500).send(err);
+  req.loan.delete((err) => {
+    if (err) res.status(400).send(err);
     else res.send('Success.');
+  });
+};
+
+module.exports.createPayment = function (req, res) {
+  req.loan.createPayment(req.user, req.body, (err, loan) => {
+    if (err) res.status(400).send(err);
+    else res.json(loan.payments);
+  });
+};
+
+module.exports.deletePayment = function (req, res) {
+  req.loan.deletePayment(req.params, (err, loan) => {
+    if (err) res.status(500).send(err);
+    else res.json(loan.payments);
   });
 };

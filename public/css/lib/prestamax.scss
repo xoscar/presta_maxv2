@@ -1,9 +1,39 @@
 nav.search {
-	height: 40px;
-	
-	.nav-wrapper {
-		i {
-			line-height: 43px;
-		}
-	}
+    height: 40px;
+    .nav-wrapper {
+        i {
+            line-height: 43px;
+        }
+    }
+}
+
+.capitalize {
+    text-transform: capitalize;
+}
+
+.card {
+    height: 305px;
+    .card-content {
+        height: 242px;
+    }
+}
+
+.collection.loans {
+    .collection-item {
+        &:hover {
+            opacity: .8;
+        }
+    }
+}
+
+.modal {
+    width: 80%;
+    max-height: 80%;
+}
+.pagination {
+    li {
+        &.active {
+            background: #d32f2f;
+        }
+    }
 }

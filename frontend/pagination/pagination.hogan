@@ -1,0 +1,26 @@
+<ul class="pagination">
+
+	{{#prev}}
+		<li class="waves-effect previous"><a href="{{prev}}"><i class="material-icons">chevron_left</i></a></li>
+	{{/prev}}
+	{{^prev}}
+  	<li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
+  {{/prev}}
+
+  {{#prevPages}}
+  	<li class="waves-effect number"><a href="{{.}}">{{.}}</a></li>
+  {{/prevPages}}
+
+  <li class="active number"><a href="{{current}}">{{current}}</a></li>
+
+  {{#nextPages}}
+  	<li class="waves-effect number"><a href="{{.}}">{{.}}</a></li>
+  {{/nextPages}}
+  
+  {{#next}}
+		<li class="waves-effect next"><a href="{{next}}"><i class="material-icons">chevron_right</i></a></li>
+	{{/next}}
+  {{^next}}
+  	<li class="disabled"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+  {{/next}}
+</ul>

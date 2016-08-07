@@ -1,7 +1,8 @@
 const User = require('../models/User');
 
 module.exports.getIndex = function (req, res) {
-  res.render('portal/main');
+  if (!req.session.user) res.redirect('/login');
+  else res.render('portal/main', { user: req.session.user });
 };
 
 module.exports.getLogIn = function (req, res) {
@@ -9,7 +10,16 @@ module.exports.getLogIn = function (req, res) {
 };
 
 module.exports.postLogIn = function (req, res) {
-  res.redirect('/');
+  console.log(req.body, req.query);
+  User.login(req.body, (err, user) => {
+    if (err) {
+      req.flash('errors', err.messages);
+      return res.redirect('/login');
+    } else {
+      req.session.user = user;
+      res.redirect('/');
+    }
+  });
 };
 
 module.exports.getSignUp = function (req, res) {
@@ -23,5 +33,11 @@ module.exports.postSignUp = function (req, res) {
       user.save((err, user) => {
         res.json(user.getInfo());
       });
+  });
+};
+
+module.exports.getLogOut = function (req, res) {
+  req.session.destroy(() => {
+    res.redirect('/login');
   });
 };

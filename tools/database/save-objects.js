@@ -1,7 +1,7 @@
 // prepare MongoDB connection
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
-const Client = require('../../models/Client');
+const Loan = require('../../models/Loan').Loan;
 dotenv.load({ path: '.env' });
 
 var gracefulExit = function () {
@@ -23,7 +23,7 @@ mongoose.connection.on('connected', function () {
   var numOfDocuments = 0;
 
   // start working
-  Client
+  Loan
     .find().stream()
     .on('data', function (doc) {
       var _this = this;

@@ -4,9 +4,12 @@ const bodyParser = require('body-parser');
 const logger = require('morgan');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const cors = require('cors');
 
 // routes
 const clients = require('./routes/clients');
+const loans = require('./routes/loans');
+const charges = require('./routes/charges');
 
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
@@ -35,7 +38,11 @@ mongoose.connection.on('connected', () => {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
 
+  app.use(cors());
+
   app.use('/clients', clients);
+  app.use('/loans', loans);
+  app.use('/charges', charges);
 
   /**
    * Start Express server.

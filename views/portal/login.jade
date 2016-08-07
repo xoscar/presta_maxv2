@@ -9,18 +9,20 @@ html
           div.row
             div.col.s12.m12.center-align.white-text.red.darken-2
               h3 Presta Max
+          .row.center-align
+            include ./flash
           div.row
             form.col.s12.m6.offset-m3(method="POST" action="/login")
               input(type='hidden', name='_csrf', value=_csrf)
               div.row
                 div.input-field.col.s12
                   i.material-icons.prefix account_circle
-                  input.validate(id="first_name" type="text")
+                  input.validate(id="first_name" name="username" type="text")
                   label(for="first_name") Username
               div.row
                 div.input-field.col.s12
                   i.material-icons.prefix https
-                  input.validate(id="first_name" type="text")
+                  input.validate(id="first_name" name="password" type="password")
                   label(for="first_name") Password
               div.row.right-align
                 div.col.s12

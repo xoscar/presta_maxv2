@@ -151,8 +151,8 @@ function generateArrayFromObject(object, fields) {
   var result = [];
   for (var i = 0; i < fields.length; i++) {
     var field = fields[i];
-    if (!validator.isNull(select(object, field))) {
-      result.push(select(object, field).toLowerCase());
+    if (!validator.isNull(String(select(object, field)))) {
+      result.push(String(select(object, field)).toLowerCase());
     }
   }
 
