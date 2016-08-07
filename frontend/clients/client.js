@@ -13,4 +13,10 @@ Client.prototype.search = function (query, callback) {
   this.send(options);
 };
 
+Client.prototype.loans = function (id, callback) {
+  var url = this.resource + '/' + id + '/loans';
+  var options = this.generateOptions(url, 'GET', null, callback);
+  this.send(options);
+};
+
 module.exports = Client;

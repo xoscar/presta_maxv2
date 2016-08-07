@@ -1,0 +1,73 @@
+<div class="row">
+  <div class="col s12">
+    <div style="margin-top:2%;" class="col s12">
+      <div class="row">
+        <h4 class="capitalize">{{name_complete}}</h4>
+      </div>
+    </div>
+  </div>
+  <div class="col s12">
+    <div class="row">
+      <div class="col s8 update_response center-align">
+      </div>
+      <form class="col s8 update_profile_form" href="{{id}}">
+        <div class="row">
+          <div class="input-field col s6">
+            <input id="first_name" name="name" type="text" class="uppercase validate" value="{{name_complete}}">
+            <label class="active" for="first_name">Nombre</label>
+          </div>
+          <div class="input-field col s6">
+            <input id="last_name" name="surname" type="text" class="uppercase validate" value="{{surname}}">
+            <label class="active" for="last_name">Apellido</label>
+          </div>
+          <div class="input-field col s6">
+            <input id="phone" name="phone" type="text" class="validate" value="{{phone}}">
+            <label class="active" for="phone">Teléfono</label>
+          </div>
+          <div class="input-field col s12">
+            <textarea id="textarea1" name="address" class="uppercase materialize-textarea">{{address}}</textarea>
+            <label class="active" for="textarea1">Dirección</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12 right-align">
+            <button class="waves-effect waves-light btn">Modificar</button>
+          </div>
+        </div>
+      </form>
+      <div class="col s4">
+        <ul class="collection with-header" style="margin-top:0px">
+          <li class="collection-header"><h5>Información</h5></li>
+          <li class="collection-item"><div>ID: <span class="secondary-content">{{client_id}}</span></li>
+          <li class="collection-item"><div>Adeudo: <span class="secondary-content">${{total_depth}}.00</span></li>
+          <li class="collection-item"><div>Creado: <span class="secondary-content">{{created}}</span></li>
+          <li class="collection-item"><div>Prestamos activos: <span class="secondary-content">{{loans.length}}</span></li>
+          {{#last_payment}}
+            <li class="collection-item"><div>Ultimo pago: <span class="secondary-content">{{last_payment}}</span></li>
+          {{/last_payment}}
+          <li class="collection-item"><div>Ultimo prestamo: <span class="secondary-content">{{last_loan}}</span></li>
+          <li class="collection-item"><div>Prestamos vencidos: 
+              {{#expired_loans}}
+                <span class="secondary-content red-text">Si
+              {{/expired_loans}}
+              {{^expired_loans}}
+              <span class="secondary-content">No
+              {{/expired_loans}}
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fixed-action-btn horizontal" style="bottom: 45px; right: 24px;">
+  <a class="btn-floating btn-large red darken-2">
+    <i class="large material-icons">menu</i>
+  </a>
+  <ul>
+    <li><a href="{{id}}" class="btn-floating profile_remove red darken-1"><i class="material-icons">close</i></a></li>
+    <li><a href="{{id}}" class="btn-floating profile_add_loan blue darken-1"><i class="material-icons">exposure_plus_1</i></a></li>
+    <li><a href="{{id}}" class="btn-floating profile_add_charge yellow darken-3"><i class="material-icons">attach_money</i></a></li>
+  </ul>
+</div>

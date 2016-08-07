@@ -67,7 +67,7 @@ clientSchema.pre('save', function (next) {
   next();
 });
 
-clientSchema.methods.getInfo = function (callback) {
+clientSchema.methods.getInfo = function (finished, callback) {
   var _this = this;
   var result = {
     name: this.name.split(' ')[0].toLowerCase(),
@@ -83,9 +83,10 @@ clientSchema.methods.getInfo = function (callback) {
 
   Async.waterfall([
     function getLoans(wfaCallback) {
-      _this.getLoans((err, loans, extra) => {
+      _this.getLoans(finished, (err, loans, extra) => {
         if (err) return wfaCallback(err);
-        result.active_loans = loans;
+        result.loans = loans;
+        result.active_loans = loans.length !== 0 ? true : false;
         result.total_depth = extra.total;
         result.last_payment = extra.last_payment;
         result.last_loan = extra.last_loan;
@@ -120,7 +121,7 @@ clientSchema.methods.getCharges = function (callback) {
     });
 };
 
-clientSchema.methods.getLoans = function (callback) {
+clientSchema.methods.getLoans = function (finished, callback) {
   var _this = this;
   var extra = {
     total: 0,
@@ -130,10 +131,14 @@ clientSchema.methods.getLoans = function (callback) {
     last_loan: null,
     expired: false,
   };
+
+  var match = {
+    client_id: _this.id,
+  };
+  if (!finished) match.finished = false;
+
   Loan
-    .find({
-      client_id: _this.id,
-    })
+    .find(match)
     .sort({ created: -1 })
     .exec((err, docs) => {
       if (err) return callback(err);

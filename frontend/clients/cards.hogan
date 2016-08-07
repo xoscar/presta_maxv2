@@ -1,18 +1,24 @@
 <div class="row">
-  <div style="margin-top:2%;" class="col s12 red-text text-darken-2">
-    <h4>Clientes</h4>
+  <div class="col s12">
+    <div style="margin-top:2%;" class="col s12 red-text text-darken-2">
+      <div class="row">
+        <h4>Clientes</h4>
+      </div>
+    </div>
   </div>
   <div class="col s12">
-    <nav class="search red darken-2">
-      <div class="nav-wrapper">
-        <form class="search-bar-form">
-          <div class="input-field">
-            <input type="search" placeholder="ID de usuario, nombre o apellido."/>
-            <label for="search"><i class="material-icons">search</i></label><i class="material-icons">close</i>
-          </div>
-        </form>
-      </div>
-    </nav>
+    <div class="col s12">
+      <nav class="search red darken-2">
+        <div class="nav-wrapper">
+          <form class="search-bar-form">
+            <div class="input-field">
+              <input type="search" placeholder="ID de usuario, nombre o apellido."/>
+              <label for="search"><i class="material-icons">search</i></label><i class="material-icons">close</i>
+            </div>
+          </form>
+        </div>
+      </nav>
+    </div>
   </div>
 </div>
 <div class="row">
@@ -20,13 +26,13 @@
     <div class="row">
     {{#clients}}
       <div class="col s12 m4">
-        <div class="card">
+        <div class="card client">
           <div class="card-content grey-text text-darken-2">
             <span class="card-title capitalize">
               {{client_id}}
             </span>
             <p class="capitalize">Nombre: {{name_complete}} {{surname}}</p>
-            <p>Prestamos activos: {{active_loans.length}}.</p>
+            <p>Prestamos activos: {{loans.length}}.</p>
               {{#last_payment}}
                 <p>Ultimo abono: {{last_payment}}.</p>
               {{/last_payment}}
@@ -39,16 +45,14 @@
             {{/expired_loans}}
           </div>
           <div class="card-action">
-              <a class="green-text darken-2">Más</a>
+              <a href="{{id}}" class="more green-text darken-2">Más</a>
+              {{#active_loans}}
               <a href="{{id}}" class="green-text darken-2 modal-trigger">Prestamos</a>
+              {{/active_loans}}
           </div>
         </div>
       </div>
     {{/clients}}
     </div>
-  </div>
-</div>
-<div class ="row center-align">
-  <div class="col s12 pagination">
   </div>
 </div>

@@ -8,32 +8,42 @@ nav.search {
 }
 
 .capitalize {
-    text-transform: capitalize;
+  text-transform: capitalize;
 }
 
-.card {
+.uppercase {
+  text-transform: uppercase;
+}
+
+.card.client {
     height: 305px;
     .card-content {
         height: 242px;
     }
 }
 
-.collection.loans {
-    .collection-item {
-        &:hover {
-            opacity: .8;
-        }
-        &.avatar {
-          padding-left: 10px;
+.card.loan {
+  &:hover {
+      cursor: pointer;
+  }
+  margin-top:0px;
+}
+
+.collection {
+  .collection-item {
+      &.payment {
+          height: auto;
           min-height: auto;
-        }
-    }
+      }
+  }
 }
 
 .modal {
-    width: 80%;
+    width: auto;
+    max-width: 70%;
     max-height: 80%;
 }
+
 .pagination {
     li {
         &.active {

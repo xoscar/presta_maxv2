@@ -1,9 +1,13 @@
 const Client = require('./client.js');
 const Pagination = require('../pagination/');
+const common = require('../utils/common');
+const Response = require('../response/');
 const templates = {
   cards: require('!mustache!./cards.hogan'),
-  holders: require('!mustache!./holders.hogan'),
-  loans: require('!mustache!./loans-modal.hogan'),
+  search: require('!mustache!./search_holders.hogan'),
+  loans: require('!mustache!./loans_modal.hogan'),
+  client_holder: require('!mustache!./client_holder.hogan'),
+  client: require('!mustache!./client.hogan'),
 };
 var searchControl = {
   page: 0,
@@ -26,7 +30,14 @@ function sendSearch(query, callback) {
   });
 }
 
-module.exports.init = function (user, token, root) {
+function showProfile(client) {
+  $rootNode.html(templates.client_holder());
+  $rootNode.find('.profile').html(templates.client(client));
+  $rootNode.find('.profile_loans').html(templates.loans(client));
+  $rootNode.find('.profile_loans ul:first-of-type').removeClass('hide');
+}
+
+function init(user, token, root) {
   var headers = [{
     name: 'user',
     value: user,
@@ -36,9 +47,7 @@ module.exports.init = function (user, token, root) {
   }, ];
   client = new Client(headers);
   $rootNode = $(root);
-
-  $rootNode.html('');
-  $rootNode.html(templates.holders());
+  Response.setRootNode($rootNode);
 
   // search listener
   $rootNode.on('submit', '.search-bar-form', function (event) {
@@ -57,9 +66,46 @@ module.exports.init = function (user, token, root) {
 
   $rootNode.on('click', 'a.modal-trigger', function (event) {
     event.preventDefault();
-    client.get($(this).attr('href'), function (err, client) {
+    client.loans($(this).attr('href'), function (err, client) {
+      client.loans.forEach(function (loan) {
+        loan.text_color = loan.expired ? 'red-text' : 'green-text';
+      });
+
       $rootNode.find('.modals').html(templates.loans(client));
+      $rootNode.find('.modals .payments ul:first-of-type').removeClass('hide');
       $rootNode.find('.loans-modal').openModal();
+    });
+  });
+
+  $rootNode.on('submit', '.update_profile_form', function (event) {
+    event.preventDefault();
+    var id = $(this).attr('href');
+    var data = common.generateFormData($(this).serializeArray());
+    client.update(id, data, function (err, client) {
+      if (!err) showProfile(client);
+      Response.show('.update_response', err, 'Usuario modificado exitosamente.');
+    });
+  });
+
+  $rootNode.on('click', '.modals .loan', function () {
+    var id = $(this).attr('href');
+
+    $rootNode.find('.payments ul').addClass('hide');
+    $rootNode.find('.payments [name="' + id + '"]').removeClass('hide');
+  });
+
+  $rootNode.on('click', '.profile_loans .loan', function () {
+    var id = $(this).attr('href');
+
+    $rootNode.find('.profile_loans ul').addClass('hide');
+    $rootNode.find('.profile_loans [name="' + id + '"]').removeClass('hide');
+  });
+
+  $rootNode.on('click', '.search-wrapper .more', function (event) {
+    event.preventDefault();
+    var id = $(this).attr('href');
+    client.get(id, function (err, client) {
+      showProfile(client);
     });
   });
 
@@ -80,10 +126,17 @@ module.exports.init = function (user, token, root) {
   });
 };
 
-module.exports.index = function (callback) {
+function index(callback) {
   client.getAll(function (err, clients) {
     if (err) return callback(err);
+    $rootNode.html('');
+    $rootNode.html(templates.search());
     showIndex('cards', { clients: clients });
     callback();
   });
+}
+
+module.exports = {
+  index: index,
+  init: init,
 };

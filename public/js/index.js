@@ -73,10 +73,14 @@
 
 	const Client = __webpack_require__(2);
 	const Pagination = __webpack_require__(4);
+	const common = __webpack_require__(9);
+	const Response = __webpack_require__(10);
 	const templates = {
-	  cards: __webpack_require__(9),
-	  holders: __webpack_require__(10),
-	  loans: __webpack_require__(11),
+	  cards: __webpack_require__(12),
+	  search: __webpack_require__(13),
+	  loans: __webpack_require__(14),
+	  client_holder: __webpack_require__(15),
+	  client: __webpack_require__(16),
 	};
 	var searchControl = {
 	  page: 0,
@@ -99,7 +103,14 @@
 	  });
 	}
 
-	module.exports.init = function (user, token, root) {
+	function showProfile(client) {
+	  $rootNode.html(templates.client_holder());
+	  $rootNode.find('.profile').html(templates.client(client));
+	  $rootNode.find('.profile_loans').html(templates.loans(client));
+	  $rootNode.find('.profile_loans ul:first-of-type').removeClass('hide');
+	}
+
+	function init(user, token, root) {
 	  var headers = [{
 	    name: 'user',
 	    value: user,
@@ -109,9 +120,7 @@
 	  }, ];
 	  client = new Client(headers);
 	  $rootNode = $(root);
-
-	  $rootNode.html('');
-	  $rootNode.html(templates.holders());
+	  Response.setRootNode($rootNode);
 
 	  // search listener
 	  $rootNode.on('submit', '.search-bar-form', function (event) {
@@ -130,9 +139,46 @@
 
 	  $rootNode.on('click', 'a.modal-trigger', function (event) {
 	    event.preventDefault();
-	    client.get($(this).attr('href'), function (err, client) {
+	    client.loans($(this).attr('href'), function (err, client) {
+	      client.loans.forEach(function (loan) {
+	        loan.text_color = loan.expired ? 'red-text' : 'green-text';
+	      });
+
 	      $rootNode.find('.modals').html(templates.loans(client));
+	      $rootNode.find('.modals .payments ul:first-of-type').removeClass('hide');
 	      $rootNode.find('.loans-modal').openModal();
+	    });
+	  });
+
+	  $rootNode.on('submit', '.update_profile_form', function (event) {
+	    event.preventDefault();
+	    var id = $(this).attr('href');
+	    var data = common.generateFormData($(this).serializeArray());
+	    client.update(id, data, function (err, client) {
+	      if (!err) showProfile(client);
+	      Response.show('.update_response', err, 'Usuario modificado exitosamente.');
+	    });
+	  });
+
+	  $rootNode.on('click', '.modals .loan', function () {
+	    var id = $(this).attr('href');
+
+	    $rootNode.find('.payments ul').addClass('hide');
+	    $rootNode.find('.payments [name="' + id + '"]').removeClass('hide');
+	  });
+
+	  $rootNode.on('click', '.profile_loans .loan', function () {
+	    var id = $(this).attr('href');
+
+	    $rootNode.find('.profile_loans ul').addClass('hide');
+	    $rootNode.find('.profile_loans [name="' + id + '"]').removeClass('hide');
+	  });
+
+	  $rootNode.on('click', '.search-wrapper .more', function (event) {
+	    event.preventDefault();
+	    var id = $(this).attr('href');
+	    client.get(id, function (err, client) {
+	      showProfile(client);
 	    });
 	  });
 
@@ -153,12 +199,19 @@
 	  });
 	};
 
-	module.exports.index = function (callback) {
+	function index(callback) {
 	  client.getAll(function (err, clients) {
 	    if (err) return callback(err);
+	    $rootNode.html('');
+	    $rootNode.html(templates.search());
 	    showIndex('cards', { clients: clients });
 	    callback();
 	  });
+	}
+
+	module.exports = {
+	  index: index,
+	  init: init,
 	};
 
 
@@ -177,6 +230,12 @@
 
 	Client.prototype.search = function (query, callback) {
 	  var url = this.attachParamsToUrl(this.resource, query);
+	  var options = this.generateOptions(url, 'GET', null, callback);
+	  this.send(options);
+	};
+
+	Client.prototype.loans = function (id, callback) {
+	  var url = this.resource + '/' + id + '/loans';
 	  var options = this.generateOptions(url, 'GET', null, callback);
 	  this.send(options);
 	};
@@ -1135,24 +1194,80 @@
 
 /***/ },
 /* 9 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	var H = __webpack_require__(6);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"row\">");t.b("\n" + i);t.b("  <div style=\"margin-top:2%;\" class=\"col s12 red-text text-darken-2\">");t.b("\n" + i);t.b("    <h4>Clientes</h4>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  <div class=\"col s12\">");t.b("\n" + i);t.b("    <nav class=\"search red darken-2\">");t.b("\n" + i);t.b("      <div class=\"nav-wrapper\">");t.b("\n" + i);t.b("        <form class=\"search-bar-form\">");t.b("\n" + i);t.b("          <div class=\"input-field\">");t.b("\n" + i);t.b("            <input type=\"search\" placeholder=\"ID de usuario, nombre o apellido.\"/>");t.b("\n" + i);t.b("            <label for=\"search\"><i class=\"material-icons\">search</i></label><i class=\"material-icons\">close</i>");t.b("\n" + i);t.b("          </div>");t.b("\n" + i);t.b("        </form>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </nav>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div class=\"row\">");t.b("\n" + i);t.b("  <div class=\"col s12 grey-text darken-2\">");t.b("\n" + i);t.b("    <div class=\"row\">");t.b("\n" + i);if(t.s(t.f("clients",c,p,1),c,p,0,655,1755,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <div class=\"col s12 m4\">");t.b("\n" + i);t.b("        <div class=\"card\">");t.b("\n" + i);t.b("          <div class=\"card-content grey-text text-darken-2\">");t.b("\n" + i);t.b("            <span class=\"card-title capitalize\">");t.b("\n" + i);t.b("              ");t.b(t.v(t.f("client_id",c,p,0)));t.b("\n" + i);t.b("            </span>");t.b("\n" + i);t.b("            <p class=\"capitalize\">Nombre: ");t.b(t.v(t.f("name_complete",c,p,0)));t.b(" ");t.b(t.v(t.f("surname",c,p,0)));t.b("</p>");t.b("\n" + i);t.b("            <p>Prestamos activos: ");t.b(t.v(t.d("active_loans.length",c,p,0)));t.b(".</p>");t.b("\n" + i);if(t.s(t.f("last_payment",c,p,1),c,p,0,1042,1112,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("                <p>Ultimo abono: ");t.b(t.v(t.f("last_payment",c,p,0)));t.b(".</p>");t.b("\n" + i);});c.pop();}t.b("            <p><b>Adeudo actual: $");t.b(t.v(t.f("total_depth",c,p,0)));t.b(".00.</b></p>");t.b("\n" + i);if(t.s(t.f("expired_loans",c,p,1),c,p,0,1222,1336,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("              <p class=\"red-text text-darken-2\">Este cliente tiene al menos un prestamo vencido.</p>");t.b("\n" + i);});c.pop();}if(!t.s(t.f("expired_loans",c,p,1),c,p,1,0,0,"")){t.b("              <p class=\"green-text text-darken-2\">Este no presenta ningun prestamo vencido.</p>");t.b("\n" + i);};t.b("          </div>");t.b("\n" + i);t.b("          <div class=\"card-action\">");t.b("\n" + i);t.b("              <a class=\"green-text darken-2\">Más</a>");t.b("\n" + i);t.b("              <a href=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\" class=\"green-text darken-2 modal-trigger\">Prestamos</a>");t.b("\n" + i);t.b("          </div>");t.b("\n" + i);t.b("        </div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);});c.pop();}t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div class =\"row center-align\">");t.b("\n" + i);t.b("  <div class=\"col s12 pagination\">");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"row\">\n  <div style=\"margin-top:2%;\" class=\"col s12 red-text text-darken-2\">\n    <h4>Clientes</h4>\n  </div>\n  <div class=\"col s12\">\n    <nav class=\"search red darken-2\">\n      <div class=\"nav-wrapper\">\n        <form class=\"search-bar-form\">\n          <div class=\"input-field\">\n            <input type=\"search\" placeholder=\"ID de usuario, nombre o apellido.\"/>\n            <label for=\"search\"><i class=\"material-icons\">search</i></label><i class=\"material-icons\">close</i>\n          </div>\n        </form>\n      </div>\n    </nav>\n  </div>\n</div>\n<div class=\"row\">\n  <div class=\"col s12 grey-text darken-2\">\n    <div class=\"row\">\n    {{#clients}}\n      <div class=\"col s12 m4\">\n        <div class=\"card\">\n          <div class=\"card-content grey-text text-darken-2\">\n            <span class=\"card-title capitalize\">\n              {{client_id}}\n            </span>\n            <p class=\"capitalize\">Nombre: {{name_complete}} {{surname}}</p>\n            <p>Prestamos activos: {{active_loans.length}}.</p>\n              {{#last_payment}}\n                <p>Ultimo abono: {{last_payment}}.</p>\n              {{/last_payment}}\n            <p><b>Adeudo actual: ${{total_depth}}.00.</b></p>\n            {{#expired_loans}}\n              <p class=\"red-text text-darken-2\">Este cliente tiene al menos un prestamo vencido.</p>\n            {{/expired_loans}}\n            {{^expired_loans}}\n              <p class=\"green-text text-darken-2\">Este no presenta ningun prestamo vencido.</p>\n            {{/expired_loans}}\n          </div>\n          <div class=\"card-action\">\n              <a class=\"green-text darken-2\">Más</a>\n              <a href=\"{{id}}\" class=\"green-text darken-2 modal-trigger\">Prestamos</a>\n          </div>\n        </div>\n      </div>\n    {{/clients}}\n    </div>\n  </div>\n</div>\n<div class =\"row center-align\">\n  <div class=\"col s12 pagination\">\n  </div>\n</div>\n", H);return T.render.apply(T, arguments); };
+	module.exports.generateFormData = function (serializeArray) {
+	  var result = {};
+
+	  serializeArray.forEach(function (field) {
+	    result[field.name] = field.value;
+	  });
+
+	  return result;
+	};
+
 
 /***/ },
 /* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(6);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class =\"search-wrapper\">");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div class = \"modals\">");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class =\"search-wrapper\">\n</div>\n<div class = \"modals\">\n</div>", H);return T.render.apply(T, arguments); };
+	var template = __webpack_require__(11);
+	var $rootNode = null;
+
+	module.exports.show = function (selector, err, response) {
+	  var messages = null;
+	  if (err) messages = { errors: JSON.parse(err.responseText).messages };
+	  else if (response) messages = { success: [{ message: response }] };
+	  if (messages)
+	    $rootNode.find(selector).html(template(messages));
+	};
+
+	module.exports.setRootNode = function (root) {
+	  $rootNode = root;
+	};
+
 
 /***/ },
 /* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(6);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"modal loans-modal\">");t.b("\n" + i);t.b("  <div class=\"modal-content\">");t.b("\n" + i);t.b("  	<div class =\"row\">");t.b("\n" + i);t.b("    	<h5>Prestamos de <span class=\"capitalize\">");t.b(t.v(t.f("name_complete",c,p,0)));t.b("</span> (");t.b(t.v(t.f("client_id",c,p,0)));t.b(")</h5>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"row\">");t.b("\n" + i);t.b("    	<div class =\"col s6 z-depth-1\">");t.b("\n" + i);t.b("    		<div class=\"collection loans\">");t.b("\n" + i);if(t.s(t.f("active_loans",c,p,1),c,p,0,308,1051,"{{ }}")){t.rs(c,p,function(c,p,t){if(!t.s(t.f("expired",c,p,1),c,p,1,0,0,"")){t.b("		        		<a href=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\" class=\"collection-item white green-text  avatar text-darken-2 hoverable\">");t.b("\n" + i);};if(t.s(t.f("expired",c,p,1),c,p,0,481,593,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("		        		<a href=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\" class=\"collection-item white red-text avatar text-darken-2 hoverable\">");t.b("\n" + i);});c.pop();}t.b("		        	<span>Cantidad: $");t.b(t.v(t.f("amount",c,p,0)));t.b(".00 | Adeudo: $");t.b(t.v(t.f("current_balance",c,p,0)));t.b(".00 </span>");t.b("\n" + i);t.b("		        	<span class=\"secondary-content grey-text text-darken-1\"><i class=\"material-icons\">expand_more</i></span>");t.b("\n" + i);if(t.s(t.f("last_payment",c,p,1),c,p,0,834,905,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("		        		<p>Ultimo pago: ");t.b(t.v(t.f("last_payment_from_now",c,p,0)));t.b(" </p>");t.b("\n" + i);});c.pop();}if(!t.s(t.f("last_payment",c,p,1),c,p,1,0,0,"")){t.b("		        		<p>No se han realizado pagos.</p>");t.b("\n" + i);};t.b("		        </a>");t.b("\n" + i);});c.pop();}t.b("       	</div>");t.b("\n" + i);t.b("  		</div>");t.b("\n" + i);t.b("  	</div>");t.b("\n" + i);t.b("  	<div class=\"col s6\">");t.b("\n" + i);t.b("  	</div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b(" 	<div class=\"modal-footer\">");t.b("\n" + i);t.b("    <a class=\" modal-action modal-close waves-effect waves-green btn-flat\">Close</a>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"modal loans-modal\">\n  <div class=\"modal-content\">\n  \t<div class =\"row\">\n    \t<h5>Prestamos de <span class=\"capitalize\">{{name_complete}}</span> ({{client_id}})</h5>\n    </div>\n    <div class=\"row\">\n    \t<div class =\"col s6 z-depth-1\">\n    \t\t<div class=\"collection loans\">\n    \t\t\t{{#active_loans}}\n    \t\t\t\t\t{{^expired}}\n\t\t        \t\t<a href=\"{{id}}\" class=\"collection-item white green-text  avatar text-darken-2 hoverable\">\n\t\t        \t{{/expired}}\n\t\t        \t{{#expired}}\n\t\t        \t\t<a href=\"{{id}}\" class=\"collection-item white red-text avatar text-darken-2 hoverable\">\n\t\t        \t{{/expired}}\n\t\t        \t<span>Cantidad: ${{amount}}.00 | Adeudo: ${{current_balance}}.00 </span>\n\t\t        \t<span class=\"secondary-content grey-text text-darken-1\"><i class=\"material-icons\">expand_more</i></span>\n\t\t        \t{{#last_payment}}\n\t\t        \t\t<p>Ultimo pago: {{last_payment_from_now}} </p>\n\t\t        \t{{/last_payment}}\n\t\t        \t{{^last_payment}}\n\t\t        \t\t<p>No se han realizado pagos.</p>\n\t\t        \t{{/last_payment}}\n\t\t        </a>\n       \t\t{{/active_loans}}\n       \t</div>\n  \t\t</div>\n  \t</div>\n  \t<div class=\"col s6\">\n  \t</div>\n  </div>\n \t<div class=\"modal-footer\">\n    <a class=\" modal-action modal-close waves-effect waves-green btn-flat\">Close</a>\n  </div>\n</div>", H);return T.render.apply(T, arguments); };
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");if(t.s(t.f("errors",c,p,1),c,p,0,11,124,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("	<div class=\"white-text red chip\"> ");t.b("\n" + i);t.b("		");t.b(t.v(t.f("message",c,p,0)));t.b("\n" + i);t.b("    <i class=\"close material-icons\">close</i>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  <br>");t.b("\n" + i);});c.pop();}if(t.s(t.f("success",c,p,1),c,p,0,148,263,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("	<div class=\"white-text green chip\"> ");t.b("\n" + i);t.b("		");t.b(t.v(t.f("message",c,p,0)));t.b("\n" + i);t.b("    <i class=\"close material-icons\">close</i>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  <br>");t.b("\n" + i);});c.pop();}return t.fl(); },partials: {}, subs: {  }}, "{{#errors}}\n\t<div class=\"white-text red chip\"> \n\t\t{{message}}\n    <i class=\"close material-icons\">close</i>\n  </div>\n  <br>\n{{/errors}}\n{{#success}}\n\t<div class=\"white-text green chip\"> \n\t\t{{message}}\n    <i class=\"close material-icons\">close</i>\n  </div>\n  <br>\n{{/success}}", H);return T.render.apply(T, arguments); };
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(6);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"row\">");t.b("\n" + i);t.b("  <div class=\"col s12\">");t.b("\n" + i);t.b("    <div style=\"margin-top:2%;\" class=\"col s12 red-text text-darken-2\">");t.b("\n" + i);t.b("      <div class=\"row\">");t.b("\n" + i);t.b("        <h4>Clientes</h4>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  <div class=\"col s12\">");t.b("\n" + i);t.b("    <div class=\"col s12\">");t.b("\n" + i);t.b("      <nav class=\"search red darken-2\">");t.b("\n" + i);t.b("        <div class=\"nav-wrapper\">");t.b("\n" + i);t.b("          <form class=\"search-bar-form\">");t.b("\n" + i);t.b("            <div class=\"input-field\">");t.b("\n" + i);t.b("              <input type=\"search\" placeholder=\"ID de usuario, nombre o apellido.\"/>");t.b("\n" + i);t.b("              <label for=\"search\"><i class=\"material-icons\">search</i></label><i class=\"material-icons\">close</i>");t.b("\n" + i);t.b("            </div>");t.b("\n" + i);t.b("          </form>");t.b("\n" + i);t.b("        </div>");t.b("\n" + i);t.b("      </nav>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div class=\"row\">");t.b("\n" + i);t.b("  <div class=\"col s12 grey-text darken-2\">");t.b("\n" + i);t.b("    <div class=\"row\">");t.b("\n" + i);if(t.s(t.f("clients",c,p,1),c,p,0,790,1973,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <div class=\"col s12 m4\">");t.b("\n" + i);t.b("        <div class=\"card client\">");t.b("\n" + i);t.b("          <div class=\"card-content grey-text text-darken-2\">");t.b("\n" + i);t.b("            <span class=\"card-title capitalize\">");t.b("\n" + i);t.b("              ");t.b(t.v(t.f("client_id",c,p,0)));t.b("\n" + i);t.b("            </span>");t.b("\n" + i);t.b("            <p class=\"capitalize\">Nombre: ");t.b(t.v(t.f("name_complete",c,p,0)));t.b(" ");t.b(t.v(t.f("surname",c,p,0)));t.b("</p>");t.b("\n" + i);t.b("            <p>Prestamos activos: ");t.b(t.v(t.d("loans.length",c,p,0)));t.b(".</p>");t.b("\n" + i);if(t.s(t.f("last_payment",c,p,1),c,p,0,1177,1247,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("                <p>Ultimo abono: ");t.b(t.v(t.f("last_payment",c,p,0)));t.b(".</p>");t.b("\n" + i);});c.pop();}t.b("            <p><b>Adeudo actual: $");t.b(t.v(t.f("total_depth",c,p,0)));t.b(".00.</b></p>");t.b("\n" + i);if(t.s(t.f("expired_loans",c,p,1),c,p,0,1357,1471,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("              <p class=\"red-text text-darken-2\">Este cliente tiene al menos un prestamo vencido.</p>");t.b("\n" + i);});c.pop();}if(!t.s(t.f("expired_loans",c,p,1),c,p,1,0,0,"")){t.b("              <p class=\"green-text text-darken-2\">Este no presenta ningun prestamo vencido.</p>");t.b("\n" + i);};t.b("          </div>");t.b("\n" + i);t.b("          <div class=\"card-action\">");t.b("\n" + i);t.b("              <a href=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\" class=\"more green-text darken-2\">Más</a>");t.b("\n" + i);if(t.s(t.f("active_loans",c,p,1),c,p,0,1804,1906,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("              <a href=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\" class=\"green-text darken-2 modal-trigger\">Prestamos</a>");t.b("\n" + i);});c.pop();}t.b("          </div>");t.b("\n" + i);t.b("        </div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);});c.pop();}t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"row\">\n  <div class=\"col s12\">\n    <div style=\"margin-top:2%;\" class=\"col s12 red-text text-darken-2\">\n      <div class=\"row\">\n        <h4>Clientes</h4>\n      </div>\n    </div>\n  </div>\n  <div class=\"col s12\">\n    <div class=\"col s12\">\n      <nav class=\"search red darken-2\">\n        <div class=\"nav-wrapper\">\n          <form class=\"search-bar-form\">\n            <div class=\"input-field\">\n              <input type=\"search\" placeholder=\"ID de usuario, nombre o apellido.\"/>\n              <label for=\"search\"><i class=\"material-icons\">search</i></label><i class=\"material-icons\">close</i>\n            </div>\n          </form>\n        </div>\n      </nav>\n    </div>\n  </div>\n</div>\n<div class=\"row\">\n  <div class=\"col s12 grey-text darken-2\">\n    <div class=\"row\">\n    {{#clients}}\n      <div class=\"col s12 m4\">\n        <div class=\"card client\">\n          <div class=\"card-content grey-text text-darken-2\">\n            <span class=\"card-title capitalize\">\n              {{client_id}}\n            </span>\n            <p class=\"capitalize\">Nombre: {{name_complete}} {{surname}}</p>\n            <p>Prestamos activos: {{loans.length}}.</p>\n              {{#last_payment}}\n                <p>Ultimo abono: {{last_payment}}.</p>\n              {{/last_payment}}\n            <p><b>Adeudo actual: ${{total_depth}}.00.</b></p>\n            {{#expired_loans}}\n              <p class=\"red-text text-darken-2\">Este cliente tiene al menos un prestamo vencido.</p>\n            {{/expired_loans}}\n            {{^expired_loans}}\n              <p class=\"green-text text-darken-2\">Este no presenta ningun prestamo vencido.</p>\n            {{/expired_loans}}\n          </div>\n          <div class=\"card-action\">\n              <a href=\"{{id}}\" class=\"more green-text darken-2\">Más</a>\n              {{#active_loans}}\n              <a href=\"{{id}}\" class=\"green-text darken-2 modal-trigger\">Prestamos</a>\n              {{/active_loans}}\n          </div>\n        </div>\n      </div>\n    {{/clients}}\n    </div>\n  </div>\n</div>\n", H);return T.render.apply(T, arguments); };
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(6);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class =\"search-wrapper z-depth-1\">");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div class =\"row center-align z-depth-1\">");t.b("\n" + i);t.b("  <div class=\"col s12 pagination\">");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div>");t.b("\n" + i);t.b("	<div class=\"modal loans-modal modal-fixed-footer\">");t.b("\n" + i);t.b("	  <div class=\"modal-content modals\">");t.b("\n" + i);t.b("	  </div>");t.b("\n" + i);t.b("	  <div class=\"modal-footer\">");t.b("\n" + i);t.b("    		<a class=\" modal-action modal-close waves-effect waves-green btn-flat\">Cerrar</a>");t.b("\n" + i);t.b("  		</div>");t.b("\n" + i);t.b("		</div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class =\"search-wrapper z-depth-1\">\n</div>\n<div class =\"row center-align z-depth-1\">\n  <div class=\"col s12 pagination\">\n  </div>\n</div>\n<div>\n\t<div class=\"modal loans-modal modal-fixed-footer\">\n\t  <div class=\"modal-content modals\">\n\t  </div>\n\t  <div class=\"modal-footer\">\n    \t\t<a class=\" modal-action modal-close waves-effect waves-green btn-flat\">Cerrar</a>\n  \t\t</div>\n\t\t</div>\n  </div>\n</div>", H);return T.render.apply(T, arguments); };
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(6);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class =\"row z-depth-1\">");t.b("\n" + i);t.b("  <div class=\"col s12\">");t.b("\n" + i);t.b("  	<h5>Prestamos de <span class=\"capitalize\">");t.b(t.v(t.f("name_complete",c,p,0)));t.b("</span> (");t.b(t.v(t.f("client_id",c,p,0)));t.b(")</h5>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  <div class=\"row\">");t.b("\n" + i);t.b("    <div class =\"col s6\">");t.b("\n" + i);if(t.s(t.f("loans",c,p,1),c,p,0,224,795,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  		<div class=\"card loan\" href=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\">");t.b("\n" + i);t.b("      	<div class=\"card-content white ");t.b(t.v(t.f("text_color",c,p,0)));t.b("  avatar text-darken-2\">");t.b("\n" + i);t.b("        	<span>Cantidad: $");t.b(t.v(t.f("amount",c,p,0)));t.b(".00 | Adeudo: $");t.b(t.v(t.f("current_balance",c,p,0)));t.b(".00 </span>");t.b("\n" + i);t.b("        	<span class=\"secondary-content grey-text text-darken-1\"><i class=\"material-icons\">expand_more</i></span>");t.b("\n" + i);if(t.s(t.f("last_payment",c,p,1),c,p,0,568,639,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("          		<p>Ultimo pago: ");t.b(t.v(t.f("last_payment_from_now",c,p,0)));t.b(" </p>");t.b("\n" + i);});c.pop();}if(!t.s(t.f("last_payment",c,p,1),c,p,1,0,0,"")){t.b("          		<p>No se han realizado pagos.</p>");t.b("\n" + i);};t.b("        </div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);});c.pop();}t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"col s6 payments z-depth-1\">");t.b("\n" + i);if(t.s(t.f("loans",c,p,1),c,p,0,877,1438,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("        <ul class=\"collection hide\" name=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\">");t.b("\n" + i);if(t.s(t.f("payments",c,p,1),c,p,0,952,1207,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("            <li class=\"collection-item payment\">");t.b("\n" + i);t.b("              <span class=\"title green-text text-darken-2\">$");t.b(t.v(t.f("amount",c,p,0)));t.b(".00</span>");t.b("\n" + i);t.b("              <label>");t.b("\n" + i);t.b("                ");t.b(t.v(t.f("created_from_now",c,p,0)));t.b(" (");t.b(t.v(t.f("created",c,p,0)));t.b(")");t.b("\n" + i);t.b("              </label>");t.b("\n" + i);t.b("            </li>");t.b("\n" + i);});c.pop();}if(!t.s(t.f("payments",c,p,1),c,p,1,0,0,"")){t.b("            <li class=\"collection-item payment\">");t.b("\n" + i);t.b("              <span class=\"title text-darken-2\">No se han realizado pagos.</span>");t.b("\n" + i);t.b("            </li>");t.b("\n" + i);};t.b("        </ul>");t.b("\n" + i);});c.pop();}t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class =\"row z-depth-1\">\n  <div class=\"col s12\">\n  \t<h5>Prestamos de <span class=\"capitalize\">{{name_complete}}</span> ({{client_id}})</h5>\n  </div>\n  </div>\n  <div class=\"row\">\n    <div class =\"col s6\">\n      {{#loans}}\n  \t\t<div class=\"card loan\" href=\"{{id}}\">\n      \t<div class=\"card-content white {{text_color}}  avatar text-darken-2\">\n        \t<span>Cantidad: ${{amount}}.00 | Adeudo: ${{current_balance}}.00 </span>\n        \t<span class=\"secondary-content grey-text text-darken-1\"><i class=\"material-icons\">expand_more</i></span>\n          \t{{#last_payment}}\n          \t\t<p>Ultimo pago: {{last_payment_from_now}} </p>\n          \t{{/last_payment}}\n          \t{{^last_payment}}\n          \t\t<p>No se han realizado pagos.</p>\n          \t{{/last_payment}}\n        </div>\n      </div>\n      {{/loans}}\n    </div>\n    <div class=\"col s6 payments z-depth-1\">\n      {{#loans}}\n        <ul class=\"collection hide\" name=\"{{id}}\">\n          {{#payments}}\n            <li class=\"collection-item payment\">\n              <span class=\"title green-text text-darken-2\">${{amount}}.00</span>\n              <label>\n                {{created_from_now}} ({{created}})\n              </label>\n            </li>\n          {{/payments}}\n          {{^payments}}\n            <li class=\"collection-item payment\">\n              <span class=\"title text-darken-2\">No se han realizado pagos.</span>\n            </li>\n          {{/payments}}\n        </ul>\n      {{/loans}}\n    </div>\n  </div>\n</div>", H);return T.render.apply(T, arguments); };
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(6);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"profile z-depth-1\"></div>");t.b("\n");t.b("\n" + i);t.b("<div class =\"profile_loans\"></div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"add_charge\"></div>");t.b("\n" + i);t.b("<div class=\"add_loan\"></div>");t.b("\n" + i);t.b("<div class=\"remove_client\"></div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"new_charge\"></div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"profile z-depth-1\"></div>\n\n<div class =\"profile_loans\"></div>\n\n<div class=\"add_charge\"></div>\n<div class=\"add_loan\"></div>\n<div class=\"remove_client\"></div>\n\n<div class=\"new_charge\"></div>", H);return T.render.apply(T, arguments); };
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(6);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"row\">");t.b("\n" + i);t.b("  <div class=\"col s12\">");t.b("\n" + i);t.b("    <div style=\"margin-top:2%;\" class=\"col s12\">");t.b("\n" + i);t.b("      <div class=\"row\">");t.b("\n" + i);t.b("        <h4 class=\"capitalize\">");t.b(t.v(t.f("name_complete",c,p,0)));t.b("</h4>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  <div class=\"col s12\">");t.b("\n" + i);t.b("    <div class=\"row\">");t.b("\n" + i);t.b("      <div class=\"col s8 update_response center-align\">");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <form class=\"col s8 update_profile_form\" href=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\">");t.b("\n" + i);t.b("        <div class=\"row\">");t.b("\n" + i);t.b("          <div class=\"input-field col s6\">");t.b("\n" + i);t.b("            <input id=\"first_name\" name=\"name\" type=\"text\" class=\"uppercase validate\" value=\"");t.b(t.v(t.f("name_complete",c,p,0)));t.b("\">");t.b("\n" + i);t.b("            <label class=\"active\" for=\"first_name\">Nombre</label>");t.b("\n" + i);t.b("          </div>");t.b("\n" + i);t.b("          <div class=\"input-field col s6\">");t.b("\n" + i);t.b("            <input id=\"last_name\" name=\"surname\" type=\"text\" class=\"uppercase validate\" value=\"");t.b(t.v(t.f("surname",c,p,0)));t.b("\">");t.b("\n" + i);t.b("            <label class=\"active\" for=\"last_name\">Apellido</label>");t.b("\n" + i);t.b("          </div>");t.b("\n" + i);t.b("          <div class=\"input-field col s6\">");t.b("\n" + i);t.b("            <input id=\"phone\" name=\"phone\" type=\"text\" class=\"validate\" value=\"");t.b(t.v(t.f("phone",c,p,0)));t.b("\">");t.b("\n" + i);t.b("            <label class=\"active\" for=\"phone\">Teléfono</label>");t.b("\n" + i);t.b("          </div>");t.b("\n" + i);t.b("          <div class=\"input-field col s12\">");t.b("\n" + i);t.b("            <textarea id=\"textarea1\" name=\"address\" class=\"uppercase materialize-textarea\">");t.b(t.v(t.f("address",c,p,0)));t.b("</textarea>");t.b("\n" + i);t.b("            <label class=\"active\" for=\"textarea1\">Dirección</label>");t.b("\n" + i);t.b("          </div>");t.b("\n" + i);t.b("        </div>");t.b("\n" + i);t.b("        <div class=\"row\">");t.b("\n" + i);t.b("          <div class=\"col s12 right-align\">");t.b("\n" + i);t.b("            <button class=\"waves-effect waves-light btn\">Modificar</button>");t.b("\n" + i);t.b("          </div>");t.b("\n" + i);t.b("        </div>");t.b("\n" + i);t.b("      </form>");t.b("\n" + i);t.b("      <div class=\"col s4\">");t.b("\n" + i);t.b("        <ul class=\"collection with-header\" style=\"margin-top:0px\">");t.b("\n" + i);t.b("          <li class=\"collection-header\"><h5>Información</h5></li>");t.b("\n" + i);t.b("          <li class=\"collection-item\"><div>ID: <span class=\"secondary-content\">");t.b(t.v(t.f("client_id",c,p,0)));t.b("</span></li>");t.b("\n" + i);t.b("          <li class=\"collection-item\"><div>Adeudo: <span class=\"secondary-content\">$");t.b(t.v(t.f("total_depth",c,p,0)));t.b(".00</span></li>");t.b("\n" + i);t.b("          <li class=\"collection-item\"><div>Creado: <span class=\"secondary-content\">");t.b(t.v(t.f("created",c,p,0)));t.b("</span></li>");t.b("\n" + i);t.b("          <li class=\"collection-item\"><div>Prestamos activos: <span class=\"secondary-content\">");t.b(t.v(t.d("loans.length",c,p,0)));t.b("</span></li>");t.b("\n" + i);if(t.s(t.f("last_payment",c,p,1),c,p,0,2181,2311,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("            <li class=\"collection-item\"><div>Ultimo pago: <span class=\"secondary-content\">");t.b(t.v(t.f("last_payment",c,p,0)));t.b("</span></li>");t.b("\n" + i);});c.pop();}t.b("          <li class=\"collection-item\"><div>Ultimo prestamo: <span class=\"secondary-content\">");t.b(t.v(t.f("last_loan",c,p,0)));t.b("</span></li>");t.b("\n" + i);t.b("          <li class=\"collection-item\"><div>Prestamos vencidos: ");t.b("\n" + i);if(t.s(t.f("expired_loans",c,p,1),c,p,0,2543,2618,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("                <span class=\"secondary-content red-text\">Si");t.b("\n" + i);});c.pop();}if(!t.s(t.f("expired_loans",c,p,1),c,p,1,0,0,"")){t.b("              <span class=\"secondary-content\">No");t.b("\n" + i);};t.b("            </span>");t.b("\n" + i);t.b("          </li>");t.b("\n" + i);t.b("        </ul>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"fixed-action-btn horizontal\" style=\"bottom: 45px; right: 24px;\">");t.b("\n" + i);t.b("  <a class=\"btn-floating btn-large red darken-2\">");t.b("\n" + i);t.b("    <i class=\"large material-icons\">menu</i>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("  <ul>");t.b("\n" + i);t.b("    <li><a href=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\" class=\"btn-floating profile_remove red darken-1\"><i class=\"material-icons\">close</i></a></li>");t.b("\n" + i);t.b("    <li><a href=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\" class=\"btn-floating profile_add_loan blue darken-1\"><i class=\"material-icons\">exposure_plus_1</i></a></li>");t.b("\n" + i);t.b("    <li><a href=\"");t.b(t.v(t.f("id",c,p,0)));t.b("\" class=\"btn-floating profile_add_charge yellow darken-3\"><i class=\"material-icons\">attach_money</i></a></li>");t.b("\n" + i);t.b("  </ul>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"row\">\n  <div class=\"col s12\">\n    <div style=\"margin-top:2%;\" class=\"col s12\">\n      <div class=\"row\">\n        <h4 class=\"capitalize\">{{name_complete}}</h4>\n      </div>\n    </div>\n  </div>\n  <div class=\"col s12\">\n    <div class=\"row\">\n      <div class=\"col s8 update_response center-align\">\n      </div>\n      <form class=\"col s8 update_profile_form\" href=\"{{id}}\">\n        <div class=\"row\">\n          <div class=\"input-field col s6\">\n            <input id=\"first_name\" name=\"name\" type=\"text\" class=\"uppercase validate\" value=\"{{name_complete}}\">\n            <label class=\"active\" for=\"first_name\">Nombre</label>\n          </div>\n          <div class=\"input-field col s6\">\n            <input id=\"last_name\" name=\"surname\" type=\"text\" class=\"uppercase validate\" value=\"{{surname}}\">\n            <label class=\"active\" for=\"last_name\">Apellido</label>\n          </div>\n          <div class=\"input-field col s6\">\n            <input id=\"phone\" name=\"phone\" type=\"text\" class=\"validate\" value=\"{{phone}}\">\n            <label class=\"active\" for=\"phone\">Teléfono</label>\n          </div>\n          <div class=\"input-field col s12\">\n            <textarea id=\"textarea1\" name=\"address\" class=\"uppercase materialize-textarea\">{{address}}</textarea>\n            <label class=\"active\" for=\"textarea1\">Dirección</label>\n          </div>\n        </div>\n        <div class=\"row\">\n          <div class=\"col s12 right-align\">\n            <button class=\"waves-effect waves-light btn\">Modificar</button>\n          </div>\n        </div>\n      </form>\n      <div class=\"col s4\">\n        <ul class=\"collection with-header\" style=\"margin-top:0px\">\n          <li class=\"collection-header\"><h5>Información</h5></li>\n          <li class=\"collection-item\"><div>ID: <span class=\"secondary-content\">{{client_id}}</span></li>\n          <li class=\"collection-item\"><div>Adeudo: <span class=\"secondary-content\">${{total_depth}}.00</span></li>\n          <li class=\"collection-item\"><div>Creado: <span class=\"secondary-content\">{{created}}</span></li>\n          <li class=\"collection-item\"><div>Prestamos activos: <span class=\"secondary-content\">{{loans.length}}</span></li>\n          {{#last_payment}}\n            <li class=\"collection-item\"><div>Ultimo pago: <span class=\"secondary-content\">{{last_payment}}</span></li>\n          {{/last_payment}}\n          <li class=\"collection-item\"><div>Ultimo prestamo: <span class=\"secondary-content\">{{last_loan}}</span></li>\n          <li class=\"collection-item\"><div>Prestamos vencidos: \n              {{#expired_loans}}\n                <span class=\"secondary-content red-text\">Si\n              {{/expired_loans}}\n              {{^expired_loans}}\n              <span class=\"secondary-content\">No\n              {{/expired_loans}}\n            </span>\n          </li>\n        </ul>\n      </div>\n    </div>\n  </div>\n</div>\n\n<div class=\"fixed-action-btn horizontal\" style=\"bottom: 45px; right: 24px;\">\n  <a class=\"btn-floating btn-large red darken-2\">\n    <i class=\"large material-icons\">menu</i>\n  </a>\n  <ul>\n    <li><a href=\"{{id}}\" class=\"btn-floating profile_remove red darken-1\"><i class=\"material-icons\">close</i></a></li>\n    <li><a href=\"{{id}}\" class=\"btn-floating profile_add_loan blue darken-1\"><i class=\"material-icons\">exposure_plus_1</i></a></li>\n    <li><a href=\"{{id}}\" class=\"btn-floating profile_add_charge yellow darken-3\"><i class=\"material-icons\">attach_money</i></a></li>\n  </ul>\n</div>", H);return T.render.apply(T, arguments); };
 
 /***/ }
 /******/ ]);

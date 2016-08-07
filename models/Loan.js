@@ -79,6 +79,9 @@ loanSchema.pre('save', function (next) {
   var searchFields = 'amount weeks client_id _id'.split(' ');
   this.search = common.generateArrayFromObject(this, searchFields);
   this.updated = Date.now();
+  this.finished = this.getCurrentBalance() === 0 ?
+    this.finished = true :
+    this.finished = false;
   next();
 });
 
@@ -90,7 +93,7 @@ loanSchema.methods.isExpired = function () {
 };
 
 loanSchema.methods.getBasicInfo = function () {
-  return {
+  var result = {
     id: this.id,
     amount: this.amount,
     weekly_payment: this.weekly_payment,
@@ -106,6 +109,17 @@ loanSchema.methods.getBasicInfo = function () {
     updated: this.updated,
     current_balance: this.getCurrentBalance(),
   };
+
+  result.payments = this.payments.map(function (payment) {
+    return {
+      id: payment.id,
+      amount: payment.amount,
+      created_from_now: moment(payment.created).fromNow(),
+      created: moment(payment.created).format('DD/MM/YYY HH:mm'),
+    };
+  });
+
+  return result;
 };
 
 loanSchema.methods.update = function (query, callback) {
@@ -122,9 +136,7 @@ loanSchema.methods.update = function (query, callback) {
 };
 
 loanSchema.methods.getInfo = function () {
-  var result = this.getBasicInfo();
-  result.payments = this.payments;
-  return result;
+  return this.getBasicInfo();
 };
 
 loanSchema.methods.getLastPayment = function () {
@@ -165,9 +177,6 @@ loanSchema.methods.createPayment = function (user, query, callback) {
     };
 
     this.payments.push(newPayment);
-    this.finished = this.getCurrentBalance() === 0 ?
-      this.finished = true :
-      this.finished = false;
 
     this.save(callback);
   } else callback(errors);
@@ -185,10 +194,6 @@ loanSchema.methods.deletePayment = function (query, callback) {
     });
 
     this.payments = paymentsHolder;
-
-    this.finished = this.getCurrentBalance() === 0 ?
-      this.finished = true :
-      this.finished = false;
 
     this.save(callback);
   } else callback(errors);

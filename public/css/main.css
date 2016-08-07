@@ -8000,20 +8000,26 @@ nav.search {
 .capitalize {
   text-transform: capitalize; }
 
-.card {
+.uppercase {
+  text-transform: uppercase; }
+
+.card.client {
   height: 305px; }
-  .card .card-content {
+  .card.client .card-content {
     height: 242px; }
 
-.collection.loans .collection-item:hover {
-  opacity: .8; }
+.card.loan {
+  margin-top: 0px; }
+  .card.loan:hover {
+    cursor: pointer; }
 
-.collection.loans .collection-item.avatar {
-  padding-left: 10px;
+.collection .collection-item.payment {
+  height: auto;
   min-height: auto; }
 
 .modal {
-  width: 80%;
+  width: auto;
+  max-width: 70%;
   max-height: 80%; }
 
 .pagination li.active {

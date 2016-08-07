@@ -1,0 +1,16 @@
+<div class ="search-wrapper z-depth-1">
+</div>
+<div class ="row center-align z-depth-1">
+  <div class="col s12 pagination">
+  </div>
+</div>
+<div>
+	<div class="modal loans-modal modal-fixed-footer">
+	  <div class="modal-content modals">
+	  </div>
+	  <div class="modal-footer">
+    		<a class=" modal-action modal-close waves-effect waves-green btn-flat">Cerrar</a>
+  		</div>
+		</div>
+  </div>
+</div>
