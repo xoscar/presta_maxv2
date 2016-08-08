@@ -8,13 +8,14 @@
       {{#loans}}
   		<div class="card loan" href="{{id}}">
       	<div class="card-content white {{text_color}}  avatar text-darken-2">
+          <span class="secondary-content grey-text text-darken-1"><i class="material-icons">expand_more</i></span>
         	<span>Cantidad: ${{amount}}.00 | Adeudo: ${{current_balance}}.00 </span>
-        	<span class="secondary-content grey-text text-darken-1"><i class="material-icons">expand_more</i></span>
+          <p>Creado: {{created_from_now}} ({{created}})</p>
           	{{#last_payment}}
-          		<p>Ultimo pago: {{last_payment_from_now}} </p>
+          		<p>Ultimo abono: {{last_payment_from_now}} </p>
           	{{/last_payment}}
           	{{^last_payment}}
-          		<p>No se han realizado pagos.</p>
+          		<p>No se han realizado pagos</p>
           	{{/last_payment}}
         </div>
       </div>

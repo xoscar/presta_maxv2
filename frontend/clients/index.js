@@ -1,4 +1,4 @@
-const Client = require('./client.js');
+const Client = require('./client');
 const Pagination = require('../pagination/');
 const common = require('../utils/common');
 const Response = require('../response/');
@@ -31,10 +31,16 @@ function sendSearch(query, callback) {
 }
 
 function showProfile(client) {
+  client.loans.forEach(function (loan) {
+    loan.text_color = loan.expired ? 'red-text' : 'green-text';
+  });
+
+  client.charges.forEach(function (charge) {
+    charge.text_color = charge.expired ? 'red-text' : 'green-text';
+  });
+
   $rootNode.html(templates.client_holder());
   $rootNode.find('.profile').html(templates.client(client));
-  $rootNode.find('.profile_loans').html(templates.loans(client));
-  $rootNode.find('.profile_loans ul:first-of-type').removeClass('hide');
 }
 
 function init(user, token, root) {

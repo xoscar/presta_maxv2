@@ -1,4 +1,6 @@
 const clients = require('./clients');
+const loans = require('./loans');
+const charges = require('./charges');
 
 $(document).ready(function () {
 
@@ -6,8 +8,9 @@ $(document).ready(function () {
   var token = $('#token').val();
 
   clients.init(userId, token, '#rootNode');
+  loans.init(userId, token, '#rootNode');
+  charges.init(userId, token, '#rootNode');
   clients.index(function () {
-    console.log('>> clients loaded');
   });
 
   $('.button-collapse').sideNav();
@@ -15,7 +18,6 @@ $(document).ready(function () {
   $('#clients').click(function (event) {
     event.preventDefault();
     clients.index(function () {
-      console.log('FINISHED');
     });
   });
 });

@@ -1,0 +1,31 @@
+<div class="col s12">
+  <h5>Añadir prestamo</h5>
+</div>
+<div class="col s12 add_loan_response center-align">
+</div>
+<form class="col s12 add_loan_form">
+  <input type="hidden" value="{{client_id}}" name="client_id"/>
+  <div class="row">
+    <div class="input-field col s4">
+      <input id="amount" name="amount" type="text" class="validate">
+      <label for="amount">Cantidad</label>
+    </div>
+    <div class="input-field col s4">
+      <input id="weekly_payment" name="weekly_payment" type="text" class="validate">
+      <label for="weekly_payment">Pago semanal</label>
+    </div>
+    <div class="input-field col s4">
+      <input id="weeks" name="weeks" type="text" class="validate">
+      <label for="weeks">Semanas</label>
+    </div>
+    <div class="input-field col s12">
+      <textarea id="description" name="description" class="materialize-textarea"></textarea>
+      <label for="description">Descripción</label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col s12 right-align">
+      <button class="waves-effect waves-light btn">Crear</button>
+    </div>
+  </div>
+</form>

@@ -25,8 +25,8 @@
             <label class="active" for="phone">Teléfono</label>
           </div>
           <div class="input-field col s12">
-            <textarea id="textarea1" name="address" class="uppercase materialize-textarea">{{address}}</textarea>
-            <label class="active" for="textarea1">Dirección</label>
+            <textarea id="address" name="address" class="uppercase materialize-textarea">{{address}}</textarea>
+            <label class="active" for="address">Dirección</label>
           </div>
         </div>
         <div class="row">
@@ -59,6 +59,49 @@
       </div>
     </div>
   </div>
+  <div class="col s12">
+    <div class ="row">
+      <div class ="col s6">
+        <h5>Prestamos</h5>
+        {{#loans}}
+        <div class="card" href="{{id}}">
+          <div class="card-content white {{text_color}}  avatar text-darken-2">
+            <span class="secondary-content grey-text text-darken-1"><i class="material-icons">expand_more</i></span>
+            <span>Cantidad: ${{amount}}.00 | Adeudo: ${{current_balance}}.00 </span>
+            <p>Creado: {{created_from_now}} ({{created}})</p>
+              {{#last_payment}}
+                <p>Ultimo abono: {{last_payment_from_now}} </p>
+              {{/last_payment}}
+              {{^last_payment}}
+                <p>No se han realizado pagos</p>
+              {{/last_payment}}
+          </div>
+        </div>
+        {{/loans}}
+        {{^loans}}
+          <p>No hay cargos para mostrar.</p>
+        {{/loans}}
+      </div>
+      <div class="col s6">
+        <h5>Cargos</h5>
+          {{#charges}}
+          <div class="card" href="{{id}}">
+            <div class="card-content white {{text_color}}  avatar text-darken-2">
+              <span class="secondary-content grey-text text-darken-1"><i class="material-icons">expand_more</i></span>
+              <span>Cantidad: ${{amount}}.00</span>
+              <p>Creado: {{created_from_now}} ({{created}})</p>
+                {{#paid}}
+                  <p>Pagado.</p>
+                {{/paid}}
+            </div>
+          </div>
+          {{/charges}}
+          {{^charges}}
+            <p>No hay cargos para mostrar.</p>
+          {{/charges}}
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="fixed-action-btn horizontal" style="bottom: 45px; right: 24px;">
@@ -66,8 +109,8 @@
     <i class="large material-icons">menu</i>
   </a>
   <ul>
-    <li><a href="{{id}}" class="btn-floating profile_remove red darken-1"><i class="material-icons">close</i></a></li>
-    <li><a href="{{id}}" class="btn-floating profile_add_loan blue darken-1"><i class="material-icons">exposure_plus_1</i></a></li>
-    <li><a href="{{id}}" class="btn-floating profile_add_charge yellow darken-3"><i class="material-icons">attach_money</i></a></li>
+    <li><a href="{{id}}" class="btn-floating remove_client red darken-1"><i class="material-icons">close</i></a></li>
+    <li><a href="{{id}}" class="btn-floating add_loan blue darken-1"><i class="material-icons">exposure_plus_1</i></a></li>
+    <li><a href="{{id}}" class="btn-floating add_charge yellow darken-3"><i class="material-icons">attach_money</i></a></li>
   </ul>
 </div>

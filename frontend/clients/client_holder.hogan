@@ -1,9 +1,21 @@
 <div class="profile z-depth-1"></div>
 
-<div class ="profile_loans"></div>
+<div class="modal add_loan_modal modal-fixed-footer">
+  <div class="modal-content add_loan_view">
+  </div>
+  <div class="modal-footer">
+  		<a class=" modal-action modal-close waves-effect waves-green btn-flat">Cerrar</a>
+		</div>
+	</div>
+</div>
 
-<div class="add_charge"></div>
-<div class="add_loan"></div>
 <div class="remove_client"></div>
 
-<div class="new_charge"></div>
+<div class="modal add_charge_modal modal-fixed-footer">
+  <div class="modal-content add_charge_view">
+  </div>
+  <div class="modal-footer">
+  		<a class=" modal-action modal-close waves-effect waves-green btn-flat">Cerrar</a>
+		</div>
+	</div>
+</div>

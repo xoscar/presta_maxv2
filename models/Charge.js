@@ -25,11 +25,19 @@ function validateData(query) {
   var errors = new Response('error');
   if (!query) errors.push('query', 'Invalid request.');
   if (!query.amount || !ö.isNumeric(query.amount))
-    errors.push('amount', 'The amount has to be numeric.');
+    errors.push('amount', 'La cantidad debe ser numerica.');
   if (!query.weeks || !ö.isNumeric(query.weeks))
-    errors.push('weeks', 'Not a valid week number.');
+    errors.push('weeks', 'El numero de semanas debe de ser numerico.');
   if (!query.client_id || !ö.isMongoId(query.client_id))
-    errors.push('client_id', 'Not a valid client id.');
+    errors.push('client_id', 'El número de identificación del cliente es invalido.');
+
+  if (errors.messages.length === 0) {
+    if (parseInt(query.weeks) < 0 && parseInt(query.weeks > 60))
+      errors.push('weeks', 'El número de semanas debe ser entre 1 y 60');
+    if (parseInt(query.amount) <= parseInt(query.weeks))
+      errors.push('amount', 'El número de semanas debe de ser menor al de la cantidad total del prestamo.');
+    return errors;
+  } else return errors;
   return errors;
 }
 
@@ -50,7 +58,8 @@ chargeSchema.methods.getInfo = function () {
     id: this.id,
     expired: this.isExpired(),
     amount: this.amount,
-    created: this.created,
+    created: moment(this.created).format('DD/MM/YYYY HH:mm'),
+    created_from_now: moment(this.created).fromNow(),
     weeks: this.weeks,
     paid: this.paid,
   };

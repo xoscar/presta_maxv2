@@ -1,8 +1,8 @@
-const Loan = require('./loan');
+const Charge = require('./charge');
 const common = require('../utils/common');
 const Response = require('../response/');
 const templates = {
-  add_loan: require('!mustache!./add_loan.hogan'),
+  add_charge: require('!mustache!./add_charge.hogan'),
 };
 
 var loans = null;
@@ -16,24 +16,24 @@ module.exports.init = function (user, token, root) {
     name: 'token',
     value: token,
   }, ];
-  loans = new Loan(headers);
+  loans = new Charge(headers);
   $rootNode = $(root);
   Response.setRootNode($rootNode);
 
-  $rootNode.on('click', '.add_loan', function (event) {
+  $rootNode.on('click', '.add_charge', function (event) {
     event.preventDefault();
     var clientId = $(this).attr('href');
-    $rootNode.find('.add_loan_view').html(templates.add_loan({ client_id: clientId }));
-    $rootNode.find('.add_loan_modal').openModal();
+    $rootNode.find('.add_charge_view').html(templates.add_charge({ client_id: clientId }));
+    $rootNode.find('.add_charge_modal').openModal();
   });
 
-  $rootNode.on('submit', '.add_loan_form', function (event) {
+  $rootNode.on('submit', '.add_charge_form', function (event) {
     event.preventDefault();
     var $this = $(this);
     var data = common.generateFormData($this.serializeArray());
     loans.create(data, function (err) {
       if (!err) $this[0].reset();
-      Response.show('.add_loan_response', err, 'Prestamo creado exitosamente.');
+      Response.show('.add_charge_response', err, 'Prestamo creado exitosamente.');
     });
   });
 };

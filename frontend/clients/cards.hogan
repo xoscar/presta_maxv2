@@ -2,7 +2,13 @@
   <div class="col s12">
     <div style="margin-top:2%;" class="col s12 red-text text-darken-2">
       <div class="row">
-        <h4>Clientes</h4>
+        <h4 class="col s10"> Clientes </h4>
+        <div class="col s2">
+          <button class="right btn waves-effect" style="margin-top: 20px">
+            Nuevo
+            <i class="material-icons right">account_box</i> 
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -33,6 +39,7 @@
             </span>
             <p class="capitalize">Nombre: {{name_complete}} {{surname}}</p>
             <p>Prestamos activos: {{loans.length}}.</p>
+            <p>Cargos activos: {{charges.length}}.</p>
               {{#last_payment}}
                 <p>Ultimo abono: {{last_payment}}.</p>
               {{/last_payment}}
