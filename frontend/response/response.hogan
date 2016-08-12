@@ -1,12 +1,11 @@
 {{#errors}}
-	<div class="white-text red chip"> 
+	<div class="white-text animated bounceIn red chip"> 
 		{{message}}
     <i class="close material-icons">close</i>
   </div>
-  <br>
 {{/errors}}
 {{#success}}
-	<div class="white-text green chip"> 
+	<div class="white-text animated bounceIn green chip"> 
 		{{message}}
     <i class="close material-icons">close</i>
   </div>

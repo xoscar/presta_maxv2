@@ -35,13 +35,13 @@ function validateData(query) {
   var errors = new Response('error');
   if (!query) errors.push('query', 'Invalid request.');
   if (!query.name)
-    errors.push('name', 'Not a valid name.');
+    errors.push('name', 'El nombre ingresado no es válido.');
   if (!query.surname)
-    errors.push('surname', 'Not a valid surname.');
+    errors.push('surname', 'El apellido ingresado no es válido.');
   if (!query.address)
-    errors.push('address', 'Not a valid address.');
+    errors.push('address', 'La dirección ingresada no es válida.');
   if (!query.phone)
-    errors.push('phone', 'Not a valid phone.');
+    errors.push('phone', 'El teléfono ingresado no es válido.');
   return errors;
 }
 
@@ -67,19 +67,23 @@ clientSchema.pre('save', function (next) {
   next();
 });
 
-clientSchema.methods.getInfo = function (finished, callback) {
-  var _this = this;
-  var result = {
+clientSchema.methods.getBasicInfo = function () {
+  return {
     name: this.name.split(' ')[0].toLowerCase(),
     name_complete: this.name.toLowerCase(),
     surname: this.surname.toLowerCase(),
-    created: moment(_this.created).fromNow(),
+    created: moment(this.created).fromNow(),
     updated: this.updated,
     address: this.address,
     phone: this.phone,
     id: this._id,
     client_id: this.client_id,
   };
+};
+
+clientSchema.methods.getInfo = function (finished, callback) {
+  var _this = this;
+  var result = this.getBasicInfo();
 
   Async.waterfall([
     function getLoans(wfaCallback) {
@@ -148,8 +152,8 @@ clientSchema.methods.getLoans = function (finished, callback) {
         if (info.last_payment && moment(info.last_payment).isAfter(extra.last_payment_holder))
           extra.last_payment = moment(info.last_payment).fromNow();
 
-        if (moment(info.created).isAfter(extra.last_loan_holder))
-          extra.last_loan = moment(info.created).fromNow();
+        if (moment(info.created, 'DD/MM/YYYY HH:mm').isAfter(extra.last_loan_holder.toDate()))
+          extra.last_loan = moment(info.created, 'DD/MM/YYYY HH:mm').fromNow();
 
         extra.total += info.current_balance;
         mapaCallback(null, info);

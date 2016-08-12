@@ -15,14 +15,18 @@ var searchControl = {
 };
 var client = null;
 var $rootNode = null;
+var pagination = null;
 
 function showIndex(template, clients) {
+  $rootNode.html('');
+  $rootNode.html(templates.search());
   $rootNode.find('.search-wrapper').html('');
   $rootNode.find('.search-wrapper').html(templates[template](clients));
-  Pagination.show(searchControl.page, clients.clients.length);
+  pagination.show(searchControl.page, clients.clients.length);
 }
 
 function sendSearch(query, callback) {
+  console.log('Sending search');
   client.search(query, function (err, clients) {
     if (err) return console.log(err);
     showIndex('cards', { clients: clients });
@@ -40,6 +44,7 @@ function showProfile(client) {
   });
 
   $rootNode.html(templates.client_holder());
+  $rootNode.find('.client_name').html(client.name_complete + ' ' + client.surname);
   $rootNode.find('.profile').html(templates.client(client));
 }
 
@@ -53,7 +58,7 @@ function init(user, token, root) {
   }, ];
   client = new Client(headers);
   $rootNode = $(root);
-  Response.setRootNode($rootNode);
+  pagination = new Pagination($rootNode, 'clients');
 
   // search listener
   $rootNode.on('submit', '.search-bar-form', function (event) {
@@ -83,6 +88,38 @@ function init(user, token, root) {
     });
   });
 
+  $rootNode.on('submit', '.add_client_form', function (event) {
+    event.preventDefault();
+    var data = common.generateFormData($(this).serializeArray());
+    client.create(data, function (err) {
+      if (!err) {
+        $rootNode.find('.add-client-modal').closeModal();
+        sendSearch([], console.log);
+      }
+
+      Response.show('.add_client_response', err, 'Usuario creado exitosamente.');
+    });
+  });
+
+  $rootNode.on('click', '.add-client', function () {
+    $rootNode.find('.add-client-modal').openModal();
+  });
+
+  $rootNode.on('click', '.remove_client', function (event) {
+    event.preventDefault();
+    $rootNode.find('input[name="client_id"]').val($(this).attr('href'));
+    $rootNode.find('.remove_client_modal').openModal();
+  });
+
+  $rootNode.on('submit', '.remove_client_form', function (event) {
+    event.preventDefault();
+    var data = common.generateFormData($(this).serializeArray());
+    client.delete(data.client_id, function () {
+      $rootNode.find('.remove_client_modal').closeModal();
+      sendSearch([], console.log);
+    });
+  });
+
   $rootNode.on('submit', '.update_profile_form', function (event) {
     event.preventDefault();
     var id = $(this).attr('href');
@@ -93,7 +130,7 @@ function init(user, token, root) {
     });
   });
 
-  $rootNode.on('click', '.modals .loan', function () {
+  $rootNode.on('click', '.mod als .loan', function () {
     var id = $(this).attr('href');
 
     $rootNode.find('.payments ul').addClass('hide');
@@ -107,7 +144,7 @@ function init(user, token, root) {
     $rootNode.find('.profile_loans [name="' + id + '"]').removeClass('hide');
   });
 
-  $rootNode.on('click', '.search-wrapper .more', function (event) {
+  $rootNode.on('click', '.search-wrapper .more, .client_more', function (event) {
     event.preventDefault();
     var id = $(this).attr('href');
     client.get(id, function (err, client) {
@@ -115,8 +152,7 @@ function init(user, token, root) {
     });
   });
 
-  Pagination.setRootNode($rootNode);
-  Pagination.listen(function (page) {
+  pagination.listen(function (page) {
     searchControl.page = page;
     var query = [{
       name: 'page',
@@ -130,16 +166,10 @@ function init(user, token, root) {
       showIndex('cards', { clients: clients });
     });
   });
-};
+}
 
 function index(callback) {
-  client.getAll(function (err, clients) {
-    if (err) return callback(err);
-    $rootNode.html('');
-    $rootNode.html(templates.search());
-    showIndex('cards', { clients: clients });
-    callback();
-  });
+  sendSearch([], callback);
 }
 
 module.exports = {

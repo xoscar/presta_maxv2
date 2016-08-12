@@ -7,7 +7,8 @@
   },
   "scripts": {
     "start": "node app.js",
-    "test": "mocha --reporter spec --timeout 5000"
+    "test": "mocha --reporter spec --timeout 5000",
+    "build": "sh tools/application/build.sh"
   },
   "dependencies": {
     "async": "^2.0.0",

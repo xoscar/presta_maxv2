@@ -1,0 +1,23 @@
+<div class="col s12">
+  <h5>Modificar abono</h5>
+</div>
+<div class="col s12 update_payment_response center-align">
+</div>
+<form class="col s12 update_payment_form" href="{{payment_id}}-{{loan_id}}">
+  <div class="row">
+    <div class="input-field col s6">
+      <input id="amount" name="amount" type="text" class="validate" value="{{amount}}">
+      <label class="active" for="amount">Cantidad</label>
+    </div>
+    <div class="input-field col s6">
+      <input id="created" name="created" placeholder="DD/MM/YYYY HH:mm" type="text" class="validate" value="{{created}}">
+      <label class="active" for="created">Creado</label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col s12 right-align">
+      <a class="modal-action modal-close waves-effect waves-green black-text btn grey lighten-3">Cerrar</a>
+      <button class="waves-effect waves-light btn">Modificar</button>
+    </div>
+  </div>
+</form>

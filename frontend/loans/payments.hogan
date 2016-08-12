@@ -1,0 +1,19 @@
+{{#payments}}
+  <div class="col s4">
+    <div class="card" href="{{id}}">
+      <div class="card-content white {{text_color}}  avatar text-darken-2">
+        <p class="card-title">${{amount}}.00</p>
+        <p class="capitalize">{{created_from_now}} <span style="font-size:.7rem;">({{created}})</span></p>
+      </div>
+      <div class="card-action">
+        <a href="{{id}}-{{loan_id}}" class="payment_delete red-text text-darken-2"><i class="material-icons">close</i></a>
+        <a href="{{id}}-{{loan_id}}" class="payment_update yellow-text text-darken-2"><i class="material-icons">edit</i></a>
+      </div>
+    </div>
+  </div>
+{{/payments}}
+{{^payments}}
+  <div class="col s12">
+    <p>No hay pagos para mostrar.</p>
+  </div>
+{{/payments}}

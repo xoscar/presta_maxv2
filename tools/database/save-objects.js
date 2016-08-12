@@ -2,6 +2,7 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const Loan = require('../../models/Loan').Loan;
+const Client = require('../../models/Client');
 dotenv.load({ path: '.env' });
 
 var gracefulExit = function () {
@@ -29,7 +30,12 @@ mongoose.connection.on('connected', function () {
       var _this = this;
       _this.pause();
       numOfDocuments++;
-      doc.save(() => _this.resume());
+      Client.findById(doc.client_id, (err, client) => {
+        if (err) return _this.resume();
+        doc.client_name = client.name + ' ' + client.surname;
+        doc.client_identifier = client.client_id;
+        doc.save(() => _this.resume());
+      });
     })
     .on('error', function (err) {
       console.log(startDate.toISOString() + ' # Encountered error in stream: ' + err);

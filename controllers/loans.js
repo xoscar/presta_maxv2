@@ -1,4 +1,5 @@
 const Loan = require('../models/Loan').Loan;
+const Client = require('../models/Client');
 const common = require('../utils/common');
 const Async = require('async');
 
@@ -7,7 +8,7 @@ module.exports.search = function (req, res) {
   var searchRequest = req.query.s;
   if (!searchRequest) searchRequest = ' ';
 
-  var page = req.query.p || '0';
+  var page = req.query.page || '0';
   var pageSize = req.query.pSize || '12';
 
   var finished = req.query.finished || false;
@@ -27,7 +28,11 @@ module.exports.search = function (req, res) {
       function (err, docs) {
         if (err) return res.status(500).send('Internal error.');
         Async.map(docs, (loan, mapaCallback) => {
-          mapaCallback(null, loan.getInfo());
+          var info = loan.getBasicInfo();
+          Client.findById(info.client_id, (err, client) => {
+            info.client = client.getBasicInfo();
+            mapaCallback(err, info);
+          });
         }, (err, result) => {
           if (err) return res.status(500).send('Internal error.');
           else res.status(200).json(result);
@@ -36,21 +41,42 @@ module.exports.search = function (req, res) {
 };
 
 module.exports.info = function (req, res) {
-  res.status(200).json(req.loan.getInfo());
+  var info = req.loan.getBasicInfo();
+  Client.findById(info.client_id, (err, client) => {
+    if (err) return res.status(500).send('Processing error');
+    info.client = client.getBasicInfo();
+    res.status(200).json(info);
+  });
 };
 
 module.exports.create = function (req, res) {
-  Loan.create(req.user, req.body, (err, loan) => {
-    if (err) res.status(400).send(err);
-    else
-      res.status(200).json(loan.getInfo());
+  Client.findById(req.user, (err, client) => {
+    if (err) return res.status(500).send('Processing error');
+    Loan.create(req.user, client, req.body, (err, loan) => {
+      if (err) res.status(400).send(err);
+      else {
+        var info = loan.getBasicInfo();
+        Client.findById(info.client_id, (err, client) => {
+          if (err) return res.status(500).send('Processing error');
+          info.client = client.getBasicInfo();
+          res.status(200).json(info);
+        });
+      }
+    });
   });
 };
 
 module.exports.update = function (req, res) {
   req.loan.update(req.body, (err, loan) => {
     if (err) res.status(400).send(err);
-    res.json(loan.getInfo());
+    else {
+      var info = loan.getBasicInfo();
+      Client.findById(info.client_id, (err, client) => {
+        if (err) return res.status(500).send('Processing error');
+        info.client = client.getBasicInfo();
+        res.status(200).json(info);
+      });
+    }
   });
 };
 
@@ -63,6 +89,19 @@ module.exports.delete = function (req, res) {
 
 module.exports.createPayment = function (req, res) {
   req.loan.createPayment(req.user, req.body, (err, loan) => {
+    if (err) res.status(400).send(err);
+    else res.json(loan.payments);
+  });
+};
+
+module.exports.getPayment = function (req, res) {
+  var info = req.loan.getPayment(req.params.paymentId);
+  if (!info) return res.status(404).send('Not found');
+  else res.json(info);
+};
+
+module.exports.updatePayment = function (req, res) {
+  req.loan.updatePayment(req.user, req.body, (err, loan) => {
     if (err) res.status(400).send(err);
     else res.json(loan.payments);
   });

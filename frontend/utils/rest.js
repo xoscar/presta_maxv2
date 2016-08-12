@@ -39,6 +39,12 @@ RestConnection.prototype.getAll = function (callback) {
   this.send(options);
 };
 
+RestConnection.prototype.delete = function (id, callback) {
+  var url = this.resource + '/' + id;
+  var options = this.generateOptions(url, 'DELETE', null, callback);
+  this.send(options);
+};
+
 RestConnection.prototype.generateOptions = function (url, method, body, callback) {
   var options = {
     type: method,

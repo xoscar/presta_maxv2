@@ -7,3 +7,7 @@ module.exports.generateFormData = function (serializeArray) {
 
   return result;
 };
+
+module.exports.wait = function (seconds, callback) {
+  setTimeout(callback, seconds * 1000);
+};

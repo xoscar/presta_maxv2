@@ -1,0 +1,9 @@
+<!-- search bar and cards -->
+<div class ="search-wrapper-loans z-depth-1 animated fadeIn">
+</div>
+
+<!-- pagination -->
+<div class ="row center-align z-depth-1">
+  <div class="col s12 pagination-loans">
+  </div>
+</div>

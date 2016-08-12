@@ -4,7 +4,7 @@
       <div class="row">
         <h4 class="col s10"> Clientes </h4>
         <div class="col s2">
-          <button class="right btn waves-effect" style="margin-top: 20px">
+          <button class="add-client right btn waves-effect" style="margin-top: 20px">
             Nuevo
             <i class="material-icons right">account_box</i> 
           </button>
@@ -18,7 +18,7 @@
         <div class="nav-wrapper">
           <form class="search-bar-form">
             <div class="input-field">
-              <input type="search" placeholder="ID de usuario, nombre o apellido."/>
+              <input type="search" placeholder="ID de cliente, nombre o apellido."/>
               <label for="search"><i class="material-icons">search</i></label><i class="material-icons">close</i>
             </div>
           </form>
@@ -45,10 +45,10 @@
               {{/last_payment}}
             <p><b>Adeudo actual: ${{total_depth}}.00.</b></p>
             {{#expired_loans}}
-              <p class="red-text text-darken-2">Este cliente tiene al menos un prestamo vencido.</p>
+              <p class="red-text text-darken-2">Tiene al menos un prestamo vencido.</p>
             {{/expired_loans}}
             {{^expired_loans}}
-              <p class="green-text text-darken-2">Este no presenta ningun prestamo vencido.</p>
+              <p class="green-text text-darken-2">No presenta ningun prestamo vencido.</p>
             {{/expired_loans}}
           </div>
           <div class="card-action">

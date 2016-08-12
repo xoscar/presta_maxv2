@@ -31,11 +31,23 @@ var paymentSchema = new mongoose.Schema({
   },
 });
 
+paymentSchema.methods.getBasicInfo = function (loan) {
+  return {
+    loan_id: loan.id,
+    id: this.id,
+    amount: this.amount,
+    created_from_now: moment(this.created).fromNow(),
+    created: moment(this.created).format('DD/MM/YYYY HH:mm'),
+  };
+};
+
 var loanSchema = new mongoose.Schema({
   amount: Number,
   weekly_payment: Number,
   file: String,
   description: String,
+  client_name: String,
+  client_identifier: String,
   created: {
     type: Date,
     default: Date.now,
@@ -72,6 +84,8 @@ function validateData(query) {
     errors.push('weeks', 'El numero de semanas debe de ser numerico.');
   if (!query.client_id || !ö.isMongoId(query.client_id))
     errors.push('client_id', 'El número de identificación del cliente es invalido.');
+  if (!query.created || moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
+    errors.push('created', 'La fecha de creación no es válida.');
 
   if (errors.messages.length === 0) {
     if (parseInt(query.weeks) < 0 && parseInt(query.weeks > 60))
@@ -85,8 +99,9 @@ function validateData(query) {
 }
 
 loanSchema.pre('save', function (next) {
-  var searchFields = 'amount weeks client_id _id'.split(' ');
+  var searchFields = 'amount weeks client_id _id client_identifier client_name'.split(' ');
   this.search = common.generateArrayFromObject(this, searchFields);
+  this.expired_date = moment(this.created).endOf('week').add(this.weeks, 'weeks').endOf('week').toDate();
   this.updated = Date.now();
   this.finished = this.getCurrentBalance() === 0 ?
     this.finished = true :
@@ -101,7 +116,15 @@ loanSchema.methods.isExpired = function () {
   return expired;
 };
 
+loanSchema.methods.getCurrentWeek = function () {
+  if (moment().diff(this.created, 'weeks') > (this.weeks + 1))
+    return null;
+  else
+    return moment().diff(this.created, 'weeks') + 1;
+};
+
 loanSchema.methods.getBasicInfo = function () {
+  var _this = this;
   var result = {
     id: this.id,
     amount: this.amount,
@@ -109,6 +132,7 @@ loanSchema.methods.getBasicInfo = function () {
     weekly_payment: this.weekly_payment,
     created: moment(this.created).format('DD/MM/YYYY HH:mm'),
     created_from_now: moment(this.created).fromNow(),
+    current_week: this.getCurrentWeek(),
     weeks: this.weeks,
     last_payment: this.getLastPayment(),
     last_payment_from_now: this.getLastPayment() ? moment(this.getLastPayment()).fromNow() : null,
@@ -118,15 +142,11 @@ loanSchema.methods.getBasicInfo = function () {
     finished: this.finished,
     updated: moment(this.updated).format('DD/MM/YYYY HH:mm'),
     current_balance: this.getCurrentBalance(),
+    client_id: this.client_id,
   };
 
   result.payments = this.payments.map(function (payment) {
-    return {
-      id: payment.id,
-      amount: payment.amount,
-      created_from_now: moment(payment.created).fromNow(),
-      created: moment(payment.created).format('DD/MM/YYY HH:mm'),
-    };
+    return payment.getBasicInfo(_this);
   });
 
   return result;
@@ -140,13 +160,9 @@ loanSchema.methods.update = function (query, callback) {
     this.weeks = query.weeks;
     this.description = query.description;
     this.client_id = query.client_id;
-    this.expired_date = moment(this.created).add(query.weeks, 'week').toDate();
+    this.created = moment(query.created, 'DD/MM/YYYY HH:mm').toDate();
     this.save(callback);
   } else callback(errors);
-};
-
-loanSchema.methods.getInfo = function () {
-  return this.getBasicInfo();
 };
 
 loanSchema.methods.getLastPayment = function () {
@@ -177,9 +193,9 @@ loanSchema.methods.createPayment = function (user, query, callback) {
   var errors = new Response('error');
   if (Object.keys(query).length === 0) errors.push('query', 'Invalid request.');
   if (!query.amount || !ö.isNumeric(query.amount))
-    errors.push('amount', 'The amount has to be numeric.');
+    errors.push('amount', 'La cantidad del pago debe de ser numerica.');
   if (this.getCurrentBalance() === 0)
-    errors.push('payment', 'This loan has been paid already.');
+    errors.push('payment', 'El prestamo ya fue saldado.');
   if (errors.messages.length === 0) {
     var newPayment = {
       amount: query.amount,
@@ -187,6 +203,34 @@ loanSchema.methods.createPayment = function (user, query, callback) {
     };
 
     this.payments.push(newPayment);
+
+    this.save(callback);
+  } else callback(errors);
+};
+
+loanSchema.methods.updatePayment = function (user, query, callback) {
+  var errors = new Response('error');
+  if (Object.keys(query).length === 0) errors.push('query', 'Invalid request.');
+  if (!query.payment_id || !ö.isMongoId(query.payment_id))
+    errors.push('payment_id', 'El identificador del prestamo no es correcto.');
+  if (!query.amount || !ö.isNumeric(query.amount))
+    errors.push('amount', 'La cantidad del pago debe de ser numerica.');
+  if (this.getCurrentBalance() - query.amount < 0)
+    errors.push('payment', 'El prestamo ya fue saldado.');
+  if (!query.created || moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
+    errors.push('created', 'La fecha de creación no es válida.');
+  if (errors.messages.length === 0) {
+    var payment = this.payments.find(function (payment) {
+      return payment.id === query.payment_id;
+    })[0];
+
+    if (!payment) {
+      errors.push('payment', 'Prestamo no encontrado.');
+      return callback(errors);
+    }
+
+    payment.created = moment(query.created, 'DD/MM/YYYY HH:mm').toDate();
+    payment.amount = query.amount;
 
     this.save(callback);
   } else callback(errors);
@@ -209,16 +253,26 @@ loanSchema.methods.deletePayment = function (query, callback) {
   } else callback(errors);
 };
 
-loanSchema.statics.create = function (user, query, callback) {
+loanSchema.methods.getPayment = function (paymentId) {
+  var payment = this.payments.filter(function (payment) {
+    return payment.id === paymentId;
+  })[0];
+
+  if (!payment) return null;
+  return payment.getBasicInfo(this);
+};
+
+loanSchema.statics.create = function (user, client, query, callback) {
   var errors = validateData(query);
   if (errors.messages.length === 0) {
     var newLoan = new this({
       amount: query.amount,
       weekly_payment: query.weekly_payment,
       weeks: query.weeks,
-      expired_date: moment().add(query.weeks, 'week').toDate(),
       description: query.description,
       client_id: query.client_id,
+      client_name: client.name + ' ' + client.surname,
+      client_identifier: client.client_id,
       user_id: user.id,
     });
     newLoan.save(callback);
