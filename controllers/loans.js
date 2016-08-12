@@ -88,9 +88,9 @@ module.exports.delete = function (req, res) {
 };
 
 module.exports.createPayment = function (req, res) {
-  req.loan.createPayment(req.user, req.body, (err, loan) => {
+  req.loan.createPayment(req.body, (err, loan) => {
     if (err) res.status(400).send(err);
-    else res.json(loan.payments);
+    else res.json(loan.getPayments());
   });
 };
 
@@ -101,15 +101,15 @@ module.exports.getPayment = function (req, res) {
 };
 
 module.exports.updatePayment = function (req, res) {
-  req.loan.updatePayment(req.user, req.body, (err, loan) => {
+  req.loan.updatePayment(req.params.paymentId, req.body, (err, loan) => {
     if (err) res.status(400).send(err);
-    else res.json(loan.payments);
+    else res.json(loan.getPayments());
   });
 };
 
 module.exports.deletePayment = function (req, res) {
   req.loan.deletePayment(req.params, (err, loan) => {
     if (err) res.status(500).send(err);
-    else res.json(loan.payments);
+    else res.json(loan.getPayments());
   });
 };

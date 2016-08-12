@@ -1,9 +1,9 @@
 <div class="col s12">
-  <h5>Modificar abono</h5>
+  <h5>Modificar cargo</h5>
 </div>
-<div class="col s12 update_payment_response center-align">
+<div class="col s12 update_charge_response center-align">
 </div>
-<form class="col s12 update_payment_form" href="{{id}}-{{loan_id}}">
+<form class="col s12 update_charge_form" href="{{id}}">
   <div class="row">
     <div class="input-field col s6">
       <input id="amount" name="amount" type="text" class="validate" value="{{amount}}">

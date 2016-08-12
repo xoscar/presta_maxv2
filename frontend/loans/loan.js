@@ -31,4 +31,10 @@ Loan.prototype.getPayment = function (id, paymentId, callback) {
   this.send(options);
 };
 
+RestConnection.prototype.createPayment = function (id, body, callback) {
+  var url = this.resource + '/' + id + '/payments/';
+  var options = this.generateOptions(url, 'POST', body, callback);
+  this.send(options);
+};
+
 module.exports = Loan;

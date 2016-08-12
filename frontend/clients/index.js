@@ -26,7 +26,6 @@ function showIndex(template, clients) {
 }
 
 function sendSearch(query, callback) {
-  console.log('Sending search');
   client.search(query, function (err, clients) {
     if (err) return console.log(err);
     showIndex('cards', { clients: clients });
@@ -130,7 +129,7 @@ function init(user, token, root) {
     });
   });
 
-  $rootNode.on('click', '.mod als .loan', function () {
+  $rootNode.on('click', '.modals .loan', function () {
     var id = $(this).attr('href');
 
     $rootNode.find('.payments ul').addClass('hide');

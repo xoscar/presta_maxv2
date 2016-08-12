@@ -25,6 +25,10 @@
           </div>
           </div>
         </div>
+        <div class="card-action">
+          <a href="{{id}}" class="green-text loan_more text-darken-2">Más</a>
+          <a href="{{id}}-{{weekly_payment}}" class="payment_add green-text text-darken-2">Abonar</a>
+        </div>
       </div>
       {{/loans}}
     </div>

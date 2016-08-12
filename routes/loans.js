@@ -22,7 +22,7 @@ router.delete('/:id', auth.middleware, Loan.getFromRequest, controller.delete);
 
 router.post('/:id/payments', auth.middleware, Loan.getFromRequest, controller.createPayment);
 router.get('/:id/payments/:paymentId', auth.middleware, Loan.getFromRequest, controller.getPayment);
-router.patch('/:id/payments/:paymentId/update', auth.middleware, Loan.getFromRequest, controller.updatePayment);
+router.patch('/:id/payments/:paymentId', auth.middleware, Loan.getFromRequest, controller.updatePayment);
 router.delete('/:id/payments/:paymentId', auth.middleware, Loan.getFromRequest, controller.deletePayment);
 
 module.exports = router;

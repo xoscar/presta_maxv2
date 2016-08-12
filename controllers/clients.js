@@ -34,7 +34,7 @@ module.exports.search = function (req, res) {
 };
 
 module.exports.info = function (req, res) {
-  req.client.getInfo(true, (err, info) => {
+  req.client.getInfo(false, (err, info) => {
     if (err) res.status(400).send('Error getting information.');
     else res.json(info);
   });
@@ -60,7 +60,7 @@ module.exports.create = function (req, res) {
 module.exports.update = function (req, res) {
   req.client.update(req.body, (err, client) => {
     if (err) res.status(400).send(err);
-    else client.getInfo(true, (err, info) => {
+    else client.getInfo(false, (err, info) => {
       if (err) res.status(500).send('Error updating client.');
       else res.json(info);
     });

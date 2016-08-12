@@ -21,7 +21,7 @@ var chargeSchema = new mongoose.Schema({
   user_id: mongoose.Schema.Types.ObjectId,
 });
 
-function validateData(query) {
+function validateCreationData(query) {
   var errors = new Response('error');
   if (!query) errors.push('query', 'Invalid request.');
   if (!query.amount || !ö.isNumeric(query.amount))
@@ -30,6 +30,8 @@ function validateData(query) {
     errors.push('weeks', 'El numero de semanas debe de ser numerico.');
   if (!query.client_id || !ö.isMongoId(query.client_id))
     errors.push('client_id', 'El número de identificación del cliente es invalido.');
+  if (query.created && moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
+    errors.push('created', 'La fecha de creación no es válida.');
 
   if (errors.messages.length === 0) {
     if (parseInt(query.weeks) < 0 && parseInt(query.weeks > 60))
@@ -38,6 +40,16 @@ function validateData(query) {
       errors.push('amount', 'El número de semanas debe de ser menor al de la cantidad total del prestamo.');
     return errors;
   } else return errors;
+  return errors;
+}
+
+function validateUpdateData(query) {
+  var errors = new Response('error');
+  if (!query) errors.push('query', 'Invalid request.');
+  if (!query.amount || !ö.isNumeric(query.amount))
+    errors.push('amount', 'La cantidad debe ser numerica.');
+  if (query.created && moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
+    errors.push('created', 'La fecha de creación no es válida.');
   return errors;
 }
 
@@ -65,13 +77,22 @@ chargeSchema.methods.getInfo = function () {
   };
 };
 
+chargeSchema.methods.update = function (query, callback) {
+  var errors = validateUpdateData(query);
+  if (errors.messages.length === 0) {
+    this.amount = query.amount;
+    this.created = query.created ? moment(query.created, 'DD/MM/YYYY HH:mm').toDate() : this.created;
+    this.save(callback);
+  } else callback(errors);
+};
+
 chargeSchema.methods.pay = function (callback) {
   this.paid = true;
   this.save(callback);
 };
 
 chargeSchema.statics.create = function (user, query, callback) {
-  var errors = validateData(query);
+  var errors = validateCreationData(query);
   if (errors.messages.length === 0) {
     var newCharge = new this({
       amount: query.amount,
@@ -90,7 +111,8 @@ chargeSchema.statics.getFromRequest = function (req, res, next) {
   if (!query) return res.status(400).send('Invalid request.');
   if (req.user) query.user_id = req.user.id;
   mongoose.model('charges', chargeSchema).findOne(query, function (err, doc) {
-    if (err || !doc) return res.status(400).send('Not found.');
+    if (err || !doc) return res.status(404).send('Not found.');
+    console.log(doc);
     req.charge = doc;
     next();
   });

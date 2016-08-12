@@ -1,5 +1,41 @@
 <!-- search bar and cards -->
-<div class ="search-wrapper z-depth-1  animated fadeIn">
+<div class="row z-depth-1">
+  <div class="col s12">
+    <div style="margin-top:2%;" class="col s12 red-text text-darken-2">
+      <div class="row">
+        <h4 class="col s10"> Clientes </h4>
+        <div class="col s2">
+          <button class="add-client right btn waves-effect" style="margin-top: 20px">
+            Nuevo
+            <i class="material-icons right">account_box</i> 
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- search form -->
+<div class="row z-depth-1" style="padding: 10px;">
+	<form class="search-bar-form">
+	  <div class="col s10">
+	    <nav class="search red darken-2">
+	      <div class="nav-wrapper">
+          <div class="input-field">
+            <input type="search" placeholder="ID de prestamo, ID de cliente, cantidad o semanas."/>
+            <label for="search"><i class="material-icons">search</i></label><i class="material-icons">close</i>
+          </div>
+	      </div>
+	    </nav>
+	  </div>
+	  <div class="col s2">
+	    <button class="btn red darken-2 white-text">Buscar</button>
+	  </div>
+	</form>
+</div>
+
+<!-- search results -->
+<div class="search-wrapper z-depth-1 row animated fadeIn" style="padding-top:20px;">
 </div>
 
 <!-- pagination -->
@@ -55,4 +91,10 @@
     	<a class=" modal-action modal-close waves-effect waves-green btn-flat">Cerrar</a>
 		</div>
 	</div>
+</div>
+
+<!-- add payments -->
+<div class="modal add_payment_modal">
+  <div class="modal-content add_payment_view">
+  </div>
 </div>

@@ -60,6 +60,10 @@ var loanSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  visible: {
+    type: Boolean,
+    default: true,
+  },
   weeks: Number,
   expired_date: Date,
   search: Array,
@@ -84,7 +88,7 @@ function validateData(query) {
     errors.push('weeks', 'El numero de semanas debe de ser numerico.');
   if (!query.client_id || !ö.isMongoId(query.client_id))
     errors.push('client_id', 'El número de identificación del cliente es invalido.');
-  if (!query.created || moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
+  if (query.created && moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
     errors.push('created', 'La fecha de creación no es válida.');
 
   if (errors.messages.length === 0) {
@@ -123,8 +127,13 @@ loanSchema.methods.getCurrentWeek = function () {
     return moment().diff(this.created, 'weeks') + 1;
 };
 
+loanSchema.methods.getPayments = function () {
+  return this.payments.map((payment) => {
+    return payment.getBasicInfo(this);
+  });
+};
+
 loanSchema.methods.getBasicInfo = function () {
-  var _this = this;
   var result = {
     id: this.id,
     amount: this.amount,
@@ -145,9 +154,7 @@ loanSchema.methods.getBasicInfo = function () {
     client_id: this.client_id,
   };
 
-  result.payments = this.payments.map(function (payment) {
-    return payment.getBasicInfo(_this);
-  });
+  result.payments = this.getPayments();
 
   return result;
 };
@@ -160,7 +167,7 @@ loanSchema.methods.update = function (query, callback) {
     this.weeks = query.weeks;
     this.description = query.description;
     this.client_id = query.client_id;
-    this.created = moment(query.created, 'DD/MM/YYYY HH:mm').toDate();
+    this.created = query.creaded ? moment(query.created, 'DD/MM/YYYY HH:mm').toDate() : this.created;
     this.save(callback);
   } else callback(errors);
 };
@@ -189,7 +196,7 @@ loanSchema.methods.delete = function (callback) {
   this.remove(callback);
 };
 
-loanSchema.methods.createPayment = function (user, query, callback) {
+loanSchema.methods.createPayment = function (query, callback) {
   var errors = new Response('error');
   if (Object.keys(query).length === 0) errors.push('query', 'Invalid request.');
   if (!query.amount || !ö.isNumeric(query.amount))
@@ -208,28 +215,28 @@ loanSchema.methods.createPayment = function (user, query, callback) {
   } else callback(errors);
 };
 
-loanSchema.methods.updatePayment = function (user, query, callback) {
+loanSchema.methods.updatePayment = function (paymentId, query, callback) {
   var errors = new Response('error');
   if (Object.keys(query).length === 0) errors.push('query', 'Invalid request.');
-  if (!query.payment_id || !ö.isMongoId(query.payment_id))
+  if (!paymentId || !ö.isMongoId(paymentId))
     errors.push('payment_id', 'El identificador del prestamo no es correcto.');
   if (!query.amount || !ö.isNumeric(query.amount))
     errors.push('amount', 'La cantidad del pago debe de ser numerica.');
   if (this.getCurrentBalance() - query.amount < 0)
     errors.push('payment', 'El prestamo ya fue saldado.');
-  if (!query.created || moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
+  if (query.created && moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
     errors.push('created', 'La fecha de creación no es válida.');
   if (errors.messages.length === 0) {
-    var payment = this.payments.find(function (payment) {
-      return payment.id === query.payment_id;
+    var payment = this.payments.filter(function (payment) {
+      return payment.id === paymentId;
     })[0];
 
     if (!payment) {
-      errors.push('payment', 'Prestamo no encontrado.');
+      errors.push('payment', 'Pago no encontrado.');
       return callback(errors);
     }
 
-    payment.created = moment(query.created, 'DD/MM/YYYY HH:mm').toDate();
+    payment.created = query.created ? moment(query.created, 'DD/MM/YYYY HH:mm').toDate() : this.created;
     payment.amount = query.amount;
 
     this.save(callback);
@@ -284,7 +291,7 @@ loanSchema.statics.getFromRequest = function (req, res, next) {
   if (!query) return res.status(400).send('Invalid request.');
   if (req.user) query.user_id = req.user.id;
   mongoose.model('loans', loanSchema).findOne(query, function (err, doc) {
-    if (err || !doc) return res.status(400).send('Not found.');
+    if (err || !doc) return res.status(404).send('Not found.');
     req.loan = doc;
     next();
   });

@@ -226,7 +226,7 @@ clientSchema.statics.getFromRequest = function (req, res, next) {
   if (!query) return res.status(400).send('Invalid request.');
   if (req.user) query.user_id = req.user.id;
   mongoose.model('clients', clientSchema).findOne(query, function (err, doc) {
-    if (err || !doc) return res.status(400).send('Not found.');
+    if (err || !doc) return res.status(404).send('Not found.');
     req.client = doc;
     next();
   });

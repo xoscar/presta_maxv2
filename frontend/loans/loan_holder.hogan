@@ -25,8 +25,7 @@
       </div>
     </div>
     <div class="row">
-      <form class="col s12 remove_loan_form">
-        <input type="hidden" value="{{id}}" name="loan_id"/>
+      <form class="col s12 remove_loan_form" href="{{id}}">
         <div class="row right-align">
           <div class="input-field col s12">
             <a class="modal-action modal-close waves-effect waves-green black-text btn grey lighten-3">Cerrar</a>

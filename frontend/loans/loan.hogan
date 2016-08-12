@@ -6,6 +6,7 @@
           <h4 class="capitalize">{{client.name_complete}} {{client.surname}}</h4>
         </div>
         <div class="col s4 right-align" style="margin-top:20px">
+          <button href="{{client_id}}" class="client_more btn waves-effect waves-green"><i class="material-icons">person</i></button>
           <button href="{{id}}" class="loan_more btn waves-effect waves-green"><i class="material-icons">refresh</i></button>
         </div>
       </div>
@@ -79,7 +80,7 @@
         <div class="row">
           <h5>Pagos</h5>
         </div>
-        <div class="row loan_payments">
+        <div class="row loan_payments animated fadeIn">
         </div>
       </div>
     </div>
@@ -91,6 +92,7 @@
     <i class="large material-icons">menu</i>
   </a>
   <ul>
-    <li><a href="{{id}}" class="btn-floating remove_client red darken-1"><i class="material-icons">close</i></a></li>
+    <li><a href="{{id}}" class="btn-floating remove_loan red darken-1"><i class="material-icons">close</i></a></li>
+    <li><a href="{{id}}-{{weekly_payment}}" class="btn-floating payment_add blue darken-1"><i class="material-icons">exposure_plus_1</i></a></li>
   </ul>
 </div>

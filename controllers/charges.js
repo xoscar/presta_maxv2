@@ -14,6 +14,17 @@ module.exports.pay = function (req, res) {
   });
 };
 
+module.exports.info = function I(req, res) {
+  res.json(req.charge.getInfo());
+};
+
+module.exports.update = function (req, res) {
+  req.charge.update(req.body, (err) => {
+    if (err) res.status(500).send(err);
+    else res.send('Success.');
+  });
+};
+
 module.exports.delete = function (req, res) {
   req.charge.remove((err) => {
     if (err) res.status(500).send(err);

@@ -9,7 +9,8 @@ const templates = {
   loan_holder: require('!mustache!./loan_holder.hogan'),
   loan: require('!mustache!./loan.hogan'),
   update_payment: require('!mustache!./update_payment.hogan'),
-  loan_payments: require('!mustache!./loan_payments.hogan'),
+  add_payment: require('!mustache!./add_payment.hogan'),
+  loan_payments: require('!mustache!./payments.hogan'),
 };
 
 var loan = null;
@@ -38,13 +39,14 @@ function sendSearch(query, callback) {
   });
 }
 
+function showPayments(payments) {
+  $rootNode.find('.loan_payments').html(templates.loan_payments({ payments: payments }));
+}
+
 function showLoan(loan) {
-  $rootNode.html(templates.loan_holder());
+  $rootNode.html(templates.loan_holder(loan));
   $rootNode.find('.loan_info').html(templates.loan(loan));
-  $('.datepicker').pickadate({
-    selectMonths: true,
-    selectYears: 15,
-  });
+  showPayments(loan.payments);
 }
 
 function init(user, token, root) {
@@ -103,8 +105,8 @@ function init(user, token, root) {
     var $this = $(this);
     var ids = $this.attr('href').split('-');
 
-    loan.deletePayment(ids[1], ids[0], function (err) {
-      if (!err) $this.parent().parent().fadeOut();
+    loan.deletePayment(ids[1], ids[0], function (err, payments) {
+      if (!err) showPayments(payments);
     });
   });
 
@@ -112,17 +114,61 @@ function init(user, token, root) {
     event.preventDefault();
     var ids = $(this).attr('href').split('-');
     loan.getPayment(ids[1], ids[0], function (err, payment) {
-      console.log(err, payment);
       $rootNode.find('.update_payment_view').html(templates.update_payment(payment));
       $rootNode.find('.update_payment_modal').openModal();
+    });
+  });
+
+  $rootNode.on('click', '.remove_loan', function (event) {
+    event.preventDefault();
+    $rootNode.find('.remove_loan_modal').openModal();
+  });
+
+  $rootNode.on('submit', '.remove_loan_form', function (event) {
+    event.preventDefault();
+    var id = $(this).attr('href');
+    loan.delete(id, function (err) {
+      if (!err) {
+        $rootNode.find('.remove_loan_modal').closeModal();   
+        return sendSearch([], function () {});
+      }
     });
   });
 
   $rootNode.on('submit', '.update_payment_form', function (event) {
     event.preventDefault();
     var ids = $(this).attr('href').split('-');
-    loan.updatePayment(ids[1], ids[0], function (err, payment) {
+    var data = common.generateFormData($(this).serializeArray());
+    loan.updatePayment(ids[1], ids[0], data, function (err, payments) {
+      if (!err) {
+        $rootNode.find('.update_payment_modal').closeModal();
+        return showPayments(payments);
+      }
 
+      Response.show('.update_payment_response', err, 'Pago actualizado exitosamente.');
+    });
+  });
+
+  $rootNode.on('click', '.payment_add', function (event) {
+    event.preventDefault();
+    var ids = $(this).attr('href').split('-');
+    var data = {
+      weekly_payment: ids[1],
+      loan_id: ids[0],
+    };
+
+    $rootNode.find('.add_payment_view').html(templates.add_payment(data));
+    $rootNode.find('.add_payment_modal').openModal();
+  });
+
+  $rootNode.on('submit', '.add_payment_form', function (event) {
+    event.preventDefault();
+    var id = $(this).attr('href');
+    var data = common.generateFormData($(this).serializeArray());
+    loan.createPayment(id, data, function (err, payments) {
+      console.log(payments);
+      if (!err) showPayments(payments);
+      Response.show('.add_payment_response', err, 'Pago creado exitosamente.');
     });
   });
 

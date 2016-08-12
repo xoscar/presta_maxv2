@@ -1,0 +1,13 @@
+ <div class="row">
+  <h5>Confirmacion de seguridad</h5>
+</div>
+<div class="row">
+  <form class="col s12 remove_charge_form" href="{{charge_id}}">
+    <div class="row center-align">
+      <div class="input-field col s12">
+        <a class="modal-action modal-close waves-effect waves-green black-text btn grey lighten-3">Cerrar</a>
+        <input type="submit" value="Eliminar" class="btn waves-effect waves-light red white-text darken-2" />
+      </div>
+    </div>
+  </form>
+</div>

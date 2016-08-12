@@ -1,0 +1,17 @@
+<div class="col s12">
+  <h5>Agregar abono</h5>
+</div>
+<div class="col s12 add_payment_response center-align">
+</div>
+<form class="col s12 add_payment_form" href="{{loan_id}}">
+  <div class="row">
+    <div class="input-field col s6">
+      <input id="amount" name="amount" type="text" class="validate" value="{{weekly_payment}}">
+      <label class="active" for="amount">Cantidad</label>
+    </div>
+    <div class="col s6 center-align" style="margin-top: 25px;">
+      <a class="modal-action modal-close waves-effect waves-green black-text btn grey lighten-3">Cerrar</a>
+      <button class="waves-effect waves-light btn">Agregar</button>
+    </div>
+  </div>
+</form>

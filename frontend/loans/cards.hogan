@@ -1,59 +1,35 @@
-<div class="row">
-  <div class="col s12">
-    <div style="margin-top:2%;" class="col s12 red-text text-darken-2">
-      <div class="row">
-        <h4 class="col s10"> Prestamos </h4>
-      </div>
-    </div>
-  </div>
-  <div class="col s12">
-    <div class="col s12">
-      <nav class="search red darken-2">
-        <div class="nav-wrapper">
-          <form class="search-loans-form">
-            <div class="input-field">
-              <input type="search" placeholder="ID de prestamo, ID de cliente, cantidad o semanas."/>
-              <label for="search"><i class="material-icons">search</i></label><i class="material-icons">close</i>
-            </div>
-          </form>
+<div class="col s12 grey-text darken-2">
+  <div class="row">
+  {{#loans}}
+    <div class="col s12 m4">
+      <div class="card client">
+        <div class="card-content grey-text text-darken-2">
+          <p class="card-title capitalize">${{amount}}.00 <span class="right">{{weeks}}s</span></p>
+          <p class="capitalize">Cliente: {{client.name_complete}} {{client.surname}}.</p>
+          <p>Creado: {{created_from_now}}.</p>
+          {{#last_payment}}
+            <p>Ultimo abono: {{last_payment_from_now}}.</p>
+          {{/last_payment}}
+          {{#current_week}}
+            <p>Semana actual: {{current_week}}.</p>
+          {{/current_week}}
+          <p>Pagos realizados: {{payments.length}}.</p>
+          <b>Adeudo actual: ${{current_balance}}.00.</b></p>
+          <p>Expira en: {{expired_date_from_now}}</p>
+          {{#expired}}
+            <p class="red-text text-darken-2">Prestamo expirado.</p>
+          {{/expired}}
+          {{^expired}}
+            <p class="green-text text-darken-2">Prestamo no expirado.</p>
+          {{/expired}}
         </div>
-      </nav>
-    </div>
-  </div>
-</div>
-<div class="row">
-  <div class="col s12 grey-text darken-2">
-    <div class="row">
-    {{#loans}}
-      <div class="col s12 m4">
-        <div class="card client">
-          <div class="card-content grey-text text-darken-2">
-            <p class="card-title capitalize">${{amount}}.00 <span class="right">{{weeks}}s</span></p>
-            <p class="capitalize">Cliente: {{client.name_complete}} {{client.surname}}.</p>
-            <p>Creado: {{created_from_now}}.</p>
-            {{#last_payment}}
-              <p>Ultimo abono: {{last_payment_from_now}}.</p>
-            {{/last_payment}}
-            {{#current_week}}
-              <p>Semana actual: {{current_week}}.</p>
-            {{/current_week}}
-            <p>Pagos realizados: {{payments.length}}.</p>
-            <b>Adeudo actual: ${{current_balance}}.00.</b></p>
-            <p>Expira en: {{expired_date_from_now}}</p>
-            {{#expired}}
-              <p class="red-text text-darken-2">Prestamo expirado.</p>
-            {{/expired}}
-            {{^expired}}
-              <p class="green-text text-darken-2">Prestamo no expirado.</p>
-            {{/expired}}
-          </div>
-          <div class="card-action">
-              <a href="{{id}}" class="loan_more green-text darken-2">Más</a>
-              <a href="{{client_id}}" class="green-text client_more darken-2">Cliente</a>
-          </div>
+        <div class="card-action">
+            <a href="{{id}}" class="loan_more green-text darken-2">Más</a>
+            <a href="{{client_id}}" class="blue-text client_more darken-2">Cliente</a>
         </div>
       </div>
-    {{/loans}}
     </div>
+  {{/loans}}
   </div>
 </div>
+

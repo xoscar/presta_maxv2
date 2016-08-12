@@ -1,33 +1,4 @@
 <div class="row">
-  <div class="col s12">
-    <div style="margin-top:2%;" class="col s12 red-text text-darken-2">
-      <div class="row">
-        <h4 class="col s10"> Clientes </h4>
-        <div class="col s2">
-          <button class="add-client right btn waves-effect" style="margin-top: 20px">
-            Nuevo
-            <i class="material-icons right">account_box</i> 
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col s12">
-    <div class="col s12">
-      <nav class="search red darken-2">
-        <div class="nav-wrapper">
-          <form class="search-bar-form">
-            <div class="input-field">
-              <input type="search" placeholder="ID de cliente, nombre o apellido."/>
-              <label for="search"><i class="material-icons">search</i></label><i class="material-icons">close</i>
-            </div>
-          </form>
-        </div>
-      </nav>
-    </div>
-  </div>
-</div>
-<div class="row">
   <div class="col s12 grey-text darken-2">
     <div class="row">
     {{#clients}}
@@ -37,7 +8,7 @@
             <span class="card-title capitalize">
               {{client_id}}
             </span>
-            <p class="capitalize">Nombre: {{name_complete}} {{surname}}</p>
+            <p class="capitalize">Nombre: {{name_complete}} {{surname}}.</p>
             <p>Prestamos activos: {{loans.length}}.</p>
             <p>Cargos activos: {{charges.length}}.</p>
               {{#last_payment}}
@@ -54,7 +25,7 @@
           <div class="card-action">
               <a href="{{id}}" class="more green-text darken-2">Más</a>
               {{#active_loans}}
-              <a href="{{id}}" class="green-text darken-2 modal-trigger">Prestamos</a>
+              <a href="{{id}}" class="blue-text darken-2 modal-trigger">Prestamos</a>
               {{/active_loans}}
           </div>
         </div>

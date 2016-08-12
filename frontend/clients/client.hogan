@@ -68,63 +68,77 @@
   </div>
   <div class="col s12">
     <div class ="row">
-      <div class ="col s6">
+      <div class ="col s12">
         <div class="row">
           <h5>Prestamos</h5>
         </div>
         <div class="row">
-          <div class="col s12">
-            {{#loans}}
-            <div class="card loan loan_more hoverable" href="{{id}}">
-              <div class="card-content white {{text_color}}  avatar text-darken-2">
-                <div class="row" style="margin:0px">
-                <div class="col s6">
-                  <p>Adeudo: ${{current_balance}}.00 </p>
-                  <p>
-                    Creado {{created_from_now}} <span style="font-size:.7rem;">({{created}})</span>
-                  </p>
+          {{#loans}}
+            <div class="col s6">
+              <div class="card" href="{{id}}" style="height:169px;">
+                <div class="card-content white {{text_color}}  avatar text-darken-2">
+                  <div class="row" style="margin:0px">
+                    <div class="col s6">
+                      <p>Adeudo: ${{current_balance}}.00 </p>
+                      <p>
+                        Creado {{created_from_now}} <span style="font-size:.7rem;">({{created}})</span>
+                      </p>
+                    </div>
+                    <div class="col s6">
+                      <p>Cantidad: ${{amount}}.00 </p>
+                      {{#last_payment}}
+                        <p>Abono: {{last_payment_from_now}} </p>
+                      {{/last_payment}}
+                      {{^last_payment}}
+                        <p>No se han realizado pagos</p>
+                      {{/last_payment}}
+                    </div>
+                  </div>
                 </div>
-                <div class="col s6">
-                  <p>Cantidad: ${{amount}}.00 </p>
-                  {{#last_payment}}
-                    <p>Abono: {{last_payment_from_now}} </p>
-                  {{/last_payment}}
-                  {{^last_payment}}
-                    <p>No se han realizado pagos</p>
-                  {{/last_payment}}
-                </div>
+                <div class="card-action">
+                  <a href="{{id}}" class="green-text loan_more text-darken-2">Más</a>
+                  <a href="{{id}}-{{weekly_payment}}" class="payment_add blue-text text-darken-2">Abonar</a>
                 </div>
               </div>
             </div>
-            {{/loans}}
-            {{^loans}}
-              <p>No hay cargos para mostrar.</p>
-            {{/loans}}
-          </div>
+          {{/loans}}
+          {{^loans}}
+            <p>No hay cargos para mostrar.</p>
+          {{/loans}}
         </div>
       </div>
-      <div class="col s6">
+    </div>
+    <div class ="row">
+      <div class="col s12">
         <div class="row">
           <h5>Cargos</h5>
         </div>
         <div class="row">
-          <div class="col s12">
-            {{#charges}}
-            <div class="card" href="{{id}}">
-              <div class="card-content white {{text_color}}  avatar text-darken-2">
-                <span class="secondary-content grey-text text-darken-1"><i class="material-icons">expand_more</i></span>
-                <span>Cantidad: ${{amount}}.00</span>
-                <p>Creado: {{created_from_now}} ({{created}})</p>
-                  {{#paid}}
-                    <p>Pagado.</p>
-                  {{/paid}}
+          {{#charges}}
+            <div class="col s6">
+              <div class="card" href="{{id}}">
+                <div class="card-content white {{text_color}}  avatar text-darken-2">
+                  <div class="row" style="margin:0px">
+                    <div class="col s12">
+                      <span>Cantidad: ${{amount}}.00</span>
+                      <p>Creado: {{created_from_now}} ({{created}})</p>
+                        {{#paid}}
+                          <p>Pagado.</p>
+                        {{/paid}}
+                    </div>
+                  </div>
+                </div>
+                <div class="card-action">
+                  <a href="{{id}}" class="pay_charge blue-text text-darken-2">Pagar</a>
+                  <a href="{{id}}" class="update_charge yellow-text text-darken-2">Modificar</a>
+                  <a href="{{id}}" class="remove_charge red-text text-darken-2">Eliminar</a>
+                </div>
               </div>
             </div>
-            {{/charges}}
-            {{^charges}}
-              <p>No hay cargos para mostrar.</p>
-            {{/charges}}
-          </div>
+          {{/charges}}
+          {{^charges}}
+            <p>No hay cargos para mostrar.</p>
+          {{/charges}}
         </div>
       </div>
     </div>
