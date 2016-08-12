@@ -66,84 +66,121 @@
       </div>
     </div>
   </div>
-  <div class="col s12">
-    <div class ="row">
-      <div class ="col s12">
-        <div class="row">
-          <h5>Prestamos</h5>
-        </div>
-        <div class="row">
-          {{#loans}}
-            <div class="col s6">
-              <div class="card" href="{{id}}" style="height:169px;">
-                <div class="card-content white {{text_color}}  avatar text-darken-2">
-                  <div class="row" style="margin:0px">
-                    <div class="col s6">
-                      <p>Adeudo: ${{current_balance}}.00 </p>
-                      <p>
-                        Creado {{created_from_now}} <span style="font-size:.7rem;">({{created}})</span>
-                      </p>
+  <div class="row">
+    <div class="col s12">
+      <ul class="collapsible popout" data-collapsible="accordion">
+        <li>
+          <div class="collapsible-header active"><i class="material-icons blue-text text-darken-2">thumbs_up_down</i>Prestamos</div>
+          <div class="collapsible-body">
+            <div class="row">
+              {{#loans}}
+                <div class="col s6">
+                  <div class="card" href="{{id}}" style="height:169px;">
+                    <div class="card-content white {{text_color}}  avatar text-darken-2">
+                      <div class="row" style="margin:0px">
+                        <div class="col s6">
+                          <p>Adeudo: ${{current_balance}}.00 </p>
+                          <p>
+                            Creado {{created_from_now}} <span style="font-size:.7rem;">({{created}})</span>
+                          </p>
+                        </div>
+                        <div class="col s6">
+                          <p>Cantidad: ${{amount}}.00 </p>
+                          {{#last_payment}}
+                            <p>Abono: {{last_payment_from_now}} </p>
+                          {{/last_payment}}
+                          {{^last_payment}}
+                            <p>No se han realizado pagos</p>
+                          {{/last_payment}}
+                        </div>
+                      </div>
                     </div>
-                    <div class="col s6">
-                      <p>Cantidad: ${{amount}}.00 </p>
-                      {{#last_payment}}
-                        <p>Abono: {{last_payment_from_now}} </p>
-                      {{/last_payment}}
-                      {{^last_payment}}
-                        <p>No se han realizado pagos</p>
-                      {{/last_payment}}
-                    </div>
-                  </div>
-                </div>
-                <div class="card-action">
-                  <a href="{{id}}" class="green-text loan_more text-darken-2">Más</a>
-                  <a href="{{id}}-{{weekly_payment}}" class="payment_add blue-text text-darken-2">Abonar</a>
-                </div>
-              </div>
-            </div>
-          {{/loans}}
-          {{^loans}}
-            <p>No hay cargos para mostrar.</p>
-          {{/loans}}
-        </div>
-      </div>
-    </div>
-    <div class ="row">
-      <div class="col s12">
-        <div class="row">
-          <h5>Cargos</h5>
-        </div>
-        <div class="row">
-          {{#charges}}
-            <div class="col s6">
-              <div class="card" href="{{id}}">
-                <div class="card-content white {{text_color}}  avatar text-darken-2">
-                  <div class="row" style="margin:0px">
-                    <div class="col s12">
-                      <span>Cantidad: ${{amount}}.00</span>
-                      <p>Creado: {{created_from_now}} ({{created}})</p>
-                        {{#paid}}
-                          <p>Pagado.</p>
-                        {{/paid}}
+                    <div class="card-action">
+                      <a href="{{id}}" class="green-text loan_more text-darken-2">Más</a>
+                      <a href="{{id}}-{{weekly_payment}}" class="payment_add blue-text text-darken-2">Abonar</a>
                     </div>
                   </div>
                 </div>
-                <div class="card-action">
-                  <a href="{{id}}" class="pay_charge blue-text text-darken-2">Pagar</a>
-                  <a href="{{id}}" class="update_charge yellow-text text-darken-2">Modificar</a>
-                  <a href="{{id}}" class="remove_charge red-text text-darken-2">Eliminar</a>
-                </div>
-              </div>
+              {{/loans}}
+              {{^loans}}
+                <p>No hay cargos para mostrar.</p>
+              {{/loans}}
             </div>
-          {{/charges}}
-          {{^charges}}
-            <p>No hay cargos para mostrar.</p>
-          {{/charges}}
-        </div>
-      </div>
+          </div>
+        </li>
+        <li>
+          <div class="collapsible-header"><i class="material-icons green-text text-darken-2">done</i>Prestamos liquidados</div>
+          <div class="collapsible-body">
+            <div class="row">
+              {{#finished_loans}}
+                <div class="col s6">
+                  <div class="card" href="{{id}}" style="height:169px;">
+                    <div class="card-content {{text_color}}  avatar text-darken-2">
+                      <div class="row" style="margin:0px">
+                        <div class="col s6">
+                          <p>Adeudo: ${{current_balance}}.00 </p>
+                          <p>
+                            Creado {{created_from_now}} <span style="font-size:.7rem;">({{created}})</span>
+                          </p>
+                        </div>
+                        <div class="col s6">
+                          <p>Cantidad: ${{amount}}.00 </p>
+                          {{#last_payment}}
+                            <p>Abono: {{last_payment_from_now}} </p>
+                          {{/last_payment}}
+                          {{^last_payment}}
+                            <p>No se han realizado pagos</p>
+                          {{/last_payment}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card-action">
+                      <a href="{{id}}" class="green-text loan_more text-darken-2">Más</a>
+                    </div>
+                  </div>
+                </div>
+              {{/finished_loans}}
+              {{^finished_loans}}
+                <p>No hay cargos para mostrar.</p>
+              {{/finished_loans}}
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="collapsible-header"><i class="material-icons yellow-text text-darken-2">attach_money</i>Cargos</div>
+          <div class="collapsible-body">
+            <div class="row">
+              {{#charges}}
+                <div class="col s6">
+                  <div class="card" href="{{id}}">
+                    <div class="card-content white {{text_color}}  avatar text-darken-2">
+                      <div class="row" style="margin:0px">
+                        <div class="col s12">
+                          <span>Cantidad: ${{amount}}.00</span>
+                          <p>Creado: {{created_from_now}} ({{created}})</p>
+                            {{#paid}}
+                              <p>Pagado.</p>
+                            {{/paid}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card-action">
+                      <a href="{{id}}" class="pay_charge blue-text text-darken-2">Pagar</a>
+                      <a href="{{id}}" class="update_charge yellow-text text-darken-2">Modificar</a>
+                      <a href="{{id}}" class="remove_charge red-text text-darken-2">Eliminar</a>
+                    </div>
+                  </div>
+                </div>
+              {{/charges}}
+              {{^charges}}
+                <p>No hay cargos para mostrar.</p>
+              {{/charges}}
+            </div>
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
-</div>
 
 <div class="fixed-action-btn horizontal" style="bottom: 45px; right: 24px;">
   <a class="btn-floating btn-large red darken-2">

@@ -18,8 +18,6 @@ var $rootNode = null;
 var pagination = null;
 
 function showIndex(template, clients) {
-  $rootNode.html('');
-  $rootNode.html(templates.search());
   $rootNode.find('.search-wrapper').html('');
   $rootNode.find('.search-wrapper').html(templates[template](clients));
   pagination.show(searchControl.page, clients.clients.length);
@@ -45,6 +43,7 @@ function showProfile(client) {
   $rootNode.html(templates.client_holder());
   $rootNode.find('.client_name').html(client.name_complete + ' ' + client.surname);
   $rootNode.find('.profile').html(templates.client(client));
+  $rootNode.find('.collapsible').collapsible({});
 }
 
 function init(user, token, root) {
@@ -115,6 +114,7 @@ function init(user, token, root) {
     var data = common.generateFormData($(this).serializeArray());
     client.delete(data.client_id, function () {
       $rootNode.find('.remove_client_modal').closeModal();
+      $rootNode.html(templates.search());
       sendSearch([], console.log);
     });
   });
@@ -168,6 +168,7 @@ function init(user, token, root) {
 }
 
 function index(callback) {
+  $rootNode.html(templates.search());
   sendSearch([], callback);
 }
 

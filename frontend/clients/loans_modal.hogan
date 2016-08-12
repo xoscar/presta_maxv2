@@ -1,11 +1,17 @@
 <div class ="row">
   <div class="col s12">
-  	<h5>Prestamos de <span class="capitalize">{{name_complete}}</span> ({{client_id}})</h5>
+  	<h4>Prestamos de <span class="capitalize">{{name_complete}}</span> <span style="font-size:.7em;">({{client_id}})</span></h4>
   </div>
   <div class="row">
+    <div class="col s6">
+      <h5>Prestamos</h5>
+    </div>
+    <div class="col s6">
+      <h5>Pagos</h5>
+    </div>
     <div class ="col s6">
       {{#loans}}
-  		<div class="card loan hoverable" href="{{id}}">
+  		<div class="card loan" href="{{id}}">
       	<div class="card-content white {{text_color}}  avatar text-darken-2">
           <div class="row" style="margin:0px">
           <div class="col s6">
@@ -24,10 +30,6 @@
             {{/last_payment}}
           </div>
           </div>
-        </div>
-        <div class="card-action">
-          <a href="{{id}}" class="green-text loan_more text-darken-2">Más</a>
-          <a href="{{id}}-{{weekly_payment}}" class="payment_add green-text text-darken-2">Abonar</a>
         </div>
       </div>
       {{/loans}}

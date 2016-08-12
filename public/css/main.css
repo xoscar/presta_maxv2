@@ -8017,6 +8017,9 @@ nav.search {
   height: auto;
   min-height: auto; }
 
+.collapsible-body .card p {
+  padding: 0px; }
+
 .modal {
   max-width: 70%;
   max-height: 80%; }

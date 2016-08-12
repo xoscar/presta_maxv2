@@ -47,7 +47,7 @@
           <li class="collection-header"><h5>Información</h5></li>
           <li class="collection-item"><div>Saldo: <span class="secondary-content">${{current_balance}}.00</span></li>
           {{#last_payment}}
-            <li class="collection-item"><div>Ultimo abono: <span class="secondary-content">{{last_payment_from_now}}</span></li>
+            <li class="collection-item"><div>Ult. abono: <span class="secondary-content">{{last_payment_from_now}}</span></li>
           {{/last_payment}}
 
           {{#finish}}

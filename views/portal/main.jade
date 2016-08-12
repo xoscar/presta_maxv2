@@ -14,8 +14,8 @@ block content
               | Inicio
           li
             a.red-text.text-darken-2(href="/")
-              i.material-icons.right account_box
-              | Perfil
+              i.material-icons.right account_box 
+              | #{user.username}
           li
             a.red-text.text-darken-2(href="/logout")
               i.material-icons.right power_settings_new
@@ -25,8 +25,8 @@ block content
             a.red-text.text-darken-2(href="/") 
               | Inicio
           li
-            a.red-text.text-darken-2(href="/")
-              | Perfil
+            a.red-text.text-darken-2(href="/") 
+            | #{user.username}
           li
             a.red-text.text-darken-2(href="/logout")
               | Cerrar Sesión

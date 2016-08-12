@@ -25,7 +25,7 @@ module.exports.search = function (req, res) {
       function (err, docs) {
         if (err) return res.status(500).send('Internal error.');
         Async.map(docs, (client, mapaCallback) => {
-          client.getInfo(false, mapaCallback);
+          client.getInfo(mapaCallback);
         }, (err, result) => {
           if (err) return res.status(500).send('Internal error.');
           else res.status(200).json(result);
@@ -34,14 +34,14 @@ module.exports.search = function (req, res) {
 };
 
 module.exports.info = function (req, res) {
-  req.client.getInfo(false, (err, info) => {
+  req.client.getInfo((err, info) => {
     if (err) res.status(400).send('Error getting information.');
     else res.json(info);
   });
 };
 
 module.exports.loans = function (req, res) {
-  req.client.getInfo(false, (err, info) => {
+  req.client.getInfo((err, info) => {
     if (err) res.status(400).send('Error getting information.');
     else res.json(info);
   });
@@ -50,7 +50,7 @@ module.exports.loans = function (req, res) {
 module.exports.create = function (req, res) {
   Client.create(req.user, req.body, (err, client) => {
     if (err) res.status(400).send(err);
-    else client.getInfo(false, (err, info) => {
+    else client.getInfo((err, info) => {
       if (err) res.status(500).send('Error creating client.');
       else res.json(info);
     });
@@ -60,7 +60,7 @@ module.exports.create = function (req, res) {
 module.exports.update = function (req, res) {
   req.client.update(req.body, (err, client) => {
     if (err) res.status(400).send(err);
-    else client.getInfo(false, (err, info) => {
+    else client.getInfo((err, info) => {
       if (err) res.status(500).send('Error updating client.');
       else res.json(info);
     });

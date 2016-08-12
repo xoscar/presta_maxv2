@@ -50,7 +50,8 @@ module.exports.info = function (req, res) {
 };
 
 module.exports.create = function (req, res) {
-  Client.findById(req.user, (err, client) => {
+  if (!req.body.client_id) return res.status(400).send('El id de cliente no es válido.');
+  Client.findById(req.body.client_id, (err, client) => {
     if (err) return res.status(500).send('Processing error');
     Loan.create(req.user, client, req.body, (err, loan) => {
       if (err) res.status(400).send(err);

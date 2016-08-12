@@ -81,13 +81,13 @@ clientSchema.methods.getBasicInfo = function () {
   };
 };
 
-clientSchema.methods.getInfo = function (finished, callback) {
+clientSchema.methods.getInfo = function (callback) {
   var _this = this;
   var result = this.getBasicInfo();
 
   Async.waterfall([
     function getLoans(wfaCallback) {
-      _this.getLoans(finished, (err, loans, extra) => {
+      _this.getLoans(false, (err, loans, extra) => {
         if (err) return wfaCallback(err);
         result.loans = loans;
         result.active_loans = loans.length !== 0 ? true : false;
@@ -95,6 +95,14 @@ clientSchema.methods.getInfo = function (finished, callback) {
         result.last_payment = extra.last_payment;
         result.last_loan = extra.last_loan;
         result.expired_loans = extra.expired;
+        wfaCallback();
+      });
+    },
+
+    function getLoans(wfaCallback) {
+      _this.getLoans(true, (err, loans) => {
+        if (err) return wfaCallback(err);
+        result.finished_loans = loans;
         wfaCallback();
       });
     },
@@ -138,8 +146,8 @@ clientSchema.methods.getLoans = function (finished, callback) {
 
   var match = {
     client_id: _this.id,
+    finished: finished,
   };
-  if (!finished) match.finished = false;
 
   Loan
     .find(match)

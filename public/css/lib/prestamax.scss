@@ -8,11 +8,11 @@ nav.search {
 }
 
 .capitalize {
-  text-transform: capitalize;
+    text-transform: capitalize;
 }
 
 .uppercase {
-  text-transform: uppercase;
+    text-transform: uppercase;
 }
 
 .card.client {
@@ -23,24 +23,32 @@ nav.search {
 }
 
 .card.loan {
-  &:hover {
-      cursor: pointer;
-  }
-  margin-top:0px;
+    &:hover {
+        cursor: pointer;
+    }
+    margin-top:0px;
 }
 
 .collection {
-  .collection-item {
-      &.payment {
-          height: auto;
-          min-height: auto;
+    .collection-item {
+        &.payment {
+            height: auto;
+            min-height: auto;
+        }
+    }
+}
+
+.collapsible-body {
+  .card {
+      p {
+          padding: 0px
       }
   }
 }
 
 .modal {
-  max-width: 70%;
-  max-height: 80%;
+    max-width: 70%;
+    max-height: 80%;
 }
 
 .pagination {

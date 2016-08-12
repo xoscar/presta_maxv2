@@ -199,8 +199,13 @@ loanSchema.methods.delete = function (callback) {
 loanSchema.methods.createPayment = function (query, callback) {
   var errors = new Response('error');
   if (Object.keys(query).length === 0) errors.push('query', 'Invalid request.');
-  if (!query.amount || !ö.isNumeric(query.amount))
+  if (!query.amount || !ö.isNumeric(query.amount)) {
     errors.push('amount', 'La cantidad del pago debe de ser numerica.');
+    return callback(errors);
+  }
+
+  if (this.getCurrentBalance() - query.amount < 0)
+    errors.push('payment', 'El abono es mayor a la cantidad del saldo del prestamo');
   if (this.getCurrentBalance() === 0)
     errors.push('payment', 'El prestamo ya fue saldado.');
   if (errors.messages.length === 0) {
