@@ -1,7 +1,8 @@
 var RestConnection = require('../utils/rest.js');
+var baseUrl = require('../utils/static').baseUrl.client;
 
 function Client(headers) {
-  this.resource = 'http://localhost:4000/clients';
+  this.resource = baseUrl;
   this.headers = headers;
 }
 

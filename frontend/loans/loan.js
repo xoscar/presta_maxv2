@@ -1,7 +1,8 @@
 var RestConnection = require('../utils/rest.js');
+var baseUrl = require('../utils/static').baseUrl.loan;
 
 function Loan(headers) {
-  this.resource = 'http://localhost:4000/loans';
+  this.resource = baseUrl;
   this.headers = headers;
 }
 

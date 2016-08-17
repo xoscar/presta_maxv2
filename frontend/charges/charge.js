@@ -1,7 +1,8 @@
-var RestConnection = require('../utils/rest.js');
+var RestConnection = require('../utils/rest');
+var baseUrl = require('../utils/static').baseUrl.charge;
 
 function Charge(headers) {
-  this.resource = 'http://localhost:4000/charges';
+  this.resource = baseUrl;
   this.headers = headers;
 }
 

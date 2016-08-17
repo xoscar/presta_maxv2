@@ -40,9 +40,9 @@ mongoose.connection.on('connected', () => {
 
   app.use(cors());
 
-  app.use('/clients', clients);
-  app.use('/loans', loans);
-  app.use('/charges', charges);
+  app.use('/api/clients', clients);
+  app.use('/api/loans', loans);
+  app.use('/api/charges', charges);
 
   /**
    * Start Express server.
