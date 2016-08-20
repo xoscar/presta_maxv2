@@ -8008,6 +8008,10 @@ nav.search {
   .card.client .card-content {
     height: 242px; }
 
+.loans-modal .payments {
+  overflow-y: scroll;
+  height: 313px; }
+
 .card.loan {
   margin-top: 0px; }
   .card.loan:hover {
@@ -8019,6 +8023,14 @@ nav.search {
 
 .collapsible-body .card p {
   padding: 0px; }
+
+.loan.selected .expired {
+  background: #D32F2F !important;
+  color: #ffffff !important; }
+
+.loan.selected .not-expired {
+  background: #388E3C !important;
+  color: #ffffff !important; }
 
 .modal {
   max-width: 70%;

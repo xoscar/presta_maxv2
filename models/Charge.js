@@ -11,7 +11,6 @@ var chargeSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  weeks: Number,
   description: String,
   paid: {
     type: Boolean,
@@ -26,20 +25,11 @@ function validateCreationData(query) {
   if (!query) errors.push('query', 'Invalid request.');
   if (!query.amount || !ö.isNumeric(query.amount))
     errors.push('amount', 'La cantidad debe ser numerica.');
-  if (!query.weeks || !ö.isNumeric(query.weeks))
-    errors.push('weeks', 'El numero de semanas debe de ser numerico.');
   if (!query.client_id || !ö.isMongoId(query.client_id))
     errors.push('client_id', 'El número de identificación del cliente es invalido.');
   if (query.created && moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
     errors.push('created', 'La fecha de creación no es válida.');
 
-  if (errors.messages.length === 0) {
-    if (parseInt(query.weeks) < 0 && parseInt(query.weeks > 60))
-      errors.push('weeks', 'El número de semanas debe ser entre 1 y 60');
-    if (parseInt(query.amount) <= parseInt(query.weeks))
-      errors.push('amount', 'El número de semanas debe de ser menor al de la cantidad total del prestamo.');
-    return errors;
-  } else return errors;
   return errors;
 }
 
@@ -70,6 +60,7 @@ chargeSchema.methods.getInfo = function () {
     id: this.id,
     expired: this.isExpired(),
     amount: this.amount,
+    description: this.description,
     created: moment(this.created).format('DD/MM/YYYY HH:mm'),
     created_from_now: moment(this.created).fromNow(),
     weeks: this.weeks,
@@ -81,7 +72,8 @@ chargeSchema.methods.update = function (query, callback) {
   var errors = validateUpdateData(query);
   if (errors.messages.length === 0) {
     this.amount = query.amount;
-    this.created = query.created ? moment(query.created, 'DD/MM/YYYY HH:mm').toDate() : this.created;
+    this.created = moment(query.created, 'DD/MM/YYYY HH:mm').toDate();
+    this.description = query.description;
     this.save(callback);
   } else callback(errors);
 };

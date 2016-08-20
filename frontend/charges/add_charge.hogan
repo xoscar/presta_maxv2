@@ -10,10 +10,6 @@
       <input id="amount" name="amount" type="text" class="validate">
       <label for="amount">Cantidad</label>
     </div>
-    <div class="input-field col s6">
-      <input id="weeks" name="weeks" type="text" class="validate">
-      <label for="weeks">Semanas</label>
-    </div>
     <div class="input-field col s12">
       <textarea id="description" name="description" class="materialize-textarea uppercase"></textarea>
       <label for="description">Descripción</label>

@@ -78,6 +78,9 @@ function init(user, token, root) {
     client.loans($(this).attr('href'), function (err, client) {
       client.loans.forEach(function (loan) {
         loan.text_color = loan.expired ? 'red-text' : 'green-text';
+        loan.payments.forEach(function (payment, index, payments) {
+          payment.index = payments.length - index;
+        });
       });
 
       $rootNode.find('.modals').html(templates.loans(client));
@@ -92,7 +95,7 @@ function init(user, token, root) {
     client.create(data, function (err) {
       if (!err) {
         $rootNode.find('.add-client-modal').closeModal();
-        sendSearch([], console.log);
+        index(console.log);
       }
 
       Response.show('.add_client_response', err, 'Usuario creado exitosamente.');
@@ -115,7 +118,7 @@ function init(user, token, root) {
     client.delete(data.client_id, function () {
       $rootNode.find('.remove_client_modal').closeModal();
       $rootNode.html(templates.search());
-      sendSearch([], console.log);
+      index(console.log);
     });
   });
 
@@ -130,7 +133,12 @@ function init(user, token, root) {
   });
 
   $rootNode.on('click', '.modals .loan', function () {
-    var id = $(this).attr('href');
+    var $this = $(this);
+    var id = $this.attr('href');
+    var color = $this.attr('color').split('-')[0];
+
+    $this.parent().find('.selected').removeClass('selected');
+    $this.addClass('selected').find('.card-content').addClass(color === 'red' ? 'expired' : 'not-expired');
 
     $rootNode.find('.payments ul').addClass('hide');
     $rootNode.find('.payments [name="' + id + '"]').removeClass('hide');
@@ -168,6 +176,10 @@ function init(user, token, root) {
 }
 
 function index(callback) {
+  searchControl = {
+    page: 0,
+    term: '',
+  };
   $rootNode.html(templates.search());
   sendSearch([], callback);
 }

@@ -128,7 +128,11 @@ loanSchema.methods.getCurrentWeek = function () {
 };
 
 loanSchema.methods.getPayments = function () {
-  return this.payments.map((payment) => {
+  var payments = this.payments.sort((a, b) => {
+    return moment(b.created).isAfter(a.created) ? 1 : 0;
+  });
+
+  return payments.map((payment) => {
     return payment.getBasicInfo(this);
   });
 };

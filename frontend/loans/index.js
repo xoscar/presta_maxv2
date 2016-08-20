@@ -129,8 +129,8 @@ function init(user, token, root) {
     var id = $(this).attr('href');
     loan.delete(id, function (err) {
       if (!err) {
-        $rootNode.find('.remove_loan_modal').closeModal();   
-        return sendSearch([], function () {});
+        $rootNode.find('.remove_loan_modal').closeModal();
+        return index(console.log);
       }
     });
   });
@@ -200,7 +200,11 @@ function init(user, token, root) {
 }
 
 function index(callback) {
-  sendSearch([], callback);
+  var query = [{
+    name: 's',
+    value: searchControl.term,
+  }, ];
+  sendSearch(query, callback);
 }
 
 module.exports = {

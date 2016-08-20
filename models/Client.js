@@ -72,7 +72,8 @@ clientSchema.methods.getBasicInfo = function () {
     name: this.name.split(' ')[0].toLowerCase(),
     name_complete: this.name.toLowerCase(),
     surname: this.surname.toLowerCase(),
-    created: moment(this.created).fromNow(),
+    created: moment(this.created).format('DD/MM/YYYY HH:mm'),
+    created_from_now: moment(this.created).fromNow(),
     updated: this.updated,
     address: this.address,
     phone: this.phone,
@@ -86,14 +87,23 @@ clientSchema.methods.getInfo = function (callback) {
   var result = this.getBasicInfo();
 
   Async.waterfall([
-    function getLoans(wfaCallback) {
+    function getActiveLoans(wfaCallback) {
       _this.getLoans(false, (err, loans, extra) => {
         if (err) return wfaCallback(err);
         result.loans = loans;
         result.active_loans = loans.length !== 0 ? true : false;
+        result.loans_depth = extra.total;
         result.total_depth = extra.total;
-        result.last_payment = extra.last_payment;
-        result.last_loan = extra.last_loan;
+        if (extra.last_payment) {
+          result.last_payment = extra.last_payment.format('DD/MM/YYYY HH:mm');
+          result.last_payment_from_now = extra.last_payment.fromNow();
+        }
+
+        if (extra.last_loan) {
+          result.last_loan = extra.last_loan.format('DD/MM/YYYY HH:mm');
+          result.last_loan_from_now = extra.last_loan.fromNow();
+        }
+
         result.expired_loans = extra.expired;
         wfaCallback();
       });
@@ -107,10 +117,20 @@ clientSchema.methods.getInfo = function (callback) {
       });
     },
 
-    function getCharges(wfaCallback) {
-      _this.getCharges((err, charges) => {
+    function getActiveCharges(wfaCallback) {
+      _this.getCharges(false, (err, charges, total) => {
         if (err) return wfaCallback(err);
         result.charges = charges;
+        result.total_depth += total;
+        result.charges_depth = total;
+        wfaCallback();
+      });
+    },
+
+    function getCharges(wfaCallback) {
+      _this.getCharges(true, (err, charges) => {
+        if (err) return wfaCallback(err);
+        result.paid_charges = charges;
         wfaCallback();
       });
     },
@@ -118,18 +138,22 @@ clientSchema.methods.getInfo = function (callback) {
   ], (err) => callback(err, result));
 };
 
-clientSchema.methods.getCharges = function (callback) {
+clientSchema.methods.getCharges = function (paid, callback) {
+  var totalDepth = 0;
   Charge
     .find({
       client_id: this.id,
-      paid: false,
+      paid: paid,
     })
     .sort({ created: -1 })
     .exec((err, charges) => {
       if (err) return callback(err);
       Async.map(charges, (charge, mapaCallback) => {
+        totalDepth += charge.amount;
         mapaCallback(null, charge.getInfo());
-      }, callback);
+      }, (err, charges) => {
+        callback(err, charges, totalDepth);
+      });
     });
 };
 
@@ -158,10 +182,10 @@ clientSchema.methods.getLoans = function (finished, callback) {
         var info = loan.getBasicInfo();
         if (!extra.expired) extra.expired = info.expired;
         if (info.last_payment && moment(info.last_payment).isAfter(extra.last_payment_holder))
-          extra.last_payment = moment(info.last_payment).fromNow();
+          extra.last_payment = moment(info.last_payment);
 
         if (moment(info.created, 'DD/MM/YYYY HH:mm').isAfter(extra.last_loan_holder.toDate()))
-          extra.last_loan = moment(info.created, 'DD/MM/YYYY HH:mm').fromNow();
+          extra.last_loan = moment(info.created, 'DD/MM/YYYY HH:mm');
 
         extra.total += info.current_balance;
         mapaCallback(null, info);
