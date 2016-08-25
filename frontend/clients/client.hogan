@@ -89,6 +89,7 @@
                         </div>
                         <div class="col s6">
                           <p>Cantidad: ${{amount}}.00 </p>
+                          <p>Semanal: ${{weekly_payment}}.00 </p>
                           {{#last_payment}}
                             <p>Abono: {{last_payment_from_now}} </p>
                           {{/last_payment}}
@@ -126,9 +127,6 @@
                         <div class="col s12">
                           <span>Cantidad: ${{amount}}.00</span>
                           <p>Creado: {{created_from_now}} ({{created}})</p>
-                            {{#paid}}
-                              <p>Pagado.</p>
-                            {{/paid}}
                         </div>
                       </div>
                     </div>
@@ -156,19 +154,16 @@
                     <div class="card-content {{text_color}}  avatar text-darken-2">
                       <div class="row" style="margin:0px">
                         <div class="col s6">
-                          <p>Adeudo: ${{current_balance}}.00 </p>
                           <p>
                             Creado {{created_from_now}} <span style="font-size:.7rem;">({{created}})</span>
+                          </p>
+                          <p>
+                            Liquidado: {{finished_date}}
                           </p>
                         </div>
                         <div class="col s6">
                           <p>Cantidad: ${{amount}}.00 </p>
-                          {{#last_payment}}
-                            <p>Abono: {{last_payment_from_now}} </p>
-                          {{/last_payment}}
-                          {{^last_payment}}
-                            <p>No se han realizado pagos</p>
-                          {{/last_payment}}
+                          <p>Semanal: ${{weekly_payment}}.00 </p>
                         </div>
                       </div>
                     </div>
@@ -196,9 +191,9 @@
                         <div class="col s12">
                           <span>Cantidad: ${{amount}}.00</span>
                           <p>Creado: {{created_from_now}} ({{created}})</p>
-                            {{#paid}}
-                              <p>Pagado.</p>
-                            {{/paid}}
+                          {{#paid_date}}
+                            <p>Pagado: {{paid_date}}</p>
+                          {{/paid_date}}
                         </div>
                       </div>
                     </div>

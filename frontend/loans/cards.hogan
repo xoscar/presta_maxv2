@@ -5,6 +5,7 @@
       <div class="card client">
         <div class="card-content grey-text text-darken-2">
           <p class="card-title capitalize">${{amount}}.00 <span class="right">{{weeks}}s</span></p>
+          <p>ID: {{number_id}}.</p>
           <p class="capitalize">Cliente: {{client.name_complete}} {{client.surname}}.</p>
           <p>Creado: {{created_from_now}}.</p>
           {{#last_payment}}

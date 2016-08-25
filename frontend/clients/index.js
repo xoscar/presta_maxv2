@@ -85,6 +85,9 @@ function init(user, token, root) {
 
       $rootNode.find('.modals').html(templates.loans(client));
       $rootNode.find('.modals .payments ul:first-of-type').removeClass('hide');
+      var $firstLoan = $rootNode.find('.modals .loan:nth-child(1)');
+      var color = $firstLoan.attr('color').split('-')[0];
+      $firstLoan.addClass('selected').find('.card-content').addClass(color === 'red' ? 'expired' : 'not-expired');
       $rootNode.find('.loans-modal').openModal();
     });
   });

@@ -1,6 +1,7 @@
 const common = require('../utils/common');
 const mongoose = require('mongoose');
 const Response = require('../utils/response');
+const Counter = require('./Counter');
 const ö = require('validator');
 const moment = require('moment');
 moment.locale('es');
@@ -42,12 +43,14 @@ paymentSchema.methods.getBasicInfo = function (loan) {
 };
 
 var loanSchema = new mongoose.Schema({
+  number_id: Number,
   amount: Number,
   weekly_payment: Number,
   file: String,
   description: String,
   client_name: String,
   client_identifier: String,
+  finished_date: Date,
   created: {
     type: Date,
     default: Date.now,
@@ -103,14 +106,28 @@ function validateData(query) {
 }
 
 loanSchema.pre('save', function (next) {
-  var searchFields = 'amount weeks client_id _id client_identifier client_name'.split(' ');
+  var searchFields = 'amount weeks client_id _id client_identifier client_name number_id'.split(' ');
   this.search = common.generateArrayFromObject(this, searchFields);
   this.expired_date = moment(this.created).endOf('week').add(this.weeks, 'weeks').endOf('week').toDate();
   this.updated = Date.now();
   this.finished = this.getCurrentBalance() === 0 ?
     this.finished = true :
     this.finished = false;
-  next();
+
+  if (this.finished && !this.finished_date) this.finished_date = moment().toDate();
+
+  if (this.isNew) {
+    Counter.findOne({ name: 'loans' }, (err, counter) => {
+      counter.getNext((err, value) => {
+        if (!err || value) {
+          this.number_id = value;
+          this.search.push(this.number_id.toString());
+        }
+
+        next();
+      });
+    });
+  } else next();
 });
 
 loanSchema.methods.isExpired = function () {
@@ -140,6 +157,7 @@ loanSchema.methods.getPayments = function () {
 loanSchema.methods.getBasicInfo = function () {
   var result = {
     id: this.id,
+    number_id: this.number_id,
     amount: this.amount,
     description: this.description,
     weekly_payment: this.weekly_payment,
@@ -153,6 +171,7 @@ loanSchema.methods.getBasicInfo = function () {
     expired_date: moment(this.expired_date).format('DD/MM/YYYY HH:mm'),
     expired_date_from_now: moment(this.expired_date).fromNow(),
     finished: this.finished,
+    finished_date: this.finished_date ? moment(this.finished_date).format('DD/MM/YYYY HH:mm') : null,
     updated: moment(this.updated).format('DD/MM/YYYY HH:mm'),
     current_balance: this.getCurrentBalance(),
     client_id: this.client_id,

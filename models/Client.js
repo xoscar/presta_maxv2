@@ -181,11 +181,15 @@ clientSchema.methods.getLoans = function (finished, callback) {
       Async.map(docs, (loan, mapaCallback) => {
         var info = loan.getBasicInfo();
         if (!extra.expired) extra.expired = info.expired;
-        if (info.last_payment && moment(info.last_payment).isAfter(extra.last_payment_holder))
+        if (info.last_payment && moment(info.last_payment).isAfter(extra.last_payment_holder)) {
+          extra.last_payment_holder = moment(info.last_payment);
           extra.last_payment = moment(info.last_payment);
+        }
 
-        if (moment(info.created, 'DD/MM/YYYY HH:mm').isAfter(extra.last_loan_holder.toDate()))
+        if (moment(info.created, 'DD/MM/YYYY HH:mm').isAfter(extra.last_loan_holder.toDate())) {
+          extra.last_loan_holder = moment(info.created, 'DD/MM/YYYY HH:mm');
           extra.last_loan = moment(info.created, 'DD/MM/YYYY HH:mm');
+        }
 
         extra.total += info.current_balance;
         mapaCallback(null, info);

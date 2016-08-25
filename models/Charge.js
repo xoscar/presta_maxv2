@@ -12,6 +12,7 @@ var chargeSchema = new mongoose.Schema({
     default: Date.now,
   },
   description: String,
+  paid_date: Date,
   paid: {
     type: Boolean,
     default: false,
@@ -65,6 +66,7 @@ chargeSchema.methods.getInfo = function () {
     created_from_now: moment(this.created).fromNow(),
     weeks: this.weeks,
     paid: this.paid,
+    paid_date: this.paid_date ? moment(this.paid_date).format('DD/MM/YYYY HH:mm') : null,
   };
 };
 
@@ -80,6 +82,7 @@ chargeSchema.methods.update = function (query, callback) {
 
 chargeSchema.methods.pay = function (callback) {
   this.paid = true;
+  this.paid_date = Date.now();
   this.save(callback);
 };
 

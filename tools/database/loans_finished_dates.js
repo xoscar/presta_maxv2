@@ -2,8 +2,7 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const Loan = require('../../models/Loan').Loan;
-const Client = require('../../models/Client');
-const Counter = require('../../models/Counter');
+const moment = require('moment');
 
 dotenv.load({ path: '.env' });
 
@@ -25,25 +24,22 @@ mongoose.connection.on('connected', function () {
 
   var numOfDocuments = 0;
 
-  var counter = new Counter({
-    name: 'loans',
-  });
-
   // start working
   Loan
-    .find()
-    .sort({ created: -1 })
-    .stream()
+    .find({
+      finished: true,
+    }).stream()
     .on('data', function (doc) {
       var _this = this;
       _this.pause();
       numOfDocuments++;
-      counter.getNext((err, value) => {
-        if (err) return _this.resume();
 
-        doc.number_id = value;
-        doc.save(() => _this.resume());
-      });
+      if (doc.payments.length === 0) return _this.resume();
+
+      var finishedDate = moment(doc.getPayments()[doc.payments.length - 1].created, 'DD/MM/YYYY HH:mm').toDate();
+      doc.finished_date = finishedDate;
+      doc.save(() => _this.resume());
+
     })
     .on('error', function (err) {
       console.log(startDate.toISOString() + ' # Encountered error in stream: ' + err);

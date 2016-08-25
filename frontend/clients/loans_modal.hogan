@@ -18,6 +18,7 @@
             </div>
             <div class="col s6">
               <p>Cantidad: ${{amount}}.00 </p>
+              <p>Semanal: ${{weekly_payment}}.00 </p>
               {{#last_payment}}
                 <p>Abono: {{last_payment_from_now}} </p>
               {{/last_payment}}
