@@ -113,4 +113,17 @@ chargeSchema.statics.getFromRequest = function (req, res, next) {
   });
 };
 
+chargeSchema.index({
+  created: -1,
+});
+
+chargeSchema.index({
+  client_id: 1,
+});
+
+chargeSchema.index({
+  created: -1,
+  user_id: 1,
+});
+
 module.exports = mongoose.model('charges', chargeSchema);

@@ -284,4 +284,21 @@ clientSchema.statics.search = function (searchTerms, userId, limit, skip, callba
     .exec(callback);
 };
 
+clientSchema.index({
+  _id: 1,
+});
+
+clientSchema.index({
+  created: -1,
+});
+
+clientSchema.index({
+  created: -1,
+  user_id: 1,
+});
+
+clientSchema.index({
+  search: 1,
+});
+
 module.exports = mongoose.model('clients', clientSchema);

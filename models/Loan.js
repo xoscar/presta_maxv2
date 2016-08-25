@@ -348,5 +348,26 @@ loanSchema.statics.delete = function (clientId, callback) {
     .exec(callback);
 };
 
+loanSchema.index({
+  _id: 1,
+});
+
+loanSchema.index({
+  created: -1,
+});
+
+loanSchema.index({
+  client_id: -1,
+});
+
+loanSchema.index({
+  created: -1,
+  user_id: 1,
+});
+
+loanSchema.index({
+  search: 1,
+});
+
 module.exports.Loan = mongoose.model('loans', loanSchema);
 module.exports.Payment = mongoose.model('payments', paymentSchema);
