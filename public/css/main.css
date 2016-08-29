@@ -8024,12 +8024,12 @@ nav.search {
 .collapsible-body .card p {
   padding: 0px; }
 
-.loan.selected .expired {
-  background: #D32F2F !important;
-  color: #ffffff !important; }
-
 .loan.selected .not-expired {
   background: #388E3C !important;
+  color: #ffffff !important; }
+
+.loan.selected .expired {
+  background: #D32F2F !important;
   color: #ffffff !important; }
 
 .modal {
@@ -8038,3 +8038,6 @@ nav.search {
 
 .pagination li.active {
   background: #d32f2f; }
+
+a {
+  cursor: pointer !important; }
