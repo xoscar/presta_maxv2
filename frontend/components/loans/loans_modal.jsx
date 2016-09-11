@@ -43,7 +43,7 @@ export default class LoansModal extends React.Component {
         } else if (selected === loan.id) {
           loan.selected = 'selected';
           this.state.filter = loan.id;
-        }
+        } else loan.selected = '';
 
         loan.text_color = !loan.expired ? 'green-text' : 'red-text';
         loan.expired_class = loan.expired ? 'expired' : 'not-expired';

@@ -32,6 +32,13 @@ var clientStore = Reflux.createStore({
     rest.setOptions(options);
   },
 
+  searchClients: function (query) {
+    rest.search(query, (err, clients) => {
+      if (err) this.trigger(err);
+      else this.trigger(clients);
+    });
+  },
+
   getClients: function () {
     rest.getAll((err, clients) => {
       if (err) this.trigger(err);

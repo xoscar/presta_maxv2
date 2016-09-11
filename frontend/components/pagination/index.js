@@ -21,7 +21,6 @@ Pagination.prototype.show = function (page, numOfResults) {
     nextPages.push(i + 2);
   }
 
-  console.log(page, page - 1);
   var pages = {
     current: page + 1,
     prevPages: page + 1 <= 1 ? [] : [page],
