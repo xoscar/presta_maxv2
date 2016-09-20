@@ -20,7 +20,6 @@ export default class Pagination extends React.Component {
     var prev = current < 0 ? null : current - 1;
     var next =  this.props.results === 0 || this.props.results < 12 ? null : current + 1;
 
-    console.log(current, prev);
     return (
       <div class ="row center-align z-depth-1">
         <div class="col s12 pagination-clients">

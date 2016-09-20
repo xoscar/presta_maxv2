@@ -63,7 +63,7 @@ export default class LoansModal extends React.Component {
   }
 
   componentDidUpdate() {
-    if (this.props.client) $('.loans-modal').openModal(); 
+    if (this.props.client) $('.loans-modal').openModal();
   }
 
   render() {
