@@ -3,10 +3,11 @@ const common = require('../utils/common');
 const Loan = require('./Loan').Loan;
 const Charge = require('./Charge');
 const Async = require('async');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const Response = require('../utils/response');
 
-moment.locale('es').utcOffset('-6:00');
+moment.locale('es');
+moment.tz.setDefault('America/Mexico_City');
 
 var clientSchema = new mongoose.Schema({
   client_id: String,

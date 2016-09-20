@@ -3,9 +3,10 @@ const mongoose = require('mongoose');
 const Response = require('../utils/response');
 const Counter = require('./Counter');
 const ö = require('validator');
-const moment = require('moment');
+const moment = require('moment-timezone');
 
-moment.locale('es').utcOffset('-6:00');
+moment.locale('es');
+moment.tz.setDefault('America/Mexico_City');
 
 function prepareQuery(terms, finished) {
   var query = [];

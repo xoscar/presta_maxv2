@@ -2,7 +2,7 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const Loan = require('../../models/Loan').Loan;
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 dotenv.load({ path: '.env' });
 

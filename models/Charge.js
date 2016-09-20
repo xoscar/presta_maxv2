@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const common = require('../utils/common');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const Response = require('../utils/response');
 const ö = require('validator');
 
