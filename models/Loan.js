@@ -4,7 +4,8 @@ const Response = require('../utils/response');
 const Counter = require('./Counter');
 const ö = require('validator');
 const moment = require('moment');
-moment.locale('es');
+
+moment.locale('es').utcOffset('-6:00');
 
 function prepareQuery(terms, finished) {
   var query = [];

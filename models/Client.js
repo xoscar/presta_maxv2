@@ -6,7 +6,7 @@ const Async = require('async');
 const moment = require('moment');
 const Response = require('../utils/response');
 
-moment.locale('es');
+moment.locale('es').utcOffset('-6:00');
 
 var clientSchema = new mongoose.Schema({
   client_id: String,
