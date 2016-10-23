@@ -7,6 +7,8 @@ import ClientStore from '../../../stores/client.jsx';
 
 // components
 import ClientProfile from './client.jsx';
+import NewLoan from '../../loans/new.jsx';
+import NewCharge from '../../charges/new.jsx';
 
 @ReactMixin.decorate(Reflux.connect(ClientStore, 'clients'))
 export default class ClientRoute extends React.Component {
@@ -16,8 +18,31 @@ export default class ClientRoute extends React.Component {
 		this.state = {
 			user: document.getElementById('user').value,
       token: document.getElementById('token').value,
+      showNewLoan: false,
+      showNewCharge: false,
 		};
 	}
+
+  onAction(type, event) {
+    event.preventDefault();
+    switch (type) {
+      case 'remove':
+        ClientActions.removeClient(this.client.id);
+      break;
+
+      case 'show_add_loan':
+        this.setState({
+          showNewLoan: !this.state.showNewLoan,
+        });
+      break;
+
+      case 'show_add_charge':
+        this.setState({
+          showNewCharge: !this.state.showNewCharge,
+        });
+      break;
+    }
+  }
 
 	componentDidMount() {
 		ClientActions.setAuth(this.state.user, this.state.token);
@@ -36,7 +61,9 @@ export default class ClientRoute extends React.Component {
 				this.client = this.state.clients.payload || this.client;
 				return (
 					<div>
-						<ClientProfile client={this.client} response = {this.state.clients.response}/>
+						<ClientProfile client={this.client} onAction={ this.onAction.bind(this) } response = {this.state.clients.response}/>
+						{ this.state.showNewLoan ? <NewLoan client={client} /> : '' }
+        		{ this.state.showNewCharge ? <NewCharge client={client} /> : '' }
 					</div>
 				);
 			break;

@@ -1,7 +1,7 @@
 import Reflux from 'reflux';
 
 var loanActions = Reflux.createActions([
-  'setAuth',
+  'setAuth', 'newLoan',
 ]);
 
 export default loanActions;

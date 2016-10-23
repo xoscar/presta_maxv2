@@ -15,8 +15,8 @@ export default class LoansAndCharges extends React.Component {
     view.finished_loans = (<Holder type={'finished_loans'} icon="thumbs_up_down" array={client.finished_loans} text="Prestamos liquidados" key={'finished_loans' + Date.now()} />);
 
     // charge's holders
-    view.active_charges = (<Holder type="active_charges" icon="attach_money" depth={client.charges_depth} array={client.loans} text="Cargos activos" key={'active_charges' + Date.now()} />);
-    view.paid_charges = (<Holder type="paid_charges" icon="attach_money" array={client.loans} text="Cargos liquidados" key={'paid_charges' + Date.now()} />);
+    view.active_charges = (<Holder type="active_charges" icon="attach_money" depth={client.charges_depth} array={client.charges} text="Cargos activos" key={'active_charges' + Date.now()} />);
+    view.paid_charges = (<Holder type="paid_charges" icon="attach_money" array={client.paid_charges} text="Cargos liquidados" key={'paid_charges' + Date.now()} />);
 
     return view;
   }

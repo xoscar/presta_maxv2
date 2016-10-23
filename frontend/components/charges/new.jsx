@@ -1,27 +1,27 @@
-import { Component } from 'react';
+import React from 'react';
 
-import Response from '../../response/index.jsx';
+import Response from '../response/index.jsx';
 
-export default class NewLoan extends Component {
+export default class NewLoan extends React.Component {
   constructor() {
     super();
     this.state = {
-      amount: null,
-      description: null,
+      amount: '',
+      description: '',
     };
 
     this.initialState = {
-      amount: null,
-      description: null,
+      amount: '',
+      description: '',
     };
-  }
-
-  componentDidUpdate() {
-    $('.add_charge_modal').openModal();
   }
 
   componentDidMount() {
     $('.add_charge_modal').openModal();
+  }
+
+  componentDidUpdate() {
+    $('.add_loan_modal').openModal();
   }
 
   handleChange(key, event) {

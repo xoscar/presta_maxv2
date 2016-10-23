@@ -52,6 +52,20 @@ var loanStore = Reflux.createStore({
     };
     rest.setOptions(options);
   },
+
+  newLoan: function (body) {
+    rest.create(body, (err, loan) => {
+      this.trigger({
+        action: 'new-loan',
+        response: {
+          message: err ? err : 'Prestamo añadido exitosamente.',
+          type: err ? 'error' : 'success',
+        },
+        payload: loan,
+      });
+    });
+  },
+
 });
 
 export default loanStore;
