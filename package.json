@@ -34,6 +34,10 @@
     "github-api": "^2.3.0",
     "hogan.js": "^3.0.2",
     "instagram-node": "^0.5.8",
+    "eslint": "^3.8.1",
+    "eslint-config-airbnb-base": "^10.0.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-security": "^1.2.0",
     "jade": "^1.11.0",
     "jquery": "^3.1.0",
     "lastfm": "^0.9.2",
@@ -90,12 +94,6 @@
       "$",
       "document"
     ]
-  },
-  "jscsConfig": {
-    "preset": "airbnb",
-    "disallowSpacesInsideBrackets": false,
-    "disallowSpacesInsideArrayBrackets": false,
-    "maximumLineLength": false
   },
   "engines": {
     "node": "6.1.0"

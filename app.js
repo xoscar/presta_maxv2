@@ -74,7 +74,7 @@ mongoose.connection.on('connected', () => {
     res.locals.user = req.user;
     next();
   });
-  app.use(function (req, res, next) {
+  app.use((req, res, next) => {
     // After successful login, redirect back to the intended page
     if (!req.user &&
       req.path !== '/login' &&
@@ -90,7 +90,7 @@ mongoose.connection.on('connected', () => {
   app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
 
   app.use('/', portal);
-  
+
   // Error Handler.
   app.use(errorHandler());
 
