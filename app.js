@@ -47,6 +47,7 @@ mongoose.connection.on('connected', () => {
     src: path.join(__dirname, 'public'),
     dest: path.join(__dirname, 'public'),
   }));
+
   app.use(logger('dev'));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -60,6 +61,7 @@ mongoose.connection.on('connected', () => {
       autoReconnect: true,
     }),
   }));
+
   app.use(flash());
   app.use((req, res, next) => {
     if (req.path === '/signup') {
@@ -68,14 +70,15 @@ mongoose.connection.on('connected', () => {
       lusca.csrf()(req, res, next);
     }
   });
+
   app.use(lusca.xframe('SAMEORIGIN'));
   app.use(lusca.xssProtection(true));
   app.use((req, res, next) => {
     res.locals.user = req.user;
     next();
   });
+
   app.use((req, res, next) => {
-    // After successful login, redirect back to the intended page
     if (!req.user &&
       req.path !== '/login' &&
       req.path !== '/signup' &&

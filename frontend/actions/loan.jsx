@@ -1,6 +1,6 @@
 import Reflux from 'reflux';
 
-var loanActions = Reflux.createActions([
+const loanActions = Reflux.createActions([
   'setAuth', 'newLoan',
 ]);
 

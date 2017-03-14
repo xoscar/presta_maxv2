@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose');
 const common = require('../utils/common');
 const Loan = require('./Loan').Loan;
@@ -8,7 +10,7 @@ const Response = require('../utils/response');
 
 moment.locale('es');
 
-var clientSchema = new mongoose.Schema({
+const clientSchema = new mongoose.Schema({
   client_id: String,
   name: String,
   surname: String,
@@ -29,45 +31,51 @@ var clientSchema = new mongoose.Schema({
 const availableRequests = [{
   fields: '_id'.split(' '),
   params: 'id'.split(' '),
-}, ];
+}];
 
 function validateData(query) {
-  var errors = new Response('error');
-  if (!query) errors.push('query', 'Invalid request.');
-  if (!query.name)
+  const errors = new Response('error');
+  if (!query) {
+    errors.push('query', 'Invalid request.');
+  }
+
+  if (!query.name) {
     errors.push('name', 'El nombre ingresado no es válido.');
-  if (!query.surname)
+  }
+
+  if (!query.surname) {
     errors.push('surname', 'El apellido ingresado no es válido.');
-  if (!query.address)
+  }
+
+  if (!query.address) {
     errors.push('address', 'La dirección ingresada no es válida.');
-  if (!query.phone)
+  }
+
+  if (!query.phone) {
     errors.push('phone', 'El teléfono ingresado no es válido.');
+  }
+
   return errors;
 }
 
-function prepareQuery(terms) {
-  var query = [];
-  terms.forEach(function (term) {
-    query.push({
-      search: {
-        $regex: term,
-        $options: 'i',
-      },
-    });
-  });
+const prepareQuery = terms => (
+  terms.map(term => ({
+    search: {
+      $regex: term,
+      $options: 'i',
+    },
+  }))
+);
 
-  return query;
-}
+clientSchema.pre('save', function preSave(next) {
+  const searchFields = 'name client_id surname'.split(' ');
+  this.search = common.generateArrayFromObject(this, searchFields);
+  this.updated = Date.now();
 
-clientSchema.pre('save', function (next) {
-  var _this = this;
-  var searchFields = 'name client_id surname'.split(' ');
-  _this.search = common.generateArrayFromObject(_this, searchFields);
-  _this.updated = Date.now();
   next();
 });
 
-clientSchema.methods.getBasicInfo = function () {
+clientSchema.methods.getBasicInfo = function getBasicInfo() {
   return {
     name: this.name.split(' ')[0].toLowerCase(),
     name_complete: this.name.toLowerCase(),
@@ -77,23 +85,23 @@ clientSchema.methods.getBasicInfo = function () {
     updated: this.updated,
     address: this.address,
     phone: this.phone,
-    id: this._id,
+    id: this._id, // eslint-ignore
     client_id: this.client_id,
   };
 };
 
-clientSchema.methods.getInfo = function (callback) {
-  var _this = this;
-  var result = this.getBasicInfo();
+clientSchema.methods.getInfo = function getInfo(callback) {
+  const result = this.getBasicInfo();
 
   Async.waterfall([
-    function getActiveLoans(wfaCallback) {
-      _this.getLoans(false, (err, loans, extra) => {
+    (wfaCallback) => {
+      this.getLoans(false, (err, loans, extra) => {
         if (err) return wfaCallback(err);
         result.loans = loans;
-        result.active_loans = loans.length !== 0 ? true : false;
+        result.active_loans = loans.length !== 0;
         result.loans_depth = extra.total;
         result.total_depth = extra.total;
+
         if (extra.last_payment) {
           result.last_payment = extra.last_payment.format('DD/MM/YYYY HH:mm');
           result.last_payment_from_now = extra.last_payment.fromNow();
@@ -105,61 +113,66 @@ clientSchema.methods.getInfo = function (callback) {
         }
 
         result.expired_loans = extra.expired;
-        wfaCallback();
+        return wfaCallback();
       });
     },
 
-    function getLoans(wfaCallback) {
-      _this.getLoans(true, (err, loans) => {
+    (wfaCallback) => {
+      this.getLoans(true, (err, loans) => {
         if (err) return wfaCallback(err);
         result.finished_loans = loans;
-        wfaCallback();
+
+        return wfaCallback();
       });
     },
 
-    function getActiveCharges(wfaCallback) {
-      _this.getCharges(false, (err, charges, total) => {
+    (wfaCallback) => {
+      this.getCharges(false, (err, charges, total) => {
         if (err) return wfaCallback(err);
         result.charges = charges;
         result.total_depth += total;
         result.charges_depth = total;
-        wfaCallback();
+
+        return wfaCallback();
       });
     },
 
-    function getCharges(wfaCallback) {
-      _this.getCharges(true, (err, charges) => {
+    (wfaCallback) => {
+      this.getCharges(true, (err, charges) => {
         if (err) return wfaCallback(err);
         result.paid_charges = charges;
-        wfaCallback();
+
+        return wfaCallback();
       });
     },
-
-  ], (err) => callback(err, result));
+  ], err => (
+    callback(err, result)
+  ));
 };
 
-clientSchema.methods.getCharges = function (paid, callback) {
-  var totalDepth = 0;
+clientSchema.methods.getCharges = function getCharges(paid, callback) {
+  let totalDepth = 0;
+
   Charge
     .find({
       client_id: this.id,
-      paid: paid,
+      paid,
     })
     .sort({ created: -1 })
     .exec((err, charges) => {
       if (err) return callback(err);
-      Async.map(charges, (charge, mapaCallback) => {
+
+      return Async.map(charges, (charge, mapaCallback) => {
         totalDepth += charge.amount;
         mapaCallback(null, charge.getInfo());
-      }, (err, charges) => {
-        callback(err, charges, totalDepth);
+      }, (resError, result) => {
+        callback(resError, result, totalDepth);
       });
     });
 };
 
-clientSchema.methods.getLoans = function (finished, callback) {
-  var _this = this;
-  var extra = {
+clientSchema.methods.getLoans = function getLoans(finished, callback) {
+  const extra = {
     total: 0,
     last_payment_holder: moment().subtract(4, 'year'),
     last_loan_holder: moment().subtract(4, 'year'),
@@ -168,9 +181,9 @@ clientSchema.methods.getLoans = function (finished, callback) {
     expired: false,
   };
 
-  var match = {
-    client_id: _this.id,
-    finished: finished,
+  const match = {
+    client_id: this.id,
+    finished,
   };
 
   Loan
@@ -178,8 +191,10 @@ clientSchema.methods.getLoans = function (finished, callback) {
     .sort({ created: -1 })
     .exec((err, docs) => {
       if (err) return callback(err);
-      Async.map(docs, (loan, mapaCallback) => {
-        var info = loan.getBasicInfo();
+
+      return Async.map(docs, (loan, mapaCallback) => {
+        const info = loan.getBasicInfo();
+
         if (!extra.expired) extra.expired = info.expired;
         if (info.last_payment && moment(info.last_payment).isAfter(extra.last_payment_holder)) {
           extra.last_payment_holder = moment(info.last_payment);
@@ -193,18 +208,19 @@ clientSchema.methods.getLoans = function (finished, callback) {
 
         extra.total += info.current_balance;
         mapaCallback(null, info);
-      }, (err, loans) => {
-        callback(err, loans, extra);
+      }, (resultError, loans) => {
+        callback(resultError, loans, extra);
       });
     });
 };
 
-clientSchema.methods.deleteLoans = function (callback) {
+clientSchema.methods.deleteLoans = function deleteLoans(callback) {
   Loan.delete(this.id, callback);
 };
 
-clientSchema.methods.update = function (query, callback) {
-  var errors = validateData(query);
+clientSchema.methods.update = function update(query, callback) {
+  const errors = validateData(query);
+
   if (errors.messages.length === 0) {
     this.name = query.name;
     this.surname = query.surname;
@@ -214,62 +230,68 @@ clientSchema.methods.update = function (query, callback) {
   } else callback(errors);
 };
 
-clientSchema.methods.delete = function (callback) {
-  var _this = this;
+clientSchema.methods.delete = function deleteClient(callback) {
   this.deleteLoans((err) => {
     if (err) callback(err);
-    else _this.remove(callback);
+    else this.remove(callback);
   });
 };
 
-clientSchema.statics.create = function (user, query, callback) {
-  var errors = validateData(query);
-  if (errors.messages.length === 0) {
-    var clientId = query.name.slice(0, 2).toUpperCase() +
-      query.surname.slice(0, 2).toUpperCase();
-    this
-      .find({
-        client_id: { $regex: new RegExp(clientId + '[0-9]') },
-        user_id: user.id,
-      })
-      .select('client_id')
-      .exec((err, docs) => {
-        if (err) {
-          errors.push('application', 'Processing error.');
-          callback(errors);
-        } else {
-          var number = 1;
-          docs.forEach((doc, index) => {
-            number = index + 2;
-          });
+clientSchema.statics.create = function create(user, query, callback) {
+  const errors = validateData(query);
 
-          var newClient = new this({
-            name: query.name,
-            surname: query.surname,
-            address: query.address,
-            phone: query.phone,
-            user_id: user.id,
-            client_id: clientId + number,
-          });
-          newClient.save(callback);
-        }
-      });
+  if (errors.messages.length === 0) {
+    const clientId = query.name.slice(0, 2).toUpperCase() +
+      query.surname.slice(0, 2).toUpperCase();
+
+    this.find({
+      client_id: { $regex: new RegExp(clientId + '[0-9]') },
+      user_id: user.id,
+    })
+
+    .select('client_id')
+
+    .exec((err, docs) => {
+      if (err) {
+        errors.push('application', 'Processing error.');
+        callback(errors);
+      } else {
+        let number = 1;
+        docs.forEach((doc, index) => {
+          number = index + 2;
+        });
+
+        const newClient = new this({
+          name: query.name,
+          surname: query.surname,
+          address: query.address,
+          phone: query.phone,
+          user_id: user.id,
+          client_id: clientId + number,
+        });
+
+        newClient.save(callback);
+      }
+    });
   } else callback(errors);
 };
 
-clientSchema.statics.getFromRequest = function (req, res, next) {
-  var query = common.getQueryFromRequest(availableRequests, req);
+clientSchema.statics.getFromRequest = function getFromRequest(req, res, next) {
+  const query = common.getQueryFromRequest(availableRequests, req);
   if (!query) return res.status(400).send('Invalid request.');
   if (req.user) query.user_id = req.user.id;
-  mongoose.model('clients', clientSchema).findOne(query, function (err, doc) {
+
+  return mongoose.model('clients', clientSchema).findOne(query, (err, doc) => {
     if (err || !doc) return res.status(404).send('Not found.');
+
     req.client = doc;
-    next();
+    return next();
   });
 };
 
-clientSchema.statics.search = function (searchTerms, userId, limit, skip, callback) {
-  var andQuery = prepareQuery(searchTerms);
+clientSchema.statics.search = function search(searchTerms, userId, limit, skip, callback) {
+  const andQuery = prepareQuery(searchTerms);
+
   this
     .find({
       $and: andQuery,

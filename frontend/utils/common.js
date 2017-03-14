@@ -1,13 +1,13 @@
-module.exports.generateFormData = function (serializeArray) {
-  var result = {};
+module.exports.generateFormData = (serializeArray) => {
+  const result = {};
 
-  serializeArray.forEach(function (field) {
+  serializeArray.forEach((field) => {
     result[field.name] = field.value;
   });
 
   return result;
 };
 
-module.exports.wait = function (seconds, callback) {
+module.exports.wait = (seconds, callback) => {
   setTimeout(callback, seconds * 1000);
 };
