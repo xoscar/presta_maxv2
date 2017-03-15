@@ -1,21 +1,21 @@
 import React from 'react';
-import ClassNames from 'classnames';
 
-export default class ResponseRow extends React.Component {
-  constructor() {
-    super();
-  }
+const responseRow = ({
+  backColor,
+  message,
+}) => ((
+  <div>
+    <div className={`white-text animated bounceIn red chip ${backColor}`}>
+      {message}
+      <i className="close material-icons">close</i>
+    </div>
+    <br />
+  </div>
+));
 
-  render() {
-    var divClass = ClassNames('white-text animated bounceIn red chip', this.props.error ? 'red' : 'green');
-    return (
-      <div>
-        <div class={divClass}> 
-          {this.props.message}
-          <i class="close material-icons">close</i>
-        </div>
-        <br />
-      </div>
-    );
-  }
-}
+responseRow.propTypes = {
+  message: React.PropTypes.string,
+  backColor: React.PropTypes.string,
+};
+
+export default responseRow;

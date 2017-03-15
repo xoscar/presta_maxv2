@@ -1,0 +1,39 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "airbnb-base",
+    "plugin:react/recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "parser": "babel-eslint",
+  "rules": {
+    "no-dupe-keys": 2,
+    "array-bracket-spacing": 0,
+    "no-underscore-dangle": 0,
+    "no-console": 0,
+    "max-len": 0,
+    "strict": 0,
+    "class-methods-use-this": 0,
+    "no-useless-concat": 0,
+    "prefer-template": 0,
+    "no-param-reassign": 0,
+    "import/no-extraneous-dependencies": ["error", {
+      "devDependencies": true,
+      "optionalDependencies": false,
+      "peerDependencies": false
+    }]
+  },
+  "env": {
+    "browser": true,
+    "jquery": true
+  },
+  "plugins": [
+    "react"
+  ]
+}

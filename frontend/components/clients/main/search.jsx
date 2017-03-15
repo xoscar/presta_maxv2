@@ -1,29 +1,27 @@
 import React from 'react';
 
-export default class ClientSearch extends React.Component {
-  constructor() {
-    super();
-  }
-
-  render() {
-    return (
-      <div class="row white z-depth-1" style={{ padding: '10px' }}>
-        <form class="search-bar-form" onSubmit = {this.props.onSearch}>
-          <div class="col s10">
-            <nav class="search red darken-2">
-              <div class="nav-wrapper">
-                <div class="input-field">
-                  <input type="search" placeholder="ID de prestamo, ID de cliente, cantidad o semanas."/>
-                  <label for="search"><i class="material-icons">search</i></label><i class="material-icons">close</i>
-                </div>
-              </div>
-            </nav>
+const clientSearch = ({ onSearch }) => ((
+  <div className="row white z-depth-1" style={{ padding: '10px' }}>
+    <form className="search-bar-form" onSubmit = {onSearch}>
+      <div className="col s10">
+        <nav className="search red darken-2">
+          <div className="nav-wrapper">
+            <div className="input-field">
+              <input type="search" placeholder="ID de prestamo, ID de cliente, cantidad o semanas."/>
+              <label htmlFor="search"><i className="material-icons">search</i></label><i className="material-icons">close</i>
+            </div>
           </div>
-          <div class="col s2">
-            <button class="btn red darken-2 white-text">Buscar</button>
-          </div>
-        </form>
+        </nav>
       </div>
-    );
-  }
-}
+      <div className="col s2">
+        <button className="btn red darken-2 white-text">Buscar</button>
+      </div>
+    </form>
+  </div>
+));
+
+clientSearch.propTypes = {
+  onSearch: React.PropTypes.func.isRequired,
+};
+
+export default clientSearch;

@@ -1,7 +1,5 @@
 import React from 'react';
 
-import ClientActions from '../../../actions/client.jsx';
-
 // exterior components
 import Response from '../../response/index.jsx';
 
@@ -19,23 +17,26 @@ export default class Client extends React.Component {
   }
 
   render() {
-    if (!this.props.client) return (<h1>Cargando..</h1>);
-    var client = this.client = this.props.client;
+    const client = this.props.client;
+
+    if (!this.props.client) {
+      return (<h1>Cargando..</h1>);
+    }
 
     return (
       <div>
-        <div class="profile z-depth-1 animated fadeIn">
-          <div class="row">
+        <div className="profile z-depth-1 animated fadeIn">
+          <div className="row">
             <Heading client={client} />
-            <div class ="col s12">
-              <div class="row">
-                <div class="col s8 center-align" >
+            <div className="col s12">
+              <div className="row">
+                <div className="col s8 center-align" >
                   <Response response={this.props.response} />
                 </div>
-                <UpdateForm  client={client}/>
-                <Information  client={client}/>
-                <div class="row">
-                  <div class="col s12">
+                <UpdateForm client={client}/>
+                <Information client={client}/>
+                <div className="row">
+                  <div className="col s12">
                     <LoansAndCharges client={client} />
                   </div>
                 </div>
@@ -48,3 +49,9 @@ export default class Client extends React.Component {
     );
   }
 }
+
+Client.propTypes = {
+  client: React.PropTypes.object.isRequired,
+  response: React.PropTypes.object.isRequired,
+  onAction: React.PropTypes.object.isRequired,
+};

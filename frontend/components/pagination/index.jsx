@@ -10,45 +10,39 @@ export default class Pagination extends React.Component {
 
   paginationChange(event) {
     event.preventDefault();
-    var value = Number(event.target.getAttribute('name'));
-    this.state.page = value;
+    const value = Number(event.target.getAttribute('name'));
+    this.setState({
+      page: value,
+    });
+
     this.props.onClick(value);
   }
 
   render() {
-    var current = this.state.page;
-    var prev = current < 0 ? null : current - 1;
-    var next =  this.props.results === 0 || this.props.results < 12 ? null : current + 1;
+    const current = this.props.page;
+    const prev = current < 0 ? null : current - 1;
+    const next = this.props.results === 0 || this.props.results < 12 ? null : current + 1;
 
     return (
-      <div class ="row center-align z-depth-1">
-        <div class="col s12 pagination-clients">
-          <ul class="pagination">
+      <div className="row center-align z-depth-1">
+        <div className="col s12 pagination-clients">
+          <ul className="pagination">
             {
               prev >= 0 ?
-                <li class="waves-effect previous"><a name={prev} onClick={this.paginationChange.bind(this)} ><i name={prev} class="material-icons">chevron_left</i></a></li>
-              :
-                <li class="disabled"><a><i class="material-icons">chevron_left</i></a></li>
+                <li className="waves-effect previous"><a name={prev} onClick={this.paginationChange.bind(this)} ><i name={prev} className="material-icons">chevron_left</i></a></li> :
+                <li className="disabled"><a><i className="material-icons">chevron_left</i></a></li>
             }
 
-            {
-              prev >= 0 ?
-                <li class="waves-effect number"><a name={prev} onClick={this.paginationChange.bind(this)}>{prev + 1}</a></li>
-              : ''
-            }
+            { prev >= 0 ? <li className="waves-effect number"><a name={prev} onClick={this.paginationChange.bind(this)}>{prev + 1}</a></li> : '' }
 
-            <li class="active number"><a name={current}>{current + 1}</a></li>
+            <li className="active number"><a name={current}>{current + 1}</a></li>
+
+            { next ? <li className="waves-effect number"><a name={next} onClick={this.paginationChange.bind(this)}>{next + 1}</a></li> : '' }
 
             {
               next ?
-                <li class="waves-effect number"><a name={next} onClick={this.paginationChange.bind(this)}>{next + 1}</a></li> : ''
-            }
-
-            {
-              next ?
-                <li class="waves-effect next"><a name={next} onClick={this.paginationChange.bind(this)}><i name={next} class="material-icons">chevron_right</i></a></li>
-              :
-                <li class="disabled"><a><i class="material-icons">chevron_right</i></a></li>
+                <li className="waves-effect next"><a name={next} onClick={this.paginationChange.bind(this)}><i name={next} className="material-icons">chevron_right</i></a></li> :
+                <li className="disabled"><a><i className="material-icons">chevron_right</i></a></li>
             }
           </ul>
         </div>
@@ -56,3 +50,9 @@ export default class Pagination extends React.Component {
     );
   }
 }
+
+Pagination.propTypes = {
+  onClick: React.PropTypes.func.isRequired,
+  results: React.PropTypes.number,
+  page: React.PropTypes.number,
+};

@@ -21,7 +21,7 @@ export default class UpdateForm extends React.Component {
   }
 
   componentWillMount() {
-    var client = this.props.client;
+    const client = this.props.client;
     this.setState({
       id: client.id,
       name: client.name_complete,
@@ -37,34 +37,38 @@ export default class UpdateForm extends React.Component {
   }
 
   render() {
-    var state = this.state;
+    const state = this.state;
 
     return (
-      <form class="col s8 update_profile_form" onSubmit={this.updateClient.bind(this, state.id)}>
-        <div class="row">
-          <div class="input-field col s6">
-            <input id="first_name" name="name" type="text" class="uppercase validate" value={state.name} onChange={this.onValueChange.bind(this, 'name')} />
-            <label class="active" for="first_name">Nombre</label>
+      <form className="col s8 update_profile_form" onSubmit={this.updateClient.bind(this, state.id)}>
+        <div className="row">
+          <div className="input-field col s6">
+            <input id="first_name" name="name" type="text" className="uppercase validate" value={state.name} onChange={this.onValueChange.bind(this, 'name')} />
+            <label className="active" htmlFor="first_name">Nombre</label>
           </div>
-          <div class="input-field col s6">
-            <input id="last_name" name="surname" type="text" class="uppercase validate" value={state.surname} onChange={this.onValueChange.bind(this, 'surname')} />
-            <label class="active" for="last_name">Apellido</label>
+          <div className="input-field col s6">
+            <input id="last_name" name="surname" type="text" className="uppercase validate" value={state.surname} onChange={this.onValueChange.bind(this, 'surname')} />
+            <label className="active" htmlFor="last_name">Apellido</label>
           </div>
-          <div class="input-field col s6">
-            <input id="phone" name="phone" type="text" class="validate" value={state.phone} onChange={this.onValueChange.bind(this, 'phone')} />
-            <label class="active" for="phone">Teléfono</label>
+          <div className="input-field col s6">
+            <input id="phone" name="phone" type="text" className="validate" value={state.phone} onChange={this.onValueChange.bind(this, 'phone')} />
+            <label className="active" htmlFor="phone">Teléfono</label>
           </div>
-          <div class="input-field col s12">
-            <textarea id="address" name="address" class="uppercase materialize-textarea" value={state.address} onChange={this.onValueChange.bind(this, 'address')}></textarea>
-            <label class="active" for="address">Dirección</label>
+          <div className="input-field col s12">
+            <textarea id="address" name="address" className="uppercase materialize-textarea" value={state.address} onChange={this.onValueChange.bind(this, 'address')}></textarea>
+            <label className="active" htmlFor="address">Dirección</label>
           </div>
         </div>
-        <div class="row">
-          <div class="col s12 right-align">
-            <button class="waves-effect waves-light btn">Modificar</button>
+        <div className="row">
+          <div className="col s12 right-align">
+            <button className="waves-effect waves-light btn">Modificar</button>
           </div>
         </div>
       </form>
     );
   }
 }
+
+UpdateForm.propTypes = {
+  client: React.PropTypes.object.isRequired,
+};

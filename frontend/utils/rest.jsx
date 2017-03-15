@@ -1,96 +1,82 @@
 import $ from 'jquery';
 
-export default class RestConnection {
-  constructor(options) {
-    this.requestsWithBody = 'POST PATCH PUT'.split(' ');
-    this.resource = options.resource;
-    this.headers = options.headers;
-  }
+export default (options) => {
+  const requestsWithBody = 'POST PATCH PUT'.split(' ');
+  const resource = options.resource;
+  const headers = options.headers;
 
-  setOptions(options) {
-    this.resource = options.resource || this.resource;
-    this.headers = options.headers || this.headers;
-  }
+  const getHeaders = () => (
+    Object.assign({
+      'Content-type': 'application/json',
+    }, headers || {})
+  );
 
-  attachParamsToUrl(url, query) {
-    if (!query) return null;
-    url = url + '?';
-    query.forEach(function (param) {
-      url += param.name + '=' + param.value + '&';
+  const send = localOptions => (
+    $.ajax(localOptions)
+  );
+
+  const attachParamsToUrl = (url, query) => {
+    if (!query) {
+      return null;
+    }
+
+    url += '?';
+    query.forEach((param) => {
+      url += `${param.name}=${param.value}&`;
     });
 
     return url;
-  }
+  };
 
-  create(body, callback) {
-    var options = this.generateOptions(this.resource, 'POST', body, callback);
-    this.send(options);
-  }
-
-  update(id, body, callback) {
-    var url = this.resource + '/' + id;
-    var options = this.generateOptions(url, 'PATCH', body, callback);
-    this.send(options);
-  }
-
-  get(id, callback) {
-    var url = this.resource + '/' + id;
-    var options = this.generateOptions(url, 'GET', null, callback);
-    this.send(options);
-  }
-
-  getAll(callback) {
-    var url = this.resource;
-    var options = this.generateOptions(url, 'GET', null, callback);
-    this.send(options);
-  }
-
-  delete(id, callback) {
-    var url = this.resource + '/' + id;
-    var options = this.generateOptions(url, 'DELETE', null, callback);
-    this.send(options);
-  }
-
-  extend(methods) {
-    methods.forEach((method) => {
-      this[method.name] = method.function;
-    });
-  }
-
-  generateOptions(url, method, body, callback) {
-    var options = {
+  const generateOptions = (url, method, body, callback) => {
+    const localOptions = {
       type: method,
-      url: url,
-      headers: this.getHeaders(),
+      url,
+      headers: getHeaders(),
       cache: false,
-      success: function (data, status, xhr) {
-        callback(null, data, status, xhr);
-      },
-
-      error: function (err) {
-        callback(err);
-      },
+      success: (data, status, xhr) => (
+        callback(null, data, status, xhr)
+      ),
+      error: err => (
+        callback(JSON.parse(err.responseText).messages)
+      ),
     };
 
-    if (this.requestsWithBody.indexOf(method) !== -1)
-      options.data = JSON.stringify(body);
-    return options;
-  }
+    if (requestsWithBody.indexOf(method) !== -1) {
+      localOptions.data = JSON.stringify(body);
+    }
 
-  getHeaders() {
-    var result = {
-      'Content-type': 'application/json',
-    };
+    return localOptions;
+  };
 
-    if (!this.headers) return result;
+  const create = (body, callback) => (
+    send(generateOptions(resource, 'POST', body, callback))
+  );
 
-    var keys = Object.keys(this.headers);
-    keys.forEach((key) => result[key] = this.headers[key]);
+  const update = (id, body, callback) => (
+    send(generateOptions(`${resource}/${id}`, 'PATCH', body, callback))
+  );
 
-    return result;
-  }
+  const get = (id, callback) => (
+    send(generateOptions(`${resource}/${id}`, 'GET', null, callback))
+  );
 
-  send(options) {
-    $.ajax(options);
-  }
-}
+  const getAll = callback => (
+    send(generateOptions(resource, 'GET', null, callback))
+  );
+
+  const del = (id, callback) => (
+    send(generateOptions(`${resource}/${id}`, 'DELETE', null, callback))
+  );
+
+  return {
+    create,
+    get,
+    getAll,
+    del,
+    update,
+    send,
+    attachParamsToUrl,
+    generateOptions,
+  };
+};

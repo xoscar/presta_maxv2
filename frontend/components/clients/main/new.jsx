@@ -1,11 +1,11 @@
 import React from 'react';
 
-import ClientActions from '../../../actions/client.jsx';
 import Response from '../../response/index.jsx';
 
 export default class NewClient extends React.Component {
   constructor() {
     super();
+
     this.state = {
       name: '',
       surname: '',
@@ -30,20 +30,21 @@ export default class NewClient extends React.Component {
   componentDidUpdate() {
     $('.add-client-modal').openModal();
 
-    if (this.props.response &&
-      this.props.response.type === 'success' &&
-      !this.state.initial) {
+    if (this.props.response && !this.props.response.isError && !this.state.initial) {
       this.setState(this.initialState);
-      ClientActions.getClients();
     }
   }
 
   createClient(event) {
     event.preventDefault();
-    ClientActions.newClient(this.state);
+    this.props.onNewClient(this.state);
   }
 
   handleInputChange(key, event) {
+    if (this.props.response) {
+      this.props.responseShowed('newClient');
+    }
+
     this.setState({
       [key]: event.target.value,
       initial: false,
@@ -53,37 +54,37 @@ export default class NewClient extends React.Component {
   render() {
     return (
       <div>
-        <div class="modal add-client-modal">
-          <div class="modal-content">
-            <div class="col s12">
+        <div className="modal add-client-modal">
+          <div className="modal-content">
+            <div className="col s12">
               <h5>Agregar cliente</h5>
             </div>
-            <div class="center-align">
-              <Response response = {this.props.response} />
+            <div className="center-align">
+            { this.props.response ? <Response isError={this.props.response.isError} messages={this.props.response.messages} /> : '' }
             </div>
-            <form class="col s12 add_client_form" onSubmit = {this.createClient.bind(this)}>
-              <div class="row">
-                <div class="input-field col s4">
-                  <input id="name" value = {this.state.name} onChange = {this.handleInputChange.bind(this, 'name')} type="text" class="uppercase validate" />
-                  <label for="name">Nombre</label>
+            <form className="col s12 add_client_form" onSubmit={this.createClient.bind(this)}>
+              <div className="row">
+                <div className="input-field col s4">
+                  <input id="name" value = {this.state.name} onChange = {this.handleInputChange.bind(this, 'name')} type="text" className="uppercase validate" />
+                  <label htmlFor="name">Nombre</label>
                 </div>
-                <div class="input-field col s4">
-                  <input id="surname" value = {this.state.surname} onChange = {this.handleInputChange.bind(this, 'surname')} type="text" class="uppercase validate" />
-                  <label for="surname">Apellido</label>
+                <div className="input-field col s4">
+                  <input id="surname" value = {this.state.surname} onChange = {this.handleInputChange.bind(this, 'surname')} type="text" className="uppercase validate" />
+                  <label htmlFor="surname">Apellido</label>
                 </div>
-                <div class="input-field col s4">
-                  <input id="phone" type="text" value = {this.state.phone} onChange = {this.handleInputChange.bind(this, 'phone')} class="uppercase validate" />
-                  <label for="phone">Teléfono</label>
+                <div className="input-field col s4">
+                  <input id="phone" type="text" value = {this.state.phone} onChange = {this.handleInputChange.bind(this, 'phone')} className="uppercase validate" />
+                  <label htmlFor="phone">Teléfono</label>
                 </div>
-                <div class="input-field col s12">
-                  <textarea id="address" value = {this.state.address} onChange = {this.handleInputChange.bind(this, 'address')} class="uppercase materialize-textarea"></textarea>
-                  <label for="address">Dirección</label>
+                <div className="input-field col s12">
+                  <textarea id="address" value={this.state.address} onChange={this.handleInputChange.bind(this, 'address')} className="uppercase materialize-textarea"></textarea>
+                  <label htmlFor="address">Dirección</label>
                 </div>
               </div>
-              <div class="row">
-                <div class="col s12 right-align">
-                  <a class="modal-action modal-close waves-effect waves-green black-text btn grey lighten-3">Cerrar</a>
-                  <button class="waves-effect waves-light btn">Agregar</button>
+              <div className="row">
+                <div className="col s12 right-align">
+                  <a className="modal-action modal-close waves-effect waves-green black-text btn grey lighten-3">Cerrar</a>
+                  <button className="waves-effect waves-light btn">Agregar</button>
                 </div>
               </div>
             </form>
@@ -93,3 +94,9 @@ export default class NewClient extends React.Component {
     );
   }
 }
+
+NewClient.propTypes = {
+  response: React.PropTypes.object,
+  onNewClient: React.PropTypes.func.isRequired,
+  responseShowed: React.PropTypes.func.isRequired,
+};
