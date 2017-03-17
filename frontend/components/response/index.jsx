@@ -16,7 +16,7 @@ const response = ({
 
 response.propTypes = {
   isError: React.PropTypes.bool,
-  messages: React.PropTypes.arrayOf(React.PropTypes.object),
+  messages: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
 };
 
 export default response;

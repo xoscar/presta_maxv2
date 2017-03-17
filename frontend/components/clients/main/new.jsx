@@ -2,6 +2,8 @@ import React from 'react';
 
 import Response from '../../response/index.jsx';
 
+import Modal from '../../modal/index.jsx';
+
 export default class NewClient extends React.Component {
   constructor() {
     super();
@@ -11,6 +13,7 @@ export default class NewClient extends React.Component {
       surname: '',
       phone: '',
       address: '',
+      response: null,
       initial: true,
     };
 
@@ -23,80 +26,104 @@ export default class NewClient extends React.Component {
     };
   }
 
-  componentDidMount() {
-    $('.add-client-modal').openModal();
-  }
-
   componentDidUpdate() {
-    $('.add-client-modal').openModal();
-
-    if (this.props.response && !this.props.response.isError && !this.state.initial) {
+    if (this.state.response && !this.state.response.isError && !this.state.initial) {
       this.setState(this.initialState);
     }
   }
 
+  createNewClient(body) {
+    this.props.clientService.create(body, (err) => {
+      if (!err) {
+        this.props.refreshClients('', 0);
+      }
+
+      this.setState({
+        response: {
+          isError: err !== null,
+          messages: err || [{
+            field: 'success',
+            message: 'Cliente añadido exitosamente.',
+          }],
+        },
+      });
+    });
+  }
+
   createClient(event) {
     event.preventDefault();
-    this.props.onNewClient(this.state);
+    this.createNewClient(this.state);
   }
 
   handleInputChange(key, event) {
-    if (this.props.response) {
-      this.props.responseShowed('newClient');
-    }
-
     this.setState({
+      response: null,
       [key]: event.target.value,
       initial: false,
     });
   }
 
+  onClosingModal() {
+    this.props.onClosingModal();
+    this.setState(Object.assign({}, this.initialState, {
+      response: null,
+    }));
+  }
+
   render() {
     return (
-      <div>
-        <div className="modal add-client-modal">
-          <div className="modal-content">
-            <div className="col s12">
-              <h5>Agregar cliente</h5>
-            </div>
-            <div className="center-align">
-            { this.props.response ? <Response isError={this.props.response.isError} messages={this.props.response.messages} /> : '' }
-            </div>
-            <form className="col s12 add_client_form" onSubmit={this.createClient.bind(this)}>
-              <div className="row">
-                <div className="input-field col s4">
-                  <input id="name" value = {this.state.name} onChange = {this.handleInputChange.bind(this, 'name')} type="text" className="uppercase validate" />
-                  <label htmlFor="name">Nombre</label>
-                </div>
-                <div className="input-field col s4">
-                  <input id="surname" value = {this.state.surname} onChange = {this.handleInputChange.bind(this, 'surname')} type="text" className="uppercase validate" />
-                  <label htmlFor="surname">Apellido</label>
-                </div>
-                <div className="input-field col s4">
-                  <input id="phone" type="text" value = {this.state.phone} onChange = {this.handleInputChange.bind(this, 'phone')} className="uppercase validate" />
-                  <label htmlFor="phone">Teléfono</label>
-                </div>
-                <div className="input-field col s12">
-                  <textarea id="address" value={this.state.address} onChange={this.handleInputChange.bind(this, 'address')} className="uppercase materialize-textarea"></textarea>
-                  <label htmlFor="address">Dirección</label>
-                </div>
-              </div>
-              <div className="row">
-                <div className="col s12 right-align">
-                  <a className="modal-action modal-close waves-effect waves-green black-text btn grey lighten-3">Cerrar</a>
-                  <button className="waves-effect waves-light btn">Agregar</button>
-                </div>
-              </div>
-            </form>
+      <Modal
+
+      id = {'add_client_modal'}
+
+      show={this.props.show}
+
+      onClosing={this.onClosingModal.bind(this)}
+
+      heading={
+        <h5>Agregar cliente</h5>
+      }
+
+      body = {
+        <div>
+          <div className="center-align">
+          { this.state.response ? <Response isError={this.state.response.isError} messages={this.state.response.messages} /> : '' }
           </div>
-      </div>
-    </div>
+          <form className="col s12 add_client_form" onSubmit={this.createClient.bind(this)}>
+            <div className="row">
+              <div className="input-field col s4">
+                <input id="name" value = {this.state.name} onChange = {this.handleInputChange.bind(this, 'name')} type="text" className="uppercase validate" />
+                <label htmlFor="name">Nombre</label>
+              </div>
+              <div className="input-field col s4">
+                <input id="surname" value = {this.state.surname} onChange = {this.handleInputChange.bind(this, 'surname')} type="text" className="uppercase validate" />
+                <label htmlFor="surname">Apellido</label>
+              </div>
+              <div className="input-field col s4">
+                <input id="phone" type="text" value = {this.state.phone} onChange = {this.handleInputChange.bind(this, 'phone')} className="uppercase validate" />
+                <label htmlFor="phone">Teléfono</label>
+              </div>
+              <div className="input-field col s12">
+                <textarea id="address" value={this.state.address} onChange={this.handleInputChange.bind(this, 'address')} className="uppercase materialize-textarea"></textarea>
+                <label htmlFor="address">Dirección</label>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col s12 right-align">
+                <a className="modal-action modal-close waves-effect waves-green black-text btn grey lighten-3">Cerrar</a>
+                <button className="waves-effect waves-light btn">Agregar</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      }/>
     );
   }
 }
 
 NewClient.propTypes = {
-  response: React.PropTypes.object,
-  onNewClient: React.PropTypes.func.isRequired,
-  responseShowed: React.PropTypes.func.isRequired,
+  refreshClients: React.PropTypes.func.isRequired,
+  onClosingModal: React.PropTypes.func.isRequired,
+  clientService: React.PropTypes.object.isRequired,
+  show: React.PropTypes.bool.isRequired,
 };

@@ -2,7 +2,12 @@ import React from 'react';
 
 const clientSearch = ({ onSearch }) => ((
   <div className="row white z-depth-1" style={{ padding: '10px' }}>
-    <form className="search-bar-form" onSubmit = {onSearch}>
+    <form className="search-bar-form" onSubmit = {
+      (event) => {
+        event.preventDefault();
+        onSearch(event.target.querySelector('input').value, 0);
+      }
+    }>
       <div className="col s10">
         <nav className="search red darken-2">
           <div className="nav-wrapper">
