@@ -1,22 +1,22 @@
 import React from 'react';
 import Row from './row.jsx';
 
-const response = ({
-  isError,
-  messages,
-}) => ((
-  <div>
-    {
-      messages.map(message => (
-        <Row backColor={isError ? 'red' : 'green'} message={message.message} key={`${message.field}-${Date.now()}`} />
-      ))
-    }
-  </div>
-));
+export default class Response extends React.Component {
 
-response.propTypes = {
+  render() {
+    return (
+      <div>
+        {
+          this.props.messages.map(message => (
+            <Row backColor={this.props.isError ? 'red' : 'green'} message={message.message} key={`${message.field}-${Date.now()}`}/>
+          ))
+        }
+      </div>
+    );
+  }
+}
+
+Response.propTypes = {
   isError: React.PropTypes.bool,
   messages: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
 };
-
-export default response;

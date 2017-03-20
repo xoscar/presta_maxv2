@@ -32,8 +32,9 @@ export default class NewClient extends React.Component {
     }
   }
 
-  createNewClient(body) {
-    this.props.clientService.create(body, (err) => {
+  createClient(event) {
+    event.preventDefault();
+    this.props.clientService.create(this.state, (err) => {
       if (!err) {
         this.props.refreshClients('', 0);
       }
@@ -48,11 +49,6 @@ export default class NewClient extends React.Component {
         },
       });
     });
-  }
-
-  createClient(event) {
-    event.preventDefault();
-    this.createNewClient(this.state);
   }
 
   handleInputChange(key, event) {

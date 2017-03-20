@@ -89,11 +89,11 @@ function validateData(query) {
     errors.push('amount', 'La cantidad debe ser numerica.');
   }
 
-  if (!query.weekly_payment || !ö.isNumeric(query.weekly_payment)) {
+  if (!query.weekly_payment || !ö.isNumeric(String(query.weekly_payment))) {
     errors.push('weekly_payment', 'El pago semanal debe de ser numerico.');
   }
 
-  if (!query.weeks || !ö.isNumeric(query.weeks)) {
+  if (!query.weeks || !ö.isNumeric(String(query.weeks))) {
     errors.push('weeks', 'El numero de semanas debe de ser numerico.');
   }
 
@@ -156,7 +156,7 @@ loanSchema.pre('save', function preSave(next) {
 });
 
 loanSchema.methods.isExpired = function isExpired() {
-  return !(moment().isAfter(this.expired_date) && !this.finished);
+  return moment().isAfter(this.expired_date) && !this.finished;
 };
 
 loanSchema.methods.getCurrentWeek = function getCurrentWeek() {
@@ -288,7 +288,7 @@ loanSchema.methods.updatePayment = function updatePayment(paymentId, query, call
     errors.push('payment_id', 'El identificador del prestamo no es correcto.');
   }
 
-  if (!query.amount || !ö.isNumeric(query.amount)) {
+  if (!query.amount || !ö.isNumeric(String(query.amount))) {
     errors.push('amount', 'La cantidad del pago debe de ser numerica.');
   }
 
@@ -358,7 +358,8 @@ loanSchema.statics.create = function create(user, client, query, callback) {
       client_identifier: client.client_id,
       user_id: user.id,
     });
-    newLoan.save(callback);
+
+    return newLoan.save(callback);
   }
 
   return callback(errors);

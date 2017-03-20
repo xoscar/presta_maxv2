@@ -1,11 +1,11 @@
 import React from 'react';
 
 const modal = ({
+  show,
+  id,
+  onClosing,
   heading,
   body,
-  show,
-  onClosing,
-  id,
 }) => {
   if (show) {
     $(`#${id}`).openModal({
@@ -13,6 +13,8 @@ const modal = ({
         onClosing();
       },
     });
+  } else {
+    $(`#${id}`).closeModal();
   }
 
   return (

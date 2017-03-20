@@ -6,17 +6,15 @@ const responseRow = ({
 }) => ((
   <div>
     <div className={`white-text animated bounceIn red chip ${backColor}`}>
-      {console.log(message, backColor)}
       {message}
       <i className="close material-icons">close</i>
     </div>
-    <br />
   </div>
 ));
 
 responseRow.propTypes = {
-  message: React.PropTypes.string,
-  backColor: React.PropTypes.string,
+  message: React.PropTypes.string.isRequired,
+  backColor: React.PropTypes.string.isRequired,
 };
 
 export default responseRow;

@@ -1,55 +1,93 @@
 import React from 'react';
-import $ from 'jquery';
 
 import Response from '../response/index.jsx';
+import Modal from '../modal/index.jsx';
 
-export default class NewLoan extends React.Component {
+export default class NewCharge extends React.Component {
   constructor() {
     super();
 
     this.state = {
       amount: '',
       description: '',
+      response: null,
+      initial: true,
     };
 
     this.initialState = {
       amount: '',
       description: '',
+      initial: true,
     };
   }
 
-  componentDidMount() {
-    $('.add_charge_modal').openModal();
-  }
-
   componentDidUpdate() {
-    $('.add_loan_modal').openModal();
+    if (this.state.response && !this.state.response.isError && !this.state.initial) {
+      this.setState(this.initialState);
+    }
   }
 
-  handleChange(key, event) {
-    this.setState({
-      [key]: event.target.value,
+  createCharge(event) {
+    event.preventDefault();
+    this.props.chargeService.create(Object.assign({ client_id: this.props.client.id }, this.state), (err) => {
+      if (!err) {
+        this.props.onCreate();
+      }
+
+      this.setState({
+        response: {
+          isError: err !== null,
+          messages: err || [{
+            field: 'success',
+            message: `Cargo añadido exitosamente a ${this.props.client.name_complete}`,
+          }],
+        },
+      });
     });
+  }
+
+  handleInputChange(key, event) {
+    this.setState({
+      response: null,
+      [key]: event.target.value,
+      initial: false,
+    });
+  }
+
+  onClosingModal() {
+    this.props.onClosingModal();
+    this.setState(Object.assign({}, this.initialState, {
+      response: null,
+    }));
   }
 
   render() {
     return (
-      <div className="modal add_charge_modal">
-        <div className="modal-content">
-         <div className="col s12">
-            <h5>Añadir cargo</h5>
-          </div>
+      <Modal
+
+      id={'add_charge_modal'}
+
+      show={this.props.show}
+
+      onClosing={this.onClosingModal.bind(this)}
+
+      heading={
+        <h5>Añadir cargo</h5>
+      }
+
+      body={
+        <div>
           <div className="col s12 center-align">
-            <Response response={this.props.response}/>
+            { this.state.response ? <Response isError={this.state.response.isError} messages={this.state.response.messages} /> : '' }
           </div>
-          <form className="col s12 add_charge_form" onSubmit={this.props.onAction}>
+          <form className="col s12 add_charge_form" onSubmit={this.createCharge.bind(this)}>
             <div className="row">
               <div className="input-field col s6">
-                <input id="amount" name="amount" type="text" className="validate" value={this.state.amount} onChange={this.handleChange.bind(this, 'amount')}/>
+                <input id="amount" name="amount" type="text" className="validate" value={this.state.amount} onChange={this.handleInputChange.bind(this, 'amount')}/>
                 <label htmlFor="amount">Cantidad</label>
               </div>
               <div className="input-field col s12">
-                <textarea id="description" name="description" className="materialize-textarea uppercase" value={this.state.description} onChange={this.handleChange.bind(this, 'description')}></textarea>
+                <textarea id="description" name="description" className="materialize-textarea uppercase" value={this.state.description} onChange={this.handleInputChange.bind(this, 'description')}></textarea>
                 <label htmlFor="description">Descripción</label>
               </div>
             </div>
@@ -60,13 +98,16 @@ export default class NewLoan extends React.Component {
               </div>
             </div>
           </form>
-      </div>
-    </div>
+        </div>
+      }/>
     );
   }
 }
 
-NewLoan.propTypes = {
-  response: React.PropTypes.string,
-  onAction: React.PropTypes.func.isRequired,
+NewCharge.propTypes = {
+  chargeService: React.PropTypes.object.isRequired,
+  onCreate: React.PropTypes.func.isRequired,
+  show: React.PropTypes.bool.isRequired,
+  client: React.PropTypes.object.isRequired,
+  onClosingModal: React.PropTypes.func.isRequired,
 };

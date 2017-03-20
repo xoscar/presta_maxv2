@@ -1,8 +1,8 @@
 import React from 'react';
 
-import ClientCard from './client_card.jsx';
-import ClientHeading from './heading.jsx';
-import ClientSearch from './search.jsx';
+import Card from './card.jsx';
+import Heading from './heading.jsx';
+import Search from './search.jsx';
 
 import Pagination from '../../pagination/index.jsx';
 
@@ -82,13 +82,13 @@ export default class ClientMain extends React.Component {
     }
 
     const cards = this.state.clients.map(client => (
-      <ClientCard client={client} key={client.id}/>
+      <Card client={client} key={client.id}/>
     ));
 
     return (
       <div>
-        <ClientHeading clientService={this.clientService} refreshClients={this.sendSearch.bind(this)}/>
-        <ClientSearch onSearch={this.sendSearch.bind(this)} />
+        <Heading clientService={this.clientService} refreshClients={this.sendSearch.bind(this)}/>
+        <Search onSearch={this.sendSearch.bind(this)} />
         <div className="search-wrapper z-depth-1 row animated fadeIn" style={{ paddingTop: '20px' }}>
           <div className="row">
             <div className="col s12 grey-text darken-2">
