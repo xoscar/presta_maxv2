@@ -1,0 +1,15 @@
+prestamax:
+  build: .
+  command: sh -c 'npm install nodemon -g; npm install'
+  ports:
+    - '3000:3000'
+    - '4000:4000'
+  volumes:
+    - .:/prestamax
+  links:
+    - mongodb
+
+mongodb:
+  image: mongo
+  ports:
+    - '27017:27017'
