@@ -1,11 +1,12 @@
-prestamax:
+web:
   build: .
-  command: sh -c 'npm install nodemon -g; npm install'
+  command: sh -c 'pwd npm run build-and-start; npm run start'
   ports:
     - '3000:3000'
     - '4000:4000'
+  working_dir: /usr/src/app
   volumes:
-    - .:/prestamax
+    - ./:/usr/src/app
   links:
     - mongodb
 

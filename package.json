@@ -2,7 +2,8 @@
   "name": "PrestaMax",
   "version": "0.1.0",
   "scripts": {
-    "start": "node app.js",
+    "start": "nodemon api.js",
+    "build-and-start": "sh tools/application/buildAndStart.sh",
     "test": "mocha --reporter spec --timeout 5000"
   },
   "dependencies": {
