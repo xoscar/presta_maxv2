@@ -4,7 +4,7 @@ import Response from '../../response/index.jsx';
 
 import Modal from '../../modal/index.jsx';
 
-export default class NewClient extends React.Component {
+export default class DeleteClient extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -90,7 +90,7 @@ export default class NewClient extends React.Component {
   }
 }
 
-NewClient.propTypes = {
+DeleteClient.propTypes = {
   onClosingModal: React.PropTypes.func.isRequired,
   client: React.PropTypes.object.isRequired,
   clientService: React.PropTypes.object.isRequired,

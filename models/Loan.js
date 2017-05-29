@@ -85,7 +85,7 @@ function validateData(query) {
     errors.push('query', 'Invalid request.');
   }
 
-  if (!query.amount || !ö.isNumeric(query.amount)) {
+  if (!query.amount || !ö.isNumeric(String(query.amount))) {
     errors.push('amount', 'La cantidad debe ser numerica.');
   }
 
@@ -250,7 +250,7 @@ loanSchema.methods.createPayment = function createPayment(query, callback) {
     errors.push('query', 'Invalid request.');
   }
 
-  if (!query.amount || !ö.isNumeric(query.amount)) {
+  if (!query.amount || !ö.isNumeric(String(query.amount))) {
     errors.push('amount', 'La cantidad del pago debe de ser numerica.');
     return callback(errors);
   }

@@ -4,7 +4,7 @@ import Loan from '../../../models/loan.jsx';
 
 import UpdateForm from './updateForm.jsx';
 import Information from './information.jsx';
-// import Options from './options.jsx';
+import Options from './options.jsx';
 
 import Response from '../../response/index.jsx';
 // import Collapsible from '../../collapsible/index.jsx';
@@ -65,10 +65,9 @@ export default class Profile extends React.Component {
       return (<h1>Cargando...</h1>);
     }
 
-    // <Options client={this.state.client} onRefresh={this.onRefresh.bind(this)} clientService={this.clientService}/>
-
     return (
       <div>
+        <Options loan={this.state.loan} onRefresh={this.onRefresh.bind(this)} loanService={this.loanService}/>
         <EditPayment show={this.state.showEditModal} onEdit={this.onRefresh.bind(this)} onClosingModal={this.closeEditModal.bind(this)} loanService={this.loanService} loan={this.state.loan} payment={this.state.payment} />
         <div className="profile z-depth-1 animated fadeIn">
           <div className="row">
@@ -88,24 +87,32 @@ export default class Profile extends React.Component {
                 </div>
                 <UpdateForm loan={this.state.loan} loanService={this.loanService} onRefresh={this.onRefresh.bind(this)}/>
                 <Information loan={this.state.loan}/>
-                <div className="row">
-                  <div className="col s12">
-                    <div className="row">
-                      <div className="col s12">
-                        <div className="row">
-                          <h5>Pagos</h5>
-                        </div>
-                        <div className="row animated fadeIn">
-                          {
-                            this.state.loan.payments.map(payment => (
-                              <PaymentCard payment={payment} showEditModal={this.showEditModal.bind(this, payment)} key={payment.id} loan={this.state.loan} loanService={this.loanService} onRefresh={this.onRefresh.bind(this)}/>
-                            ))
-                          }
+                  <div className="row">
+                    <div className="col s12">
+                      <div className="row">
+                        <div className="col s12">
+                        {
+                          this.state.loan.payments.length !== 0 ?
+                          <div>
+                            <div className="row">
+                              <h5>Pagos</h5>
+                            </div>
+                            <div className="row animated fadeIn">
+                              {
+                                this.state.loan.payments.map(payment => (
+                                  <PaymentCard payment={payment} showEditModal={this.showEditModal.bind(this, payment)} key={payment.id} loan={this.state.loan} loanService={this.loanService} onRefresh={this.onRefresh.bind(this)}/>
+                                ))
+                              }
+                            </div>
+                          </div> :
+                          <div className="row">
+                            <h5>No se han realizado pagos.</h5>
+                          </div>
+                        }
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
               </div>
             </div>
           </div>

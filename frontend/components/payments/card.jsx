@@ -27,7 +27,7 @@ export default class Card extends React.Component {
   deletePayment(event) {
     event.preventDefault();
     this.props.loanService.deletePayment(this.props.loan.id, this.props.payment.id, () => {
-      this.onRefresh();
+      this.props.onRefresh();
     });
   }
 

@@ -11,7 +11,7 @@ export default (options) => {
   );
 
   restConnection.getPayment = (id, paymentId, callback) => (
-    restConnection.send(restConnection.generateOptions(`${resource}/${id}/payments/{paymentId}`, 'GET', null, callback))
+    restConnection.send(restConnection.generateOptions(`${resource}/${id}/payments/${paymentId}`, 'GET', null, callback))
   );
 
   restConnection.createPayment = (id, body, callback) => (
@@ -23,7 +23,7 @@ export default (options) => {
   );
 
   restConnection.deletePayment = (id, paymentId, callback) => (
-    restConnection.send(restConnection.generateOptions(`${resource}/${id}/payments/{paymentId}`, 'DELETE', null, callback))
+    restConnection.send(restConnection.generateOptions(`${resource}/${id}/payments/${paymentId}`, 'DELETE', null, callback))
   );
 
   return restConnection;

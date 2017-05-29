@@ -38,7 +38,7 @@ export default class NewLoan extends React.Component {
   createLoan(event) {
     event.preventDefault();
 
-    if ((this.props.client && !this.props.client.id) || !this.state.client.id) {
+    if ((this.props.client && !this.props.client.client_id) || (!this.props.client && !this.state.client.id)) {
       return this.setState({
         response: {
           isError: true,

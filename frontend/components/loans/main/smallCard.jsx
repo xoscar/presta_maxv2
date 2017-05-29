@@ -1,37 +1,81 @@
 import React from 'react';
 
-const loanSmallCard = ({
-  loan,
-  active,
-}) => ((
-  <div className="col s6">
-    <div className="card" style={{ height: '169px' }}>
-      <div className="card-content white avatar text-darken-2 ">
-        <div className="row" style={{ margin: '0px' }}>
-          <div className="col s6">
-            { active ? <p>Adeudo: ${loan.current_balance + '.00'}</p> : '' }
-            <p>Creado: {loan.created_from_now} <span style={{ fontSize: '.7rem' }}>({loan.created})</span></p>
-            { !active ? <p>Liquidado: {loan.finished_date}</p> : '' }
+import { Link } from 'react-router';
+
+import Loan from '../../../models/loan.jsx';
+
+export default class LoanSmallCard extends React.Component {
+  constructor() {
+    super();
+
+    this.loanService = Loan({
+      headers: {
+        user: document.getElementById('user').value,
+        token: document.getElementById('token').value,
+      },
+    });
+
+    this.state = {
+      showNewPayment: false,
+    };
+  }
+
+  componentWillMount() {
+    this.setState({
+      loan: this.props.loan,
+    });
+  }
+
+  onNewPaymentModal() {
+    this.setState({
+      showNewPayment: true,
+    });
+  }
+
+  onRefresh() {
+    this.loanService.get(this.state.loan.id, (err, loan) => {
+      this.setState({
+        loan,
+      });
+    });
+  }
+
+  onClosingModal(key) {
+    this.setState({
+      [key]: false,
+    });
+  }
+
+  render() {
+    return (
+      <div className="col s6">
+        <div className="card" style={{ height: '169px' }}>
+          <div className="card-content white avatar text-darken-2 ">
+            <div className="row" style={{ margin: '0px' }}>
+              <div className="col s6">
+                { this.props.active ? <p>Adeudo: ${this.state.loan.current_balance + '.00'}</p> : '' }
+                <p>Creado: {this.state.loan.created_from_now} <span style={{ fontSize: '.7rem' }}>({this.state.loan.created})</span></p>
+                { !this.props.active ? <p>Liquidado: {this.state.loan.finished_date}</p> : '' }
+              </div>
+              <div className="col s6">
+                <p>Cantidad: ${this.state.loan.amount + '.00'} </p>
+                <p>Semanal: ${this.state.loan.weekly_payment + '.00'} </p>
+                { this.state.loan.last_payment ? <p>Abono: {this.state.loan.last_payment_from_now} </p> : <p>No se han realizado pagos</p> }
+              </div>
+            </div>
           </div>
-          <div className="col s6">
-            <p>Cantidad: ${loan.amount + '.00'} </p>
-            <p>Semanal: ${loan.weekly_payment + '.00'} </p>
-            { loan.last_payment ? <p>Abono: {loan.last_payment_from_now} </p> : <p>No se han realizado pagos</p> }
+          <div className="card-action">
+            <Link to={`/this.state.loans/${this.state.loan.id}`} className="green-text darken-2">Más</Link>
+            { this.props.active ? <a className="blue-text text-darken-2" onClick={this.onNewPaymentModal.bind(this)}>Abonar</a> : '' }
+            { this.state.loan.expired ? <div className="chip right red white-text"> Expirado </div> : '' }
           </div>
         </div>
       </div>
-      <div className="card-action">
-        <a className="green-text text-darken-2">Más</a>
-        { active ? <a className="blue-text text-darken-2">Abonar</a> : '' }
-        { loan.expired ? <div className="chip right red white-text"> Expirado </div> : '' }
-      </div>
-    </div>
-  </div>
-));
+    );
+  }
+}
 
-loanSmallCard.propTypes = {
+LoanSmallCard.propTypes = {
   loan: React.PropTypes.object.isRequired,
   active: React.PropTypes.bool,
 };
-
-export default loanSmallCard;

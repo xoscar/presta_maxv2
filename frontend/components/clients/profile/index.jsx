@@ -6,6 +6,8 @@ import UpdateForm from './updateForm.jsx';
 import Information from './information.jsx';
 import Options from './options.jsx';
 
+import NewPayment from '../../payments/new.jsx';
+
 import Response from '../../response/index.jsx';
 import Collapsible from '../../collapsible/index.jsx';
 
@@ -47,7 +49,7 @@ export default class Profile extends React.Component {
         <div>
           {
             client.loans.length ? client.loans.map(loan => (
-              <LoanSmallCard loan={loan} key={loan.id} active={true} />
+              <LoanSmallCard loan={loan} key={loan.id} active={true} onPaymentModal={this.onOpenModal.bind(this, { loan, showNewPayment: true })} />
             )) : <p>No prestamos activos para mostrar.</p>
           }
         </div>
@@ -116,6 +118,16 @@ export default class Profile extends React.Component {
     });
   }
 
+  onOpenModal(state) {
+    this.setState(state);
+  }
+
+  onClosingModal(key) {
+    this.setState({
+      [key]: false,
+    });
+  }
+
   render() {
     if (!this.state.client) {
       return (<h1>Cargando...</h1>);
@@ -123,6 +135,7 @@ export default class Profile extends React.Component {
 
     return (
       <div>
+        <NewPayment onCreate={this.onRefresh.bind(this)} onClosingModal={this.onClosingModal.bind(this, 'showNewPayment')} loan={this.state.loan} loanService={this.loanService} show={this.state.showNewPayment}/>
         <Options client={this.state.client} onRefresh={this.onRefresh.bind(this)} clientService={this.clientService}/>
         <div className="profile z-depth-1 animated fadeIn">
           <div className="row">

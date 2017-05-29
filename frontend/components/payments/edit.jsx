@@ -22,12 +22,10 @@ export default class EditPayment extends React.Component {
   }
 
   componentDidUpdate() {
-    if (this.state.response && !this.state.response.isError) {
-      this.setState(this.initialState);
-    } else if (this.state.initial) {
+    if (this.state.initial && this.props.payment) {
       this.setState({
-        amount: this.props.loan.weekly_payment,
-        created: this.props.loan.created,
+        amount: this.props.payment.amount,
+        created: this.props.payment.created,
         initial: false,
       });
     }
@@ -63,13 +61,13 @@ export default class EditPayment extends React.Component {
 
   onClosingModal() {
     this.props.onClosingModal();
-    this.setState(Object.assign({}, this.initialState, {
+    this.setState({
+      initial: true,
       response: null,
-    }));
+    });
   }
 
   render() {
-    console.log('showing', this.props, this.state);
     return (
 
       <Modal

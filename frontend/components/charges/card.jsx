@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default class ProfileHeading extends React.Component {
+export default class Card extends React.Component {
   render() {
     return (
       <div className="col s6">
@@ -25,7 +25,7 @@ export default class ProfileHeading extends React.Component {
   }
 }
 
-ProfileHeading.propTypes = {
+Card.propTypes = {
   charge: React.PropTypes.object.isRequired,
-  active: React.PropTypes.boolean,
+  active: React.PropTypes.bool,
 };
