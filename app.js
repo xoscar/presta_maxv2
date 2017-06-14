@@ -30,7 +30,7 @@ const app = express();
 /**
  * Connect to MongoDB.
  */
-mongoose.connect(process.env.MONGODB_URI || process.env.MONGOLAB_URI);
+mongoose.connect(process.env.MONGODB_PORT_27017_TCP_ADDR || process.env.MONGOLAB_URI);
 mongoose.connection.on('error', () => {
   console.error('MongoDB Connection Error. Please make sure that MongoDB is running.');
   process.exit(1);
@@ -57,7 +57,7 @@ mongoose.connection.on('connected', () => {
     saveUninitialized: true,
     secret: process.env.SESSION_SECRET,
     store: new MongoStore({
-      url: process.env.MONGODB_URI || process.env.MONGOLAB_URI,
+      url: `mongodb://${process.env.MONGODB_PORT_27017_TCP_ADDR}/prestamax` || process.env.MONGOLAB_URI,
       autoReconnect: true,
     }),
   }));

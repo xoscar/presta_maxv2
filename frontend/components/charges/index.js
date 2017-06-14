@@ -31,7 +31,6 @@ module.exports.init = function (user, token, root) {
   $rootNode.on('click', '.add_charge', function (event) {
     event.preventDefault();
     var data = { client_id: $(this).attr('href') };
-    console.log(data);
     openModal('add_charge', data);
   });
 
@@ -62,7 +61,6 @@ module.exports.init = function (user, token, root) {
   $rootNode.on('click', '.update_charge', function (event) {
     event.preventDefault();
     charge.get($(this).attr('href'), function (err, charge) {
-      console.log(err, charge);
       if (!err) openModal('update_charge', charge);
     });
   });

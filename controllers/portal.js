@@ -10,7 +10,6 @@ module.exports.getLogIn = (req, res) => {
 };
 
 module.exports.postLogIn = (req, res) => {
-  console.log(req.body, req.query);
   User.login(req.body, (loginErr, user) => {
     if (loginErr) {
       req.flash('errors', loginErr.messages);

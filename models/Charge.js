@@ -121,9 +121,8 @@ chargeSchema.statics.getFromRequest = function getFromRequest(req, res, next) {
 
   return mongoose.model('charges', chargeSchema).findOne(query, (err, doc) => {
     if (err || !doc) return res.status(404).send('Not found.');
-    console.log(doc);
-    req.charge = doc;
 
+    req.charge = doc;
     return next();
   });
 };

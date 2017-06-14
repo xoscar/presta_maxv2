@@ -70,15 +70,11 @@ module.exports.create = (req, res) => {
 
     return Loan.create(req.user, client, req.body, (createErr, loan) => {
       if (createErr) {
-        console.log('ERROR', createErr);
         return res.status(400).send(createErr);
       }
 
-      console.log('wtf');
-
       const info = loan.getBasicInfo();
       info.client = client.getBasicInfo();
-      console.log('wtf');
       return res.status(200).json(info);
     });
   });
