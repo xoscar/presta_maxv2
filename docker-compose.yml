@@ -11,5 +11,7 @@ web:
 
 mongodb:
   image: mongo
+  volumes:
+    - ./tools/backup:/usr/dump
   ports:
     - '27017:27017'
