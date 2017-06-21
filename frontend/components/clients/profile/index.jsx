@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Client from '../../../models/client.jsx';
+import Loan from '../../../models/loan.jsx';
 
 import UpdateForm from './updateForm.jsx';
 import Information from './information.jsx';
@@ -24,10 +25,19 @@ export default class Profile extends React.Component {
       },
     });
 
+    this.loanService = Loan({
+      headers: {
+        user: document.getElementById('user').value,
+        token: document.getElementById('token').value,
+      },
+    });
+
     this.state = {
+      loan: {},
       response: null,
       client: null,
       expiredActiveLoans: false,
+      showNewPayment: false,
     };
   }
 

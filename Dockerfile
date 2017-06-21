@@ -7,12 +7,10 @@ RUN npm install pm2 -g
 WORKDIR /var/tmp
 
 COPY package.json backend/
-RUN cd backend && npm install
+RUN cd backend && npm i
 
-COPY ./frontend/package.json frontend/
-RUN cd frontend && npm install
-
-RUN mv backend/ /usr/src/app && mv frontend/ /usr/src/app/frontend
+COPY ./frontend/package.json frontend/ 
+RUN cd frontend && npm i
 
 WORKDIR /usr/src/app
 

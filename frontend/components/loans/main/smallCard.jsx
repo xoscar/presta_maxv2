@@ -27,9 +27,7 @@ export default class LoanSmallCard extends React.Component {
   }
 
   onNewPaymentModal() {
-    this.setState({
-      showNewPayment: true,
-    });
+    this.props.onPaymentModal();
   }
 
   onRefresh() {
@@ -78,4 +76,5 @@ export default class LoanSmallCard extends React.Component {
 LoanSmallCard.propTypes = {
   loan: React.PropTypes.object.isRequired,
   active: React.PropTypes.bool,
+  onPaymentModal: React.PropTypes.func,
 };
