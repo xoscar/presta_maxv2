@@ -20,7 +20,14 @@ export default class NewPayment extends React.Component {
 
   componentDidUpdate() {
     if (this.state.response && !this.state.response.isError && !this.state.initial) {
-      this.setState(this.initialState);
+      this.setState(Object.assign(this.initialState, {
+        amount: this.props.loan.weekly_payment,
+      }));
+    } else if (this.state.initial && !this.state.response) {
+      this.setState({
+        initial: false,
+        amount: this.props.loan.weekly_payment,
+      });
     }
   }
 
@@ -33,19 +40,21 @@ export default class NewPayment extends React.Component {
   createPayment(event) {
     event.preventDefault();
 
-    return this.props.loanService.createPayment(this.props.loan.id, this.state, (err) => {
-      if (!err) {
-        this.props.onCreate();
-      }
+    return this.props.loanService.get(this.props.loan.id, (searchErr, loan) => {
+      this.props.loanService.createPayment(loan.id, this.state, (err) => {
+        if (!err) {
+          this.props.onCreate();
+        }
 
-      this.setState({
-        response: {
-          isError: err !== null,
-          messages: err || [{
-            field: 'success',
-            message: `Abono añadido exitosamente a ${this.props.loan.client.name_complete} ${this.props.loan.client.surname} (${this.props.loan.client.client_id})`,
-          }],
-        },
+        this.setState({
+          response: {
+            isError: err !== null,
+            messages: err || [{
+              field: 'success',
+              message: `Abono añadido exitosamente a ${loan.client.name_complete} ${loan.client.surname} (${loan.client.client_id})`,
+            }],
+          },
+        });
       });
     });
   }
@@ -88,7 +97,7 @@ export default class NewPayment extends React.Component {
           <form className="col s12" onSubmit={this.createPayment.bind(this)}>
           <div className="row">
             <div className="input-field col s6">
-              <input id="amount" name="amount" type="text" className="validate" value={this.state.amount} onChange={this.handleInputChange.bind(this, 'amount')} />
+              <input id="amount" name="amount" type="text" className="validate" value={this.state.amount || ''} onChange={this.handleInputChange.bind(this, 'amount')} />
               <label className="active" htmlFor="amount">Cantidad</label>
             </div>
             <div className="col s6 center-align" style={{ marginTop: '25px' }}>

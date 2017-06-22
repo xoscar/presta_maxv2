@@ -4,7 +4,7 @@ web:
     - '3000:3000'
     - '4000:4000'
   working_dir: /usr/src/app
-  command: mv /var/tmp/backend/node_modules /usr/src/app && mv /var/tmp/frontend/node_modules /usr/src/app/frontend
+  command: npm start
   volumes:
     - ./:/usr/src/app
   links:

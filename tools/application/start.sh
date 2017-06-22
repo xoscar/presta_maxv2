@@ -1,5 +1,11 @@
-echo 'Building front end';
+echo 'Installing backend dependencies';
+npm install
+
+echo 'Installing front end dependencies'
 cd frontend/
+npm install
+
+echo 'Building front end';
 npm run build;
 
 cd ..

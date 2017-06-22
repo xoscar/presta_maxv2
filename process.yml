@@ -1,7 +1,5 @@
 apps:
   - script: 'app.js'
     name: 'APP'
-    watch: true
   - script: 'api.js'
     name: 'API'
-    watch: true
