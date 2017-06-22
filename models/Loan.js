@@ -3,30 +3,27 @@ const mongoose = require('mongoose');
 const Response = require('../utils/response');
 const Counter = require('./Counter');
 const ö = require('validator');
-const moment = require('moment-timezone');
+const moment = require('moment');
 
 moment.locale('es');
 moment.tz.setDefault('America/Mexico_City');
 
 function prepareQuery(terms, finished) {
-  var query = [];
-  terms.forEach(function (term) {
-    query.push({
-      search: {
-        $regex: term,
-        $options: 'i',
-      },
-    });
-  });
+  const query = terms.map(term => ({
+    search: {
+      $regex: term,
+      $options: 'i',
+    },
+  }));
 
   query.push({
-    finished: finished,
+    finished,
   });
 
   return query;
 }
 
-var paymentSchema = new mongoose.Schema({
+const paymentSchema = new mongoose.Schema({
   amount: Number,
   created: {
     type: Date,
@@ -34,7 +31,7 @@ var paymentSchema = new mongoose.Schema({
   },
 });
 
-paymentSchema.methods.getBasicInfo = function (loan) {
+paymentSchema.methods.getBasicInfo = function getBasicInfo(loan) {
   return {
     loan_id: loan.id,
     id: this.id,
@@ -44,7 +41,7 @@ paymentSchema.methods.getBasicInfo = function (loan) {
   };
 };
 
-var loanSchema = new mongoose.Schema({
+const loanSchema = new mongoose.Schema({
   number_id: Number,
   amount: Number,
   weekly_payment: Number,
@@ -80,37 +77,64 @@ var loanSchema = new mongoose.Schema({
 const availableRequests = [{
   fields: '_id'.split(' '),
   params: 'id'.split(' '),
-}, ];
+}];
 
 function validateData(query) {
-  var errors = new Response('error');
-  if (!query) errors.push('query', 'Invalid request.');
-  if (!query.amount || !ö.isNumeric(query.amount))
+  const errors = new Response('error');
+
+  if (!query) {
+    errors.push('query', 'Invalid request.');
+  }
+
+  if (!query.amount || !ö.isNumeric(String(query.amount))) {
     errors.push('amount', 'La cantidad debe ser numerica.');
-  if (!query.weekly_payment || !ö.isNumeric(query.weekly_payment))
+  }
+
+  if (!query.weekly_payment || !ö.isNumeric(String(query.weekly_payment))) {
     errors.push('weekly_payment', 'El pago semanal debe de ser numerico.');
-  if (!query.weeks || !ö.isNumeric(query.weeks))
+  }
+
+  if (!query.weeks || !ö.isNumeric(String(query.weeks))) {
     errors.push('weeks', 'El numero de semanas debe de ser numerico.');
-  if (!query.client_id || !ö.isMongoId(query.client_id))
+  }
+
+  if (!query.client_id || !ö.isMongoId(query.client_id)) {
     errors.push('client_id', 'El número de identificación del cliente es invalido.');
-  if (query.created && moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
+  }
+
+  if (query.created && moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date') {
     errors.push('created', 'La fecha de creación no es válida.');
+  }
 
   if (errors.messages.length === 0) {
-    if (parseInt(query.weeks) < 0 && parseInt(query.weeks > 60))
+    if (parseInt(query.weeks, 10) < 0 && parseInt(query.weeks, 10) > 60) {
       errors.push('weeks', 'El número de semanas debe ser entre 1 y 60');
-    if (parseInt(query.amount) <= parseInt(query.weeks))
+    }
+
+    if (parseInt(query.amount, 10) <= parseInt(query.weeks, 10)) {
       errors.push('amount', 'El número de semanas debe de ser menor al de la cantidad total del prestamo.');
-    if (parseInt(query.amount) <= parseInt(query.weekly_payment))
+    }
+
+    if (parseInt(query.amount, 10) <= parseInt(query.weekly_payment, 10)) {
       errors.push('amount', 'El pago semanal debe de ser menor a la cantidad total del prestamo.');
+    }
+
     return errors;
-  } else return errors;
+  }
+
+  return errors;
 }
 
-loanSchema.pre('save', function (next) {
-  var searchFields = 'amount weeks client_id _id client_identifier client_name number_id'.split(' ');
+loanSchema.pre('save', function preSave(next) {
+  const searchFields = 'amount weeks client_id _id client_identifier client_name number_id'.split(' ');
+
   this.search = common.generateArrayFromObject(this, searchFields);
-  this.expired_date = moment(this.created).endOf('week').add(this.weeks, 'weeks').endOf('week').toDate();
+  this.expired_date = moment(this.created)
+    .endOf('week')
+    .add(this.weeks, 'weeks')
+    .endOf('week')
+    .toDate();
+
   this.updated = Date.now();
   this.finished = this.getCurrentBalance() === 0 ?
     this.finished = true :
@@ -120,8 +144,8 @@ loanSchema.pre('save', function (next) {
 
   if (this.isNew) {
     Counter.findOne({ name: 'loans' }, (err, counter) => {
-      counter.getNext((err, value) => {
-        if (!err || value) {
+      counter.getNext((nextErr, value) => {
+        if (!nextErr || value) {
           this.number_id = value;
           this.search.push(this.number_id.toString());
         }
@@ -132,32 +156,30 @@ loanSchema.pre('save', function (next) {
   } else next();
 });
 
-loanSchema.methods.isExpired = function () {
-  var expired = false;
-  if (moment().isAfter(this.expired_date) && !this.finished)
-    expired = true;
-  return expired;
+loanSchema.methods.isExpired = function isExpired() {
+  return moment().isAfter(this.expired_date) && !this.finished;
 };
 
-loanSchema.methods.getCurrentWeek = function () {
-  if (moment().diff(this.created, 'weeks') > (this.weeks + 1))
+loanSchema.methods.getCurrentWeek = function getCurrentWeek() {
+  if (moment().diff(this.created, 'weeks') > (this.weeks + 1)) {
     return null;
-  else
-    return moment().diff(this.created, 'weeks') + 1;
+  }
+
+  return moment().diff(this.created, 'weeks') + 1;
 };
 
-loanSchema.methods.getPayments = function () {
-  var payments = this.payments.sort((a, b) => {
-    return moment(b.created).isAfter(a.created) ? 1 : 0;
-  });
+loanSchema.methods.getPayments = function getPayments() {
+  const payments = this.payments.sort((a, b) => (
+    moment(b.created).isAfter(a.created) ? 1 : 0
+  ));
 
-  return payments.map((payment) => {
-    return payment.getBasicInfo(this);
-  });
+  return payments.map(payment => (
+    payment.getBasicInfo(this)
+  ));
 };
 
-loanSchema.methods.getBasicInfo = function () {
-  var result = {
+loanSchema.methods.getBasicInfo = function getBasicInfo() {
+  const result = {
     id: this.id,
     number_id: this.number_id,
     amount: this.amount,
@@ -184,8 +206,9 @@ loanSchema.methods.getBasicInfo = function () {
   return result;
 };
 
-loanSchema.methods.update = function (query, callback) {
-  var errors = validateData(query);
+loanSchema.methods.update = function update(query, callback) {
+  const errors = validateData(query);
+
   if (errors.messages.length === 0) {
     this.amount = query.amount;
     this.weekly_payment = query.weekly_payment;
@@ -197,112 +220,136 @@ loanSchema.methods.update = function (query, callback) {
   } else callback(errors);
 };
 
-loanSchema.methods.getLastPayment = function () {
-  if (this.payments.length === 0)
+loanSchema.methods.getLastPayment = function getLastPayment() {
+  if (this.payments.length === 0) {
     return null;
-  var orderedPayments = this.payments.sort(function (a, b) {
-    return moment(a.created).isAfter(b.created) ? 1 : -1;
-  });
+  }
+
+  const orderedPayments = this.payments.sort((a, b) => (
+    moment(a.created).isAfter(b.created) ? 1 : -1
+  ));
 
   return orderedPayments[orderedPayments.length - 1].created;
 };
 
-loanSchema.methods.getCurrentBalance = function () {
-  var totalPayments = 0;
-  if (this.payments.length > 0)
-    this.payments.forEach(function (a) {
-      totalPayments += parseInt(a.amount);
-    });
-
-  return this.amount - totalPayments;
+loanSchema.methods.getCurrentBalance = function getCurrentBalance() {
+  return this.amount - this.payments.map(payment => (
+    parseInt(payment.amount, 10)
+  )).reduce((a, b) => (
+    a + b
+  ), 0);
 };
 
-loanSchema.methods.delete = function (callback) {
+loanSchema.methods.delete = function deleteLoan(callback) {
   this.remove(callback);
 };
 
-loanSchema.methods.createPayment = function (query, callback) {
-  var errors = new Response('error');
-  if (Object.keys(query).length === 0) errors.push('query', 'Invalid request.');
-  if (!query.amount || !ö.isNumeric(query.amount)) {
+loanSchema.methods.createPayment = function createPayment(query, callback) {
+  const errors = new Response('error');
+
+  if (Object.keys(query).length === 0) {
+    errors.push('query', 'Invalid request.');
+  }
+
+  if (!query.amount || !ö.isNumeric(String(query.amount))) {
     errors.push('amount', 'La cantidad del pago debe de ser numerica.');
     return callback(errors);
   }
 
-  if (this.getCurrentBalance() - query.amount < 0)
+  if (this.getCurrentBalance() - query.amount < 0) {
     errors.push('payment', 'El abono es mayor a la cantidad del saldo del prestamo');
-  if (this.getCurrentBalance() === 0)
+  }
+
+  if (this.getCurrentBalance() === 0) {
     errors.push('payment', 'El prestamo ya fue saldado.');
+  }
+
   if (errors.messages.length === 0) {
-    var newPayment = {
+    const newPayment = {
       amount: query.amount,
       created: Date.now(),
     };
 
     this.payments.push(newPayment);
 
-    this.save(callback);
-  } else callback(errors);
+    return this.save(callback);
+  }
+
+  return callback(errors);
 };
 
-loanSchema.methods.updatePayment = function (paymentId, query, callback) {
-  var errors = new Response('error');
-  if (Object.keys(query).length === 0) errors.push('query', 'Invalid request.');
-  if (!paymentId || !ö.isMongoId(paymentId))
-    errors.push('payment_id', 'El identificador del prestamo no es correcto.');
-  if (!query.amount || !ö.isNumeric(query.amount))
-    errors.push('amount', 'La cantidad del pago debe de ser numerica.');
-  if (this.getCurrentBalance() - query.amount < 0)
-    errors.push('payment', 'El prestamo ya fue saldado.');
-  if (query.created && moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date')
-    errors.push('created', 'La fecha de creación no es válida.');
-  if (errors.messages.length === 0) {
-    var payment = this.payments.filter(function (payment) {
-      return payment.id === paymentId;
-    })[0];
+loanSchema.methods.updatePayment = function updatePayment(paymentId, query, callback) {
+  const errors = new Response('error');
 
-    if (!payment) {
+  if (Object.keys(query).length === 0) {
+    errors.push('query', 'Invalid request.');
+  }
+
+  if (!paymentId || !ö.isMongoId(paymentId)) {
+    errors.push('payment_id', 'El identificador del prestamo no es correcto.');
+  }
+
+  if (!query.amount || !ö.isNumeric(String(query.amount))) {
+    errors.push('amount', 'La cantidad del pago debe de ser numerica.');
+  }
+
+  if (this.getCurrentBalance() - query.amount < 0) {
+    errors.push('payment', 'El prestamo ya fue saldado.');
+  }
+
+  if (query.created && moment(query.created, 'DD/MM/YYYY HH:mm').toDate().toString() === 'Invalid Date') {
+    errors.push('created', 'La fecha de creación no es válida.');
+  }
+
+  if (errors.messages.length === 0) {
+    const foundPayment = this.payments.filter(payment => (
+      payment.id === paymentId
+    ))[0];
+
+    if (!foundPayment) {
       errors.push('payment', 'Pago no encontrado.');
       return callback(errors);
     }
 
-    payment.created = query.created ? moment(query.created, 'DD/MM/YYYY HH:mm').toDate() : this.created;
-    payment.amount = query.amount;
+    foundPayment.created = query.created ? moment(query.created, 'DD/MM/YYYY HH:mm').toDate() : this.created;
+    foundPayment.amount = query.amount;
 
-    this.save(callback);
-  } else callback(errors);
+    return this.save(callback);
+  }
+
+  return callback(errors);
 };
 
-loanSchema.methods.deletePayment = function (query, callback) {
-  var errors = new Response('error');
-  if (!query.paymentId || !ö.isMongoId(query.paymentId))
+loanSchema.methods.deletePayment = function deletePayment(query, callback) {
+  const errors = new Response('error');
+
+  if (!query.paymentId || !ö.isMongoId(query.paymentId)) {
     errors.push('paymentId', 'Not a valid payment id.');
-  if (errors.messages.length === 0) {
-    var paymentsHolder = [];
-    this.payments.forEach((payment) => {
-      if (payment.id !== query.paymentId)
-        paymentsHolder.push(payment);
-    });
+  }
 
-    this.payments = paymentsHolder;
+  if (errors.messages.length === 0) {
+    this.payments = this.payments.filter(payment => (
+      payment.id !== query.paymentId
+    ));
 
     this.save(callback);
   } else callback(errors);
 };
 
-loanSchema.methods.getPayment = function (paymentId) {
-  var payment = this.payments.filter(function (payment) {
-    return payment.id === paymentId;
-  })[0];
+loanSchema.methods.getPayment = function getPayment(paymentId) {
+  const foundPayment = this.payments.filter(payment => (
+    payment.id === paymentId
+  ))[0];
 
-  if (!payment) return null;
-  return payment.getBasicInfo(this);
+  if (!foundPayment) return null;
+  return foundPayment.getBasicInfo(this);
 };
 
-loanSchema.statics.create = function (user, client, query, callback) {
-  var errors = validateData(query);
+loanSchema.statics.create = function create(user, client, query, callback) {
+  const errors = validateData(query);
+
   if (errors.messages.length === 0) {
-    var newLoan = new this({
+    const newLoan = new this({
       amount: query.amount,
       weekly_payment: query.weekly_payment,
       weeks: query.weeks,
@@ -312,23 +359,37 @@ loanSchema.statics.create = function (user, client, query, callback) {
       client_identifier: client.client_id,
       user_id: user.id,
     });
-    newLoan.save(callback);
-  } else callback(errors);
+
+    return newLoan.save(callback);
+  }
+
+  return callback(errors);
 };
 
-loanSchema.statics.getFromRequest = function (req, res, next) {
-  var query = common.getQueryFromRequest(availableRequests, req);
-  if (!query) return res.status(400).send('Invalid request.');
-  if (req.user) query.user_id = req.user.id;
-  mongoose.model('loans', loanSchema).findOne(query, function (err, doc) {
-    if (err || !doc) return res.status(404).send('Not found.');
+loanSchema.statics.getFromRequest = function getFromRequest(req, res, next) {
+  const query = common.getQueryFromRequest(availableRequests, req);
+  if (!query) {
+    return res.status(400).send('Invalid request.');
+  }
+
+  if (req.user) {
+    query.user_id = req.user.id;
+  }
+
+  return mongoose.model('loans', loanSchema).findOne(query, (err, doc) => {
+    if (err || !doc) {
+      return res.status(404).send('Not found.');
+    }
+
     req.loan = doc;
-    next();
+
+    return next();
   });
 };
 
-loanSchema.statics.search = function (searchTerms, finished, userId, limit, skip, callback) {
-  var andQuery = prepareQuery(searchTerms, finished);
+loanSchema.statics.search = function search(searchTerms, finished, userId, limit, skip, callback) {
+  const andQuery = prepareQuery(searchTerms, finished);
+
   this
     .find({
       $and: andQuery,
@@ -343,7 +404,7 @@ loanSchema.statics.search = function (searchTerms, finished, userId, limit, skip
     .exec(callback);
 };
 
-loanSchema.statics.delete = function (clientId, callback) {
+loanSchema.statics.delete = function deleteLoan(clientId, callback) {
   this
     .find({ client_id: clientId })
     .remove()

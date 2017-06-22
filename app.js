@@ -30,7 +30,7 @@ const app = express();
 /**
  * Connect to MongoDB.
  */
-mongoose.connect(process.env.MONGODB_URI || process.env.MONGOLAB_URI);
+mongoose.connect(`${process.env.MONGODB_PORT_27017_TCP_ADDR}/prestamax` || process.env.MONGOLAB_URI);
 mongoose.connection.on('error', () => {
   console.error('MongoDB Connection Error. Please make sure that MongoDB is running.');
   process.exit(1);
@@ -47,6 +47,7 @@ mongoose.connection.on('connected', () => {
     src: path.join(__dirname, 'public'),
     dest: path.join(__dirname, 'public'),
   }));
+
   app.use(logger('dev'));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -56,10 +57,11 @@ mongoose.connection.on('connected', () => {
     saveUninitialized: true,
     secret: process.env.SESSION_SECRET,
     store: new MongoStore({
-      url: process.env.MONGODB_URI || process.env.MONGOLAB_URI,
+      url: `mongodb://${process.env.MONGODB_PORT_27017_TCP_ADDR}/prestamax` || process.env.MONGOLAB_URI,
       autoReconnect: true,
     }),
   }));
+
   app.use(flash());
   app.use((req, res, next) => {
     if (req.path === '/signup') {
@@ -68,14 +70,15 @@ mongoose.connection.on('connected', () => {
       lusca.csrf()(req, res, next);
     }
   });
+
   app.use(lusca.xframe('SAMEORIGIN'));
   app.use(lusca.xssProtection(true));
   app.use((req, res, next) => {
     res.locals.user = req.user;
     next();
   });
-  app.use(function (req, res, next) {
-    // After successful login, redirect back to the intended page
+
+  app.use((req, res, next) => {
     if (!req.user &&
       req.path !== '/login' &&
       req.path !== '/signup' &&
@@ -90,7 +93,7 @@ mongoose.connection.on('connected', () => {
   app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
 
   app.use('/', portal);
-  
+
   // Error Handler.
   app.use(errorHandler());
 

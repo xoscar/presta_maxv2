@@ -6,33 +6,45 @@ const select = require('../utils/common').select;
 const Response = require('../utils/response');
 
 function validateData(query) {
-  var errors = new Response('error');
-  if (!query) errors.push('request', 'Emtpy request');
+  const errors = new Response('error');
+
+  if (!query) {
+    errors.push('request', 'Emtpy request');
+  }
 
   if (!select(query, 'username') ||
     !validator.isAlphanumeric(query.username) ||
-    query.username.length < 4)
+    query.username.length < 4) {
     errors.push('username', 'Not a valid username.');
+  }
 
   if (!select(query, 'password') ||
-    query.password.length < 6)
+    query.password.length < 6) {
     errors.push('password', 'Not a valid password.');
+  }
+
   return errors;
 }
 
 function validateLogIn(query) {
-  var errors = new Response('error');
-  if (Object.keys(query) === 0) errors.push('request', 'Emtpy request');
+  const errors = new Response('error');
 
-  if (!select(query, 'username'))
+  if (Object.keys(query) === 0) {
+    errors.push('request', 'Emtpy request');
+  }
+
+  if (!select(query, 'username')) {
     errors.push('username', 'El usuario no puede estar vacío.');
+  }
 
-  if (!select(query, 'password'))
+  if (!select(query, 'password')) {
     errors.push('password', 'La contraseña no puede estar vacía.');
+  }
+
   return errors;
 }
 
-var userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   name: String,
   username: String,
   password: String,
@@ -40,57 +52,57 @@ var userSchema = new mongoose.Schema({
   role: String,
 });
 
-userSchema.pre('save', function (next) {
-  var _this = this;
-  if (_this.isNew) {
+userSchema.pre('save', function preSave(next) {
+  if (this.isNew) {
     Async.waterfall([
-      function encryptPassword(wfaCallback) {
-          bcrypt.genSalt(10, function (err, salt) {
-
-            bcrypt.hash(_this.password, salt, null, function (err, hash) {
-              _this.password = hash;
-              return wfaCallback(err);
-            });
+      (wfaCallback) => {
+        bcrypt.genSalt(10, (err, salt) => {
+          bcrypt.hash(this.password, salt, null, (hashErr, hash) => {
+            this.password = hash;
+            return wfaCallback(hashErr);
           });
+        });
       },
 
-      function encryptToken(wfaCallback) {
-          bcrypt.genSalt(10, function (err, salt) {
-            bcrypt.hash(_this.token, salt, null, function (err, hash) {
-              _this.token = hash;
-              return wfaCallback(err);
-            });
+      (wfaCallback) => {
+        bcrypt.genSalt(10, (err, salt) => {
+          bcrypt.hash(this.token, salt, null, (hashErr, hash) => {
+            this.token = hash;
+            return wfaCallback(hashErr);
           });
-      }, ],
+        });
+      }],
 
       (err) => {
         console.log('saving ended');
         next(err);
       });
-  } else next();
+  }
+
+  next();
 });
 
-userSchema.methods.comparePassword = function (candidatePassword, cb) {
-  bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
+userSchema.methods.comparePassword = function comparePassword(candidatePassword, callback) {
+  bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
     if (err) {
-      return cb(err);
+      return callback(err);
     }
 
-    cb(null, isMatch);
+    return callback(null, isMatch);
   });
 };
 
-userSchema.methods.compareToken = function (candidateToken, cb) {
+userSchema.methods.compareToken = function compareToken(candidateToken, callback) {
+  if (this.token === candidateToken) {
+    return callback(null, true);
+  }
 
-  if (this.token === candidateToken)
-    return cb(null, true);
-
-  bcrypt.compare(candidateToken, this.token, function (err, isMatch) {
-    return cb(err, isMatch);
-  });
+  return bcrypt.compare(candidateToken, this.token, (err, isMatch) => (
+    callback(err, isMatch)
+  ));
 };
 
-userSchema.methods.getInfo = function () {
+userSchema.methods.getInfo = function getInfo() {
   return {
     username: this.username,
     token: this.token,
@@ -98,30 +110,38 @@ userSchema.methods.getInfo = function () {
   };
 };
 
-userSchema.statics.login = function (query, callback) {
-  var errors = validateLogIn(query);
+userSchema.statics.login = function login(query, callback) {
+  const errors = validateLogIn(query);
+
   if (errors.messages.length === 0) {
     this.findOne({
       username: query.username,
     }, (err, user) => {
       if (err || !user) {
         errors.push('missmatch', 'Error en el usuario o la contraseña.');
+
         return callback(errors);
-      } else {
-        user.comparePassword(query.password, function (err, isMatch) {
-          if (err || !isMatch) {
-            errors.push('missmatch', 'Error en el usuario o la contraseña.');
-            return callback(errors);
-          } else return callback(null, user);
-        });
       }
+
+
+      return user.comparePassword(query.password, (compareErr, isMatch) => {
+        if (compareErr || !isMatch) {
+          errors.push('missmatch', 'Error en el usuario o la contraseña.');
+          return callback(errors);
+        }
+
+        return callback(null, user);
+      });
     });
-  } else callback(errors);
+  } else {
+    callback(errors);
+  }
 };
 
-userSchema.statics.create = function (query, callback) {
-  var errors = validateData(query);
-  if (errors.messages.length === 0)
+userSchema.statics.create = function create(query, callback) {
+  const errors = validateData(query);
+
+  if (errors.messages.length === 0) {
     this.findOne({ username: query.username }, (err, user) => {
       if (err) {
         errors.push('application', err);
@@ -130,15 +150,18 @@ userSchema.statics.create = function (query, callback) {
         errors.push('username', 'User already exists');
         callback(errors);
       } else {
-        var newUser = new this({
+        const newUser = new this({
           username: query.username,
           password: query.password,
           role: 'user',
         });
+
         callback(null, newUser);
       }
     });
-  else callback(errors);
+  } else {
+    callback(errors);
+  }
 };
 
 module.exports = mongoose.model('users', userSchema);

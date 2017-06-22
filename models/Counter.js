@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-var counterSchema = new mongoose.Schema({
+const counterSchema = new mongoose.Schema({
   count: {
     type: Number,
     default: 1,
@@ -8,12 +8,12 @@ var counterSchema = new mongoose.Schema({
   name: String,
 });
 
-counterSchema.methods.getNext = function (callback) {
-  var value = this.count;
-  this.count++;
+counterSchema.methods.getNext = function getNext(callback) {
+  this.count += 1;
+
   this.save((err) => {
     if (err) callback(err);
-    else callback(null, value);
+    else callback(null, this.count - 1);
   });
 };
 

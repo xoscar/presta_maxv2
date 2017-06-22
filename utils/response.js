@@ -3,19 +3,19 @@ function ApiMessages(type) {
   this.messages = [];
 }
 
-ApiMessages.prototype.push = function (field, msg) {
+ApiMessages.prototype.push = function push(field, msg) {
   this.messages.push({
-    field: field,
+    field,
     message: msg,
   });
 };
 
-ApiMessages.prototype.flush = function () {
+ApiMessages.prototype.flush = function flush() {
   this.messages = [];
 };
 
-ApiMessages.prototype.toString = function () {
-  return JSON.stringify(this.messages);
+ApiMessages.prototype.toString = function toString() {
+  JSON.stringify(this.messages);
 };
 
 module.exports = ApiMessages;
