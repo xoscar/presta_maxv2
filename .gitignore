@@ -1,4 +1,8 @@
-/node_modules/
-/.env
-/frontend/node_modules/
-backup.zip
+# Dependency files
+node_modules
+
+# Hide credentials
+.env
+
+# Ignore javascript bin file
+/public/js/index.js
