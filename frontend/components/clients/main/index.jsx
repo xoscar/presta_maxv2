@@ -22,12 +22,7 @@ export default class ClientMain extends React.Component {
       },
     };
 
-    this.clientService = Client({
-      headers: {
-        user: document.getElementById('user').value,
-        token: document.getElementById('token').value,
-      },
-    });
+    this.clientService = Client();
   }
 
   componentDidMount() {

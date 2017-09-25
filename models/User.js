@@ -27,7 +27,7 @@ function validateData(query) {
 }
 
 function validateLogIn(query) {
-  const errors = new Response('error');
+  const errors = new Response('Unauthorized');
 
   if (Object.keys(query) === 0) {
     errors.push('request', 'Emtpy request');
@@ -105,7 +105,6 @@ userSchema.methods.compareToken = function compareToken(candidateToken, callback
 userSchema.methods.getInfo = function getInfo() {
   return {
     username: this.username,
-    token: this.token,
     role: this.role,
   };
 };

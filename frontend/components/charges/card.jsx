@@ -1,5 +1,7 @@
 import React from 'react';
 
+import ChargePayment from './pay.jsx';
+
 export default class Card extends React.Component {
   render() {
     return (
@@ -15,9 +17,9 @@ export default class Card extends React.Component {
             </div>
           </div>
           <div className="card-action">
-            { this.props.active ? <a className="pay_charge blue-text text-darken-2">Pagar</a> : '' }
-            <a className="update_charge amber-text text-darken-4">Modificar</a>
-            <a className="remove_charge red-text text-darken-2">Eliminar</a>
+            { this.props.active ? <ChargePayment onPaid={this.props.onRefresh} charge={this.props.charge} /> : '' }
+            <a className="amber-text text-darken-4">Modificar</a>
+            <a className="red-text text-darken-2">Eliminar</a>
           </div>
         </div>
       </div>
@@ -27,5 +29,6 @@ export default class Card extends React.Component {
 
 Card.propTypes = {
   charge: React.PropTypes.object.isRequired,
+  onRefresh: React.PropTypes.func,
   active: React.PropTypes.bool,
 };

@@ -8,13 +8,13 @@ const modal = ({
   body,
 }) => {
   if (show) {
-    $(`#${id}`).openModal({
+    $(`#${id}`).modal({
       complete: () => {
         onClosing();
       },
-    });
+    }).modal('open');
   } else {
-    $(`#${id}`).closeModal();
+    $(`#${id}`).modal('close');
   }
 
   return (

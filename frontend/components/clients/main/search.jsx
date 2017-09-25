@@ -12,7 +12,7 @@ const clientSearch = ({ onSearch }) => ((
         <nav className="search red darken-2">
           <div className="nav-wrapper">
             <div className="input-field">
-              <input type="search" placeholder="ID de prestamo, nombre o apellido."/>
+              <input type="search" placeholder="ID de cliente, nombre o apellido."/>
               <label htmlFor="search"><i className="material-icons">search</i></label><i className="material-icons">close</i>
             </div>
           </div>

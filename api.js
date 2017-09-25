@@ -10,6 +10,7 @@ const cors = require('cors');
 const clients = require('./routes/clients');
 const loans = require('./routes/loans');
 const charges = require('./routes/charges');
+const users = require('./routes/users');
 
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
@@ -43,6 +44,7 @@ mongoose.connection.on('connected', () => {
   app.use('/api/clients', clients);
   app.use('/api/loans', loans);
   app.use('/api/charges', charges);
+  app.use('/api/users', users);
 
   /**
    * Start Express server.

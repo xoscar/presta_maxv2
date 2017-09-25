@@ -76,7 +76,7 @@ export default class Profile extends React.Component {
         <div>
           {
             client.charges.length ? client.charges.map(charge => (
-              <ChargeCard charge={charge} key={charge.id} active={true} />
+              <ChargeCard onRefresh={this.onRefresh.bind(this)} charge={charge} key={charge.id} active={true} />
             )) : <p>No cargos activos para mostrar.</p>
           }
         </div>

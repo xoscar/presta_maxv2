@@ -10,7 +10,6 @@ import Charge from '../../../models/charge.jsx';
 import NewLoan from '../../loans/main/new.jsx';
 import NewCharge from '../../charges/new.jsx';
 
-
 export default class Options extends React.Component {
   constructor() {
     super();

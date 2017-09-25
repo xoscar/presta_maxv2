@@ -4,7 +4,7 @@ import RestConnection from '../utils/rest.jsx';
 const resource = 'http://localhost:4000/api/clients';
 
 export default (options) => {
-  const restConnection = RestConnection(Object.assign(options, { resource }));
+  const restConnection = RestConnection(Object.assign(options || {}, { resource }));
 
   restConnection.search = (query, callback) => (
     restConnection.send(restConnection.generateOptions(restConnection.attachParamsToUrl(resource, query), 'GET', null, callback))
