@@ -1,13 +1,12 @@
-const debug = process.env.NODE_ENV !== 'production';
 const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
   context: path.join(__dirname),
-  devtool: debug ? 'inline-sourcemap' : null,
+  devtool: process.env.NODE_ENV !== 'production' ? 'inline-sourcemap' : null,
   entry: './app.jsx',
   output: {
-    path: path.join(__dirname, '../public/js/'),
+    path: path.join(__dirname, '../public'),
     filename: 'bundle.js',
   },
   module: {
@@ -20,17 +19,27 @@ module.exports = {
         plugins: ['react-html-attrs', 'transform-class-properties', 'transform-decorators-legacy'],
       },
     }, {
-      test: /\.hogan$/,
-      loader: 'hogan',
+      test: /\.css$/,
+      loaders: ['style-loader', 'css-loader', 'resolve-url-loader'],
+    }, {
+      test: /\.scss$/,
+      loaders: ['style-loader', 'css-loader', 'resolve-url-loader', 'sass-loader?sourceMap'],
+    }, {
+      test: /\.json$/,
+      loader: 'json-loader',
+    }, {
+      test: /\.(jpg|fig|woff|woff2|png|eot|ttf|svg)$/,
+      loader: 'url-loader?limit=5000',
     }],
   },
-  plugins: debug ? [] : [
+  plugins: process.env.NODE_ENV !== 'production' ? [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('test'),
+      'process.env.BASE_URL': JSON.stringify('http://localhost:4000/api'),
+    }),
+  ] : [
     new webpack.optimize.DedupePlugin(),
     new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.optimize.UglifyJsPlugin({ mangle: false, sourcemap: false }),
-    new webpack.ProvidePlugin({
-      $: 'jquery',
-      jQuery: 'jquery',
-    }),
   ],
 };

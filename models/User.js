@@ -1,85 +1,65 @@
+// dependencies
 const mongoose = require('mongoose');
-const Async = require('async');
 const bcrypt = require('bcrypt-nodejs');
 const validator = require('validator');
-const select = require('../utils/common').select;
-const Response = require('../utils/response');
+const uuid = require('uuid-v4');
 
-function validateData(query) {
-  const errors = new Response('error');
+// common
+const common = require('../utils/common');
 
-  if (!query) {
-    errors.push('request', 'Emtpy request');
+// schemas
+const userSchema = require('../schemas/userSchema');
+const mappings = require('../schemas/userSchema').mappings;
+
+userSchema.statics.validateCreate = function validateCreate(body = {}) {
+  const errors = [];
+  const createBody = mappings.create(body);
+
+  if (!createBody.username || !validator.isAlphanumeric(createBody.username) || createBody.username.length < 4) {
+    errors.push({ code: 'username', text: 'Not a valid username.' });
   }
 
-  if (!select(query, 'username') ||
-    !validator.isAlphanumeric(query.username) ||
-    query.username.length < 4) {
-    errors.push('username', 'Not a valid username.');
+  if (!createBody.password || createBody.password.length < 6) {
+    errors.push({ code: 'password', text: 'Not a valid password.' });
   }
 
-  if (!select(query, 'password') ||
-    query.password.length < 6) {
-    errors.push('password', 'Not a valid password.');
-  }
+  return errors.length ? Promise.reject({
+    statusCode: 400,
+    messages: errors,
+    type: 'ValidationError',
+  }) : Promise.resolve(createBody);
+};
 
-  return errors;
-}
+userSchema.statics.validateLogin = function validateLogin(body = {}) {
+  const errors = 'username password'.split(' ').reduce((acc, field) => (
+    !body[field] ? acc.concat([{ code: field, text: `El ${field} no puede ser vacío` }]) : acc
+  ), []);
 
-function validateLogIn(query) {
-  const errors = new Response('Unauthorized');
-
-  if (Object.keys(query) === 0) {
-    errors.push('request', 'Emtpy request');
-  }
-
-  if (!select(query, 'username')) {
-    errors.push('username', 'El usuario no puede estar vacío.');
-  }
-
-  if (!select(query, 'password')) {
-    errors.push('password', 'La contraseña no puede estar vacía.');
-  }
-
-  return errors;
-}
-
-const userSchema = new mongoose.Schema({
-  name: String,
-  username: String,
-  password: String,
-  token: String,
-  role: String,
-});
+  return errors.length ? Promise.reject({
+    statusCode: 400,
+    messages: errors,
+    type: 'ValidationError',
+  }) : Promise.resolve(body);
+};
 
 userSchema.pre('save', function preSave(next) {
   if (this.isNew) {
-    Async.waterfall([
-      (wfaCallback) => {
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(this.password, salt, null, (hashErr, hash) => {
-            this.password = hash;
-            return wfaCallback(hashErr);
-          });
-        });
-      },
+    this.role = 'user';
+    return Promise
 
-      (wfaCallback) => {
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(this.token, salt, null, (hashErr, hash) => {
-            this.token = hash;
-            return wfaCallback(hashErr);
-          });
-        });
-      }],
+      .all([
+        common.encryptString(this.password),
+        common.encryptString(uuid()),
+      ])
 
-      (err) => {
-        console.log('saving ended');
-        next(err);
+      .then(([password, token]) => {
+        this.token = token;
+        this.password = password;
+        next();
       });
   }
 
-  next();
+  return next();
 });
 
 userSchema.methods.comparePassword = function comparePassword(candidatePassword, callback) {
@@ -92,75 +72,54 @@ userSchema.methods.comparePassword = function comparePassword(candidatePassword,
   });
 };
 
-userSchema.methods.compareToken = function compareToken(candidateToken, callback) {
-  if (this.token === candidateToken) {
-    return callback(null, true);
-  }
+userSchema.statics.validateToken = function validateToken(jwtPayload) {
+  return new Promise((resolve, reject) => {
+    this.findOne({
+      username: jwtPayload.username,
+    }, (err, user) => {
+      if (err || !user) {
+        return reject({
+          statusCode: 401,
+          code: 'User not found',
+        });
+      }
 
-  return bcrypt.compare(candidateToken, this.token, (err, isMatch) => (
-    callback(err, isMatch)
-  ));
+      return common.compareToEncryptedString(user.token, jwtPayload.token)
+
+        .then(() => (
+          resolve(user)
+        ));
+    });
+  });
 };
 
-userSchema.methods.getInfo = function getInfo() {
-  return {
-    username: this.username,
-    role: this.role,
-  };
-};
-
-userSchema.statics.login = function login(query, callback) {
-  const errors = validateLogIn(query);
-
-  if (errors.messages.length === 0) {
+userSchema.statics.login = function login(query) {
+  return new Promise((resolve, reject) => {
     this.findOne({
       username: query.username,
     }, (err, user) => {
       if (err || !user) {
-        errors.push('missmatch', 'Error en el usuario o la contraseña.');
-
-        return callback(errors);
+        return reject({
+          statusCode: 401,
+          messages: [{
+            code: 'UserNotFound',
+            text: 'User not found',
+          }],
+          type: 'NotFoundError',
+        });
       }
 
+      return common.compareToEncryptedString(user.password, query.password)
 
-      return user.comparePassword(query.password, (compareErr, isMatch) => {
-        if (compareErr || !isMatch) {
-          errors.push('missmatch', 'Error en el usuario o la contraseña.');
-          return callback(errors);
-        }
-
-        return callback(null, user);
-      });
+        .then(() => (
+          resolve(user)
+        ));
     });
-  } else {
-    callback(errors);
-  }
+  });
 };
 
-userSchema.statics.create = function create(query, callback) {
-  const errors = validateData(query);
-
-  if (errors.messages.length === 0) {
-    this.findOne({ username: query.username }, (err, user) => {
-      if (err) {
-        errors.push('application', err);
-        callback(errors);
-      } else if (user) {
-        errors.push('username', 'User already exists');
-        callback(errors);
-      } else {
-        const newUser = new this({
-          username: query.username,
-          password: query.password,
-          role: 'user',
-        });
-
-        callback(null, newUser);
-      }
-    });
-  } else {
-    callback(errors);
-  }
+userSchema.methods.getInfo = function getInfo() {
+  return mappings.info(this);
 };
 
 module.exports = mongoose.model('users', userSchema);

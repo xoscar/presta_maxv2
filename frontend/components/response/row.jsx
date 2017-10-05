@@ -5,7 +5,7 @@ const responseRow = ({
   message,
 }) => ((
   <div>
-    <div className={`white-text animated bounceIn red chip ${backColor}`}>
+    <div className={`white-text chip ${backColor}`}>
       {message}
       <i className="close material-icons">close</i>
     </div>

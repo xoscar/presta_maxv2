@@ -1,144 +1,169 @@
-'use strict';
-
 // dependencies
-const crypto = require('crypto');
-const _ = require('underscore');
-const validator = require('validator');
+const bcrypt = require('bcrypt-nodejs');
+const objectMapper = require('object-mapper');
 
-/**
- * Returns the fingerprint from the combination of the given params.
- * @param  {Object} element object to get fingerprint
- * @param  {Array} params  combined generate the fingerprint.
- * @return {String}  hashed fingerprint.
- */
-function generateFingerPrint(element, params) {
-  const print = params.map(param => (
-    element[param]
-  )).join('');
-
-  return crypto.createHash('md5').update(print).digest('hex');
-}
-
-/**
- * Removes the keys from the object
- * @param  {Object} object, the object that is going to be filtered.
- * @param  {Array} keys, the keys to remove.
- */
-function filterKeys(object, keys) {
-  return Object.keys(object).filter(key => (
-    keys.indexOf(key) === -1
-  ));
-}
-
-/**
- * performs a shallow copy of a simple object
- * @param  {Object} object object to clone
- * @return {Object}        cloned object ready for manipulation
- */
-function clone(object) {
-  try {
-    return JSON.parse(JSON.stringify(object));
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * select a dynamic attribute from an object by using the selector
- * @param  {Object} object   object to select attribute from
- * @param  {String} selector attribute to select as string in dot-notation
- * @return {Object}          selected attribute
- */
 function select(object, selector) {
-  const path = selector.split('.');
-  let obj = clone(object);
+  if (object[selector]) return object[selector];
 
-  path.forEach((pathSegment) => {
-    if (_.has(obj, pathSegment)) {
-      obj = obj[pathSegment];
-    }
-  });
+  const path = selector.split('.');
+  let obj = Object.assign({}, object);
+
+  for (let i = 0; i < path.length; i += 1) {
+    if (obj[path[i]]) {
+      obj = obj[path[i]];
+    } else return null;
+  }
 
   return obj;
 }
 
-/**
- * Validates the page and pagesize and returns the skip and limit
- * @param  {Number} page, page number.
- * @param  {Number} pageSize, size of the page.
- * @return {Object || Boolean}
- */
-function validatePagination(page, pageSize) {
-  const pageOkay = validator.isInt(page, {
-    min: 0,
-    max: 99,
-  });
-
-  const pageSizeOkay = validator.isInt(pageSize, {
-    min: 0,
-    max: 48,
-  });
-
-  if (!(pageOkay && pageSizeOkay)) {
-    return false;
-  }
-
-  return {
-    limit: parseInt(pageSize, 10),
-    skip: parseInt(pageSize, 10) * parseInt(page, 10),
-  };
-}
-
-/**
- * Gets the query from the request
- * @param  {Array} availableRequests, array of posible combinations of parameters.
- * @param  {Object} req, request object.
- * @return {Array}
- */
-function getQueryFromRequest(availableRequests, req) {
-  const query = {};
-  let found = false;
-  const search = 'body query params'.split(' ');
-
-  search.forEach((s) => {
-    availableRequests.forEach((request) => {
-      request.params.forEach((param, index) => {
-        if (req[s] && req[s][param]) {
-          query[request.fields[index]] = req[s][param];
-        }
-      });
-
-      if (!found && Object.keys(query).length === request.params.length) {
-        found = true;
-      }
-    });
-  });
-
-  _.keys(query).forEach((key) => {
-    if (key === 'user_id') query.user_id = parseInt(query.user_id, 10);
-  });
-
-  return query;
-}
-
-function generateArrayFromObject(object, fields) {
+module.exports.generateArrayFromObject = (object, fields) => {
   const result = [];
 
   fields.forEach((field) => {
-    if (select(object, field) && !validator.isNull(String(select(object, field)))) {
+    if (select(object, field)) {
       result.push(String(select(object, field)).toLowerCase());
     }
   });
 
   return result;
-}
+};
 
-module.exports = {
-  filterKeys,
-  validatePagination,
-  clone,
-  select,
-  getQueryFromRequest,
-  generateFingerPrint,
-  generateArrayFromObject,
+const validatePagination = (page = 0, pageSize = 12) => {
+  const errors = [];
+
+  if (page > 99 || page < 0) {
+    errors.push([{
+      code: 'wrongPageNumber',
+      text: 'Page must be a number between 0 and 99',
+    }]);
+  }
+
+  if (pageSize < 5 || pageSize > 45) {
+    errors.push([{
+      code: 'wrongPageSize',
+      text: 'Page size must be a number between 0 and 45',
+    }]);
+  }
+
+  return errors.length ? Promise.reject({
+    statusCode: 400,
+    messages: errors,
+    type: 'validationError',
+  }) : Promise.resolve({
+    limit: Number(pageSize, 10),
+    skip: Number(pageSize, 10) * Number(page, 10),
+  });
+};
+
+module.exports.validatePagination = validatePagination;
+
+module.exports.encryptString = string => (
+  new Promise((resolve, reject) => (
+    bcrypt.genSalt(10, (err, salt) => {
+      bcrypt.hash(string, salt, null, (hashErr, hash) => (
+        hashErr ? reject(hashErr) : resolve(hash)
+      ));
+    })
+  ))
+);
+
+module.exports.compareToEncryptedString = (enctypted, rawString) => (
+  new Promise((resolve, reject) => (
+    bcrypt.compare(rawString, enctypted, (err, isMatch) => (
+      err ? reject(err) : resolve(isMatch)
+    ))
+  ))
+);
+
+module.exports.validateRequiredFields = (object, requiredFieldsList) => {
+  const missingFields = requiredFieldsList.filter(requiredField => (!select(object, requiredField)));
+
+  if (missingFields.length > 0) {
+    return Promise.reject({
+      statusCode: 400,
+      code: `Missing fields in create request: ${missingFields.join(', ')}`,
+    });
+  }
+
+  return Promise.resolve(object);
+};
+
+module.exports.hugs = (content, template) => (
+  template.match(/{{(.*?)}}/g) ?
+  template.match(/{{(.*?)}}/g).map(placeholder => placeholder.replace(/{+|}+/g, '')).forEach((placeholder) => {
+    const value = select(content, placeholder);
+    template = template.replace(`{{${placeholder}}}`, typeof value !== 'undefined' && value !== null ? select(content, placeholder) : '');
+  }) : template
+);
+
+module.exports.search = (model, query, eachItem) => {
+  const mappedQuery = objectMapper(query, {
+    s: {
+      key: 'searchTerms',
+      default: ' ',
+    },
+    page: {
+      key: 'page',
+      default: 0,
+    },
+    pageSize: {
+      key: 'pageSize',
+      default: 12,
+    },
+  });
+
+  // get pagination
+  return validatePagination(mappedQuery.page, mappedQuery.pageSize)
+
+    .then((pagination) => {
+      const searchRequest = (type) => {
+        const search = model[type]({
+          $and: mappedQuery.searchTerms.trim().split(' ').map(term => ({
+            search: {
+              $regex: term,
+              $options: 'i',
+            },
+          })),
+        });
+
+        if (type !== 'count') {
+          search.limit(pagination.limit).skip(pagination.skip);
+        }
+
+        return search.sort({
+          created: -1,
+        })
+        .exec();
+      };
+
+      return Promise.all([
+        searchRequest('find'),
+        searchRequest('count'),
+      ])
+
+      .then(([items, hits]) => (
+        Promise.all(items.map(item => (
+          eachItem ? eachItem(item) : item.getInfo()
+        )))
+
+        .then(results => (
+          Promise.resolve({
+            results,
+            hits,
+          })
+        ))
+      ))
+
+      .catch(err => (
+        Promise.reject({
+          statusCode: 500,
+          messages: [{
+            code: 'searchError',
+            text: `Error while searching ${err}`,
+          }],
+          type: 'InternalError',
+        })
+      ));
+    });
 };

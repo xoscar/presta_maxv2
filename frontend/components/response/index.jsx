@@ -1,22 +1,33 @@
+// dependencies
 import React from 'react';
+
+// components
 import Row from './row.jsx';
+import ErrorModal from './errorModal.jsx';
 
-export default class Response extends React.Component {
-
-  render() {
-    return (
-      <div>
-        {
-          this.props.messages.map(message => (
-            <Row backColor={this.props.isError ? 'red' : 'green'} message={message.message} key={`${message.field}-${Date.now()}`}/>
-          ))
-        }
-      </div>
-    );
-  }
-}
-
-Response.propTypes = {
-  isError: React.PropTypes.bool,
-  messages: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+const response = ({
+  res = null,
+  showMessages = true,
+  onClosingModalError,
+}) => {
+  const result = res && (res.err || res.success);
+  return (
+    <div>
+      <ErrorModal onClosingModalError={onClosingModalError} err={result && result.statusCode >= 500 ? result : null}/>
+      {
+        result && (showMessages || !res.isError) && result.statusCode < 500 ? result.data.messages.map(message => (
+          <Row backColor={res.isError ? 'red' : 'green'} message={message.text} key={`${message.code}-${Date.now()}`}/>
+        )) : ''
+      }
+    </div>
+  );
 };
+
+response.propTypes = {
+  onClosingModalError: React.PropTypes.func.isRequired,
+
+  res: React.PropTypes.object,
+  showMessages: React.PropTypes.bool,
+};
+
+export default response;

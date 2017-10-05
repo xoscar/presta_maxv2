@@ -1,29 +1,28 @@
 import RestConnection from '../utils/rest.jsx';
+import { queryStringify } from '../utils/common.jsx';
+import { logout } from '../utils/auth.jsx';
 
-// change this to be ENV configurable.
-const resource = 'http://localhost:4000/api/loans';
+export default (options = {}) => {
+  const restConnection = RestConnection(Object.assign(options, { resource: `${process.env.BASE_URL}/loans`, onfailAuth: logout }));
 
-export default (options) => {
-  const restConnection = RestConnection(Object.assign(options || {}, { resource }));
-
-  restConnection.search = (query, callback) => (
-    restConnection.send(restConnection.generateOptions(restConnection.attachParamsToUrl(resource, query), 'GET', null, callback))
+  restConnection.search = (query = {}) => (
+    restConnection.send(`${process.env.BASE_URL}/loans${queryStringify(query)}`, 'GET')
   );
 
-  restConnection.getPayment = (id, paymentId, callback) => (
-    restConnection.send(restConnection.generateOptions(`${resource}/${id}/payments/${paymentId}`, 'GET', null, callback))
+  restConnection.getPayment = (id, paymentId) => (
+    restConnection.send(`${process.env.BASE_URL}/loans/${id}/payments/${paymentId}`, 'GET')
   );
 
-  restConnection.createPayment = (id, body, callback) => (
-    restConnection.send(restConnection.generateOptions(`${resource}/${id}/payments/`, 'POST', body, callback))
+  restConnection.createPayment = (id, body) => (
+    restConnection.send(`${process.env.BASE_URL}/loans/${id}/payments/`, 'POST', body)
   );
 
-  restConnection.updatePayment = (id, paymentId, body, callback) => (
-    restConnection.send(restConnection.generateOptions(`${resource}/${id}/payments/${paymentId}`, 'PATCH', body, callback))
+  restConnection.updatePayment = (id, paymentId, body) => (
+    restConnection.send(`${process.env.BASE_URL}/loans/${id}/payments/${paymentId}`, 'PATCH', body)
   );
 
-  restConnection.deletePayment = (id, paymentId, callback) => (
-    restConnection.send(restConnection.generateOptions(`${resource}/${id}/payments/${paymentId}`, 'DELETE', null, callback))
+  restConnection.deletePayment = (id, paymentId) => (
+    restConnection.send(`${process.env.BASE_URL}/loans/${id}/payments/${paymentId}`, 'DELETE')
   );
 
   return restConnection;

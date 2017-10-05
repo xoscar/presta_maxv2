@@ -24,7 +24,7 @@ export default class Pagination extends React.Component {
     const next = this.props.results === 0 || this.props.results < 12 ? null : current + 1;
 
     return (
-      <div className="row center-align z-depth-1">
+      <div className="row center-align">
         <div className="col s12 pagination-clients">
           <ul className="pagination">
             {

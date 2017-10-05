@@ -1,72 +1,67 @@
 import $ from 'jquery';
 
-export default (options) => {
-  const requestsWithBody = 'POST PATCH PUT'.split(' ');
-  const resource = options.resource;
-  const headers = options.headers;
-
-  const getHeaders = () => (
-    Object.assign({
-      'Content-type': 'application/json',
-    }, headers || {})
+export default ({ resource = '', headers = {}, onfailAuth = null }) => {
+  const send = (url, method, body, redirect = true) => (
+    new Promise((resolve, reject) => {
+      $.ajax({
+        type: method,
+        url,
+        headers: Object.assign({
+          'Content-type': 'application/json',
+        }, headers),
+        cache: false,
+        success: (data, res, xhr) => {
+          resolve({
+            data,
+            statusCode: xhr.status,
+          });
+        },
+        error: (err) => {
+          try {
+            if (err.status === 401 && onfailAuth && redirect) {
+              onfailAuth(url);
+            } else {
+              reject({
+                data: JSON.parse(err.responseText),
+                statusCode: err.status,
+              });
+            }
+          } catch (e) {
+            console.log('Undlandled error', e);
+            reject({
+              data: {
+                messages: [{
+                  code: 'Unhandled error.',
+                  text: 'Error while connecting to API services',
+                }],
+              },
+              statusCode: 500,
+            });
+          }
+        },
+        data: 'POST PATCH PUT'.split(' ').indexOf(method) !== -1 && JSON.stringify(body),
+      });
+    })
   );
 
-  const send = localOptions => (
-    $.ajax(localOptions)
+  const create = body => (
+    send(resource, 'POST', body)
   );
 
-  const attachParamsToUrl = (url, query) => {
-    if (!query) {
-      return null;
-    }
-
-    url += '?';
-    query.forEach((param) => {
-      url += `${param.name}=${param.value}&`;
-    });
-
-    return url;
-  };
-
-  const generateOptions = (url, method, body, callback) => {
-    const localOptions = {
-      type: method,
-      url,
-      headers: getHeaders(),
-      cache: false,
-      success: (data, status, xhr) => (
-        callback(null, data, status, xhr)
-      ),
-      error: err => (
-        callback(JSON.parse(err.responseText).messages)
-      ),
-    };
-
-    if (requestsWithBody.indexOf(method) !== -1) {
-      localOptions.data = JSON.stringify(body);
-    }
-
-    return localOptions;
-  };
-
-  const create = (body, callback) => (
-    send(generateOptions(resource, 'POST', body, callback))
+  const update = (id, body) => (
+    send(`${resource}/${id}`, 'PATCH', body)
   );
 
-  const update = (id, body, callback) => (
-    send(generateOptions(`${resource}/${id}`, 'PATCH', body, callback))
+  const get = id => (
+    send(`${resource}/${id}`, 'GET')
   );
 
-  const get = (id, callback) => (
-    send(generateOptions(`${resource}/${id}`, 'GET', null, callback))
+  const getAll = () => (
+    send(resource, 'GET')
   );
 
-  const getAll = callback => (
-    send(generateOptions(resource, 'GET', null, callback))
-  );
-
-  const del = (id, callback) => (
-    send(generateOptions(`${resource}/${id}`, 'DELETE', null, callback))
+  const del = id => (
+    send(`${resource}/${id}`, 'DELETE')
   );
 
   return {
@@ -76,7 +71,5 @@ export default (options) => {
     del,
     update,
     send,
-    attachParamsToUrl,
-    generateOptions,
   };
 };

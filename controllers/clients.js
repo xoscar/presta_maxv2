@@ -1,89 +1,141 @@
-'use strict';
-
+// models
 const Client = require('../models/Client');
+
+// common
 const common = require('../utils/common');
-const Async = require('async');
+const ErrorHandler = require('../utils/errorHandler');
 
 module.exports.search = (req, res) => {
-  const userId = req.user.id;
-  let searchRequest = req.query.s;
+  common.search(Client, Object.assign(req.query, {
+    userId: req.user.id,
+  }))
 
-  if (!searchRequest) searchRequest = ' ';
+    .then(({ results, hits }) => (
+      res.json({
+        clients: results,
+        hits,
+      })
+    ))
 
-  const page = req.query.page || '0';
-  const pageSize = req.query.pSize || '12';
-
-  // get pagination
-  const pagination = common.validatePagination(page, pageSize);
-  if (!pagination) {
-    return res.status(400).end('Not a valid request');
-  }
-
-  console.log('User ' + userId + ' search for ' + searchRequest);
-
-  // prepare full text search
-  const searchTerms = searchRequest.trim().split(' ');
-
-  return Client.search(searchTerms, userId, pagination.limit, pagination.skip, (err, docs) => {
-    if (err) {
-      return res.status(500).send('Internal error.');
-    }
-
-    return Async.map(docs, (client, mapaCallback) => {
-      client.getInfo(mapaCallback);
-    }, (mapErr, result) => {
-      if (mapErr) {
-        return res.status(500).send('Internal error.');
-      }
-
-      return res.status(200).json(result);
-    });
-  });
+    .catch(ErrorHandler.attach(res));
 };
 
 module.exports.info = (req, res) => {
-  req.client.getInfo((err, info) => {
-    if (err) res.status(400).send('Error getting information.');
-    else res.json(info);
-  });
+  Client.findById(req.params.id)
+
+    .then(client => (
+      client ? client.getInfo() : Promise.reject({
+        statusCode: 404,
+        messages: [{
+          code: 'NotFound',
+          text: 'Client not found',
+        }],
+        type: 'NotFound',
+      })
+    ))
+
+    .then(client => (
+      res.json(client)
+    ))
+
+    .catch(ErrorHandler.attach(res));
 };
 
 module.exports.loans = (req, res) => {
-  req.client.getInfo((err, info) => {
-    if (err) res.status(400).send('Error getting information.');
-    else res.json(info);
-  });
+  Client.findById(req.params.id)
+
+    .then(client => (
+      client ? client.getLoans() : Promise.reject({
+        statusCode: 404,
+        messages: [{
+          code: 'NotFound',
+          text: 'Client not found',
+        }],
+        type: 'NotFound',
+      })
+    ))
+
+    .then(client => (
+      res.json(client)
+    ))
+
+    .catch(ErrorHandler.attach(res));
 };
 
 module.exports.create = (req, res) => {
-  Client.create(req.user, req.body, (err, client) => {
-    if (err) {
-      res.status(400).send(err);
-    } else {
-      client.getInfo((infoErr, info) => {
-        if (infoErr) res.status(500).send('Error creating client.');
-        else res.json(info);
-      });
-    }
-  });
+  Client.validateCreate(Object.assign(req.body, {
+    user_id: req.user.id,
+  }))
+
+    .then(createBody => (
+      Client.getNewId({ userId: req.user.id, body: createBody })
+
+      .then(clientId => (
+        Client.create(Object.assign(createBody, {
+          client_id: clientId,
+        }))
+      ))
+    ))
+
+    .then(client => (
+      client.getInfo()
+
+      .then(info => (
+        res.status(201).json(info)
+      ))
+    ))
+
+    .catch(ErrorHandler.attach(res));
 };
 
 module.exports.update = (req, res) => {
-  req.client.update(req.body, (err, client) => {
-    if (err) {
-      res.status(400).send(err);
-    } else {
-      client.getInfo((infoErr, info) => {
-        if (err) res.status(500).send('Error updating client.');
-        else res.json(info);
-      });
-    }
-  });
+  Client.validateUpdate(Object.assign(req.body, {
+    user_id: req.user.id,
+  }))
+
+    .then(updateBody => (
+      Client.findById(req.params.id)
+
+      .then(client => (
+        client ? Object.assign(client, updateBody).save() : Promise.reject({
+          statusCode: 404,
+          messages: [{
+            code: 'NotFound',
+            text: 'Client not found',
+          }],
+          type: 'NotFound',
+        })
+      ))
+    ))
+
+    .then(client => (
+      client.getInfo()
+
+      .then(info => (
+        res.json(info)
+      ))
+    ))
+
+    .catch(ErrorHandler.attach(res));
 };
 
 module.exports.delete = (req, res) => {
-  req.client.delete((err) => {
-    if (err) res.status(500).send(err);
-    else res.send('Success.');
-  });
+  Client.findById(req.params.id)
+
+  .then(client => (
+    client ? client.delete() : Promise.reject({
+      statusCode: 404,
+      messages: [{
+        code: 'NotFound',
+        text: 'Client not found',
+      }],
+      type: 'NotFound',
+    })
+  ))
+
+  .then(() => (
+    res.sendStatus(201)
+  ))
+
+  .catch(ErrorHandler.attach(res));
 };

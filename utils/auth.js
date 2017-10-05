@@ -4,76 +4,109 @@ const jwt = require('jsonwebtoken');
 // models
 const User = require('../models/User');
 
-const authUser = (jwtPayload, callback) => {
-  User.findOne({
-    username: jwtPayload.username,
-  }, (err, user) => {
-    if (err || !user) {
-      return callback(false);
-    }
-
-    return user.compareToken(jwtPayload.token, (compareErr, isMatch) => {
-      if (compareErr || !isMatch) {
-        return callback(false);
-      }
-
-      return callback(true, user);
-    });
-  });
-};
-
-const middleware = (req, res, next) => {
-  const token = req.headers.Authorization || req.headers.authorization;
-
+const validateToken = (token, username) => {
+  const type = 'authError';
   if (!token) {
-    return res.status(401).send({
-      type: 'Unauthorized',
+    return Promise.reject({
+      statusCode: 401,
       messages: [{
-        field: 'Authorization',
-        message: 'No token found.',
+        code: 'tokenNotFound',
+        text: 'No token found.',
       }],
+      type,
     });
   }
 
   if (!/token [\S]*/.test(token)) {
-    return res.status(400).send({
-      type: 'Unauthorized',
+    return Promise.reject({
+      statusCode: 400,
       messages: [{
-        field: 'Authorization',
-        message: 'Malformed token.',
+        code: 'malformedToken',
+        text: 'Malformed token.',
       }],
+      type,
     });
   }
 
-  return jwt.verify(token.split(' ')[1], process.env.SESSION_SECRET, { algorithms: ['HS384'] }, (verifyError, jwtPayload) => {
-    if (verifyError) {
-      return res.status(401).send({
-        type: 'Unauthorized',
-        messages: [{
-          field: 'Authorization',
-          message: 'Not a valid token.',
-        }],
-      });
-    }
-
-    return authUser(jwtPayload, (isAuthed, user) => {
-      if (!isAuthed) {
-        return res.status(401).send({
-          type: 'Unauthorized',
+  return new Promise((resolve, reject) => (
+    jwt.verify(token.split(' ')[1], process.env.SESSION_SECRET, { algorithms: ['HS384'] }, (verifyError, jwtPayload) => {
+      if (verifyError) {
+        return reject({
+          statusCode: 401,
           messages: [{
-            field: 'Authorization',
-            message: 'Not a valid token.',
+            code: 'notValidToken',
+            text: 'Not a valid token.',
           }],
+          type,
         });
       }
 
-      req.user = user;
-      return next();
-    });
-  });
+      if (!jwtPayload.username) {
+        return reject({
+          statusCode: 401,
+          messages: [{
+            code: 'anonUser',
+            text: 'Action requires authenticated user.',
+          }],
+          type,
+        });
+      }
+
+      if (username && jwtPayload.username !== username) {
+        return reject({
+          statusCode: 401,
+          messages: [{
+            code: 'tokenMismatch',
+            text: 'Username doesn\'t match with token.',
+          }],
+          type,
+        });
+      }
+
+      return User.validateToken(jwtPayload)
+
+        .then(user => (
+          resolve({
+            user,
+            jwtPayload,
+          })
+        ));
+    })
+  ));
 };
 
-module.exports = {
-  authUser,
-  middleware,
+module.exports.signToken = jwtPayload => (
+  new Promise((resolve, reject) => {
+    jwt.sign(jwtPayload, process.env.SESSION_SECRET, { algorithm: 'HS384' }, (err, token) => {
+      if (err) {
+        return reject({
+          statusCode: 500,
+          messages: [{
+            code: 'signingTokenError',
+            text: 'Error signing token.',
+          }],
+          type: 'ProcessingError',
+        });
+      }
+
+      return resolve(token);
+    });
+  })
+);
+
+module.exports.middleware = (req, res, next) => {
+  validateToken(req.headers.Authorization || req.headers.authorization, req.params.username)
+
+    .then((authInfo) => {
+      req.user = authInfo.user;
+      req.jwtPayload = authInfo.jwtPayload;
+
+      next();
+    }, ({
+      statusCode,
+      messages,
+      type,
+    }) => (
+      res.status(statusCode).json({ messages, type })
+    ));
 };

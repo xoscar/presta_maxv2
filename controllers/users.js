@@ -1,48 +1,35 @@
-// dependencies
-const jwt = require('jsonwebtoken');
-
 // models
 const User = require('../models/User');
 
-module.exports = {
-  postLogin: (req, res) => {
-    User.login(req.body, (err, user) => {
-      if (err) {
-        return res.status(401).json(err);
-      }
+// libs
+const signToken = require('../utils/auth').signToken;
 
-      return jwt.sign({
-        username: user.username,
-        timestamp: Date.now(),
-        token: user.token,
-      }, process.env.SESSION_SECRET, { algorithm: 'HS384' }, (signError, token) => {
-        res.json(Object.assign(user.getInfo(), { token }));
-      });
-    });
-  },
+// common
+const ErrorHandler = require('../utils/errorHandler');
 
-  getUserInfo: (req, res) => {
-    res.json(req.user.getInfo());
-  },
+module.exports.login = (req, res) => {
+  User.validateLogin(req.body)
+
+    .then(loginBody => (
+      User.login(loginBody)
+
+      .then(user => (
+        signToken({
+          username: user.username,
+          timestamp: Date.now(),
+          token: user.token,
+        })
+
+        .then(userToken => {
+          console.log('wut', Object.assign(user.getInfo(), { token: userToken }));
+          res.json(Object.assign(user.getInfo(), { token: userToken }));
+        })
+      ))
+    ))
+
+    .catch(ErrorHandler.attach(res));
 };
 
-// module.exports.getSignUp = (req, res) => {
-//   res.redirect('/');
-// };
-
-// module.exports.postSignUp = (req, res) => {
-//   User.create(req.body, (err, user) => {
-//     if (err) res.status(400).json(err);
-//     else {
-//       user.save(() => {
-//         res.json(user.getInfo());
-//       });
-//     }
-//   });
-// };
-
-// module.exports.getLogOut = (req, res) => {
-//   req.session.destroy(() => {
-//     res.redirect('/login');
-//   });
-// };
+module.exports.info = (req, res) => {
+  res.json(req.user.getInfo());
+};

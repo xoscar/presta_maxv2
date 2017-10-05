@@ -1,13 +1,11 @@
 import RestConnection from '../utils/rest.jsx';
+import { logout } from '../utils/auth.jsx';
 
-// change this to be ENV configurable.
-const resource = 'http://localhost:4000/api/users';
+export default (options = {}) => {
+  const restConnection = RestConnection(Object.assign(options, { resource: `${process.env.BASE_URL}/users`, onfailAuth: logout }));
 
-export default (options) => {
-  const restConnection = RestConnection(Object.assign(options || {}, { resource }));
-
-  restConnection.login = (body, callback) => (
-    restConnection.send(restConnection.generateOptions(`${resource}/login`, 'POST', body, callback))
+  restConnection.login = body => (
+    restConnection.send(`${process.env.BASE_URL}/users/login`, 'POST', body, false)
   );
 
   return restConnection;

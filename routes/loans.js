@@ -1,21 +1,17 @@
 const express = require('express');
 const auth = require('../utils/auth');
-const Loan = require('../models/Loan').Loan;
 
 // loangs controller
 const controller = require('../controllers/loans');
 
 const router = express.Router();
 
-router.get('/', auth.middleware, controller.search);
-router.get('/:id', auth.middleware, Loan.getFromRequest, controller.info);
-router.post('/', auth.middleware, controller.create);
-router.patch('/:id', auth.middleware, Loan.getFromRequest, controller.update);
-router.delete('/:id', auth.middleware, Loan.getFromRequest, controller.delete);
+router.all('*', auth.middleware);
 
-router.post('/:id/payments', auth.middleware, Loan.getFromRequest, controller.createPayment);
-router.get('/:id/payments/:paymentId', auth.middleware, Loan.getFromRequest, controller.getPayment);
-router.patch('/:id/payments/:paymentId', auth.middleware, Loan.getFromRequest, controller.updatePayment);
-router.delete('/:id/payments/:paymentId', auth.middleware, Loan.getFromRequest, controller.deletePayment);
+router.get('/', controller.search);
+router.get('/:id', controller.info);
+router.post('/', controller.create);
+router.patch('/:id', controller.update);
+router.delete('/:id', controller.delete);
 
 module.exports = router;

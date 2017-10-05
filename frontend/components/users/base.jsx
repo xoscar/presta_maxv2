@@ -5,11 +5,17 @@ import Cookies from 'universal-cookie';
 // models
 import User from '../../models/user.jsx';
 
+// libs
+import { getAuth } from '../../utils/auth.jsx';
+
 export default class Base extends React.Component {
   constructor() {
     super();
 
-    this.userService = User();
+    this.userService = User({
+      headers: getAuth(),
+    });
+
     this.cookieManager = new Cookies();
   }
 
@@ -18,21 +24,6 @@ export default class Base extends React.Component {
       [key]: event.target.value,
       error: null,
       response: null,
-    });
-  }
-
-  postLogin(event) {
-    event.preventDefault();
-    this.userService.login(this.state, (err, user) => {
-      if (err) {
-        return this.setState({
-          error: err,
-        });
-      }
-
-      // setting token cookie and redirecting
-      this.cookieManager.set('token', `token ${user.token}`);
-      return this.context.router.push('/portal');
     });
   }
 

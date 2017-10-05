@@ -1,80 +1,42 @@
 // dependencies
-import Cookies from 'universal-cookie';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, hashHistory } from 'react-router';
+import jquery from 'jquery';
 
-// routes
-import ClientsRoute from './routes/clients.jsx';
-import LoansRoute from './routes/loans.jsx';
-import UsersRoute from './routes/users.jsx';
+// libs
+import { validateToken } from './utils/auth.jsx';
 
-const mainLayout = React.createClass({
-  render: function render() {
-    return (
-      <div className="row">
-        <div className="col l2 s12">
-          <header>
-          </header>
-        </div>
-        <div className ="col l10 s12">
-          <main>
-            <nav className="top-nav">
-              <div className="container">
-                <div className="nav-wrapper">
-                  <a className="page-title">Clientes</a>
-                </div>
-              </div>
-            </nav>
-            <div className="container">
-              <p>{this.props.children}</p>
-            </div>
-          </main>
-        </div>
-      </div>
-    );
-  },
+// components
+import Layout from './components/layout/layout.jsx';
+import ClientsHomePage from './components/clients/pages/home.jsx';
+import ClientsProfile from './components/clients/pages/profile.jsx';
+import Login from './components/users/login.jsx';
+import LoansHomePage from './components/loans/pages/home.jsx';
+import LoansProfile from './components/loans/pages/profile.jsx';
 
-  propTypes: {
-    children: React.PropTypes.node.isRequired,
-  },
-});
+// css
+import './main.scss';
 
-const validateToken = (nextState, replace) => {
-  if (!new Cookies().get('token')) {
-    replace({
-      pathname: '/login',
-    });
-  }
-};
+window.$ = window.jQuery = jquery;
+
+require('materialize-css/dist/js/materialize.min.js');
 
 ReactDOM.render(
   <Router history={hashHistory}>
-    <Route path="/" onEnter={(nextState, replace) => {
-      replace({
-        pathname: !new Cookies().get('token') ? '/login' : '/portal',
-      });
-    }}/>
+    <Route path="/" onEnter={validateToken('/portal')}/>
 
-    <Route component={mainLayout}>
-      <Route path="/portal" onEnter={validateToken}>
-        <IndexRoute component={ClientsRoute.Main}/>
-        <Route path="clients" component={ClientsRoute.Main} >
-          <Route path=':clientId' component={ClientsRoute.Profile}/>
-        </Route>
+    <Route component={Layout}>
+      <IndexRoute component={ClientsHomePage}/>
+      <Route path="/portal" component={ClientsHomePage} onEnter={validateToken()}/>
 
-        <Route path="loans" component={LoansRoute.Main} >
-          <Route path=":loanId" component={LoansRoute.Profile}/>
-        </Route>
-      </Route>
+      <Route path="/clients" component={ClientsHomePage} onEnter={validateToken()}/>
+      <Route path='/clients/:clientId' component={ClientsProfile} onEnter={validateToken()}/>
+
+      <Route path="/loans" component={LoansHomePage} onEnter={validateToken()}/>
+      <Route path="/loans/:loanId" component={LoansProfile} onEnter={validateToken()}/>
     </Route>
 
-    <Route path="/login" onEnter={(nextState, replace) => {
-      if (new Cookies().get('token')) {
-        replace({
-          pathname: '/portal',
-        });
-      }
-    }} component={UsersRoute.Login} />
+    <Route path="/login" onEnter={validateToken('/portal')} component={Login} />
   </Router>
 , document.getElementById('rootNode'));

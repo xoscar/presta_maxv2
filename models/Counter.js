@@ -8,13 +8,14 @@ const counterSchema = new mongoose.Schema({
   name: String,
 });
 
-counterSchema.methods.getNext = function getNext(callback) {
+counterSchema.methods.getNext = function getNext() {
   this.count += 1;
 
-  this.save((err) => {
-    if (err) callback(err);
-    else callback(null, this.count - 1);
-  });
+  return this.save()
+
+  .then(() => (
+    Promise.resolve(this.count - 1)
+  ));
 };
 
 module.exports = mongoose.model('counters', counterSchema);

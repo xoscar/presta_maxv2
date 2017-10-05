@@ -1,72 +1,57 @@
-'use strict';
-
 const mongoose = require('mongoose');
 const common = require('../utils/common');
-const Loan = require('./Loan').Loan;
-const Charge = require('./Charge');
-const Async = require('async');
 const moment = require('moment-timezone');
-const Response = require('../utils/response');
 
-moment.locale('es');
-moment.tz.setDefault('America/Mexico_City');
+// models
+const Loan = require('./Loan');
+const Charge = require('./Charge');
 
-const clientSchema = new mongoose.Schema({
-  client_id: String,
-  name: String,
-  surname: String,
-  created: {
-    type: Date,
-    default: Date.now,
-  },
-  updated: {
-    type: Date,
-    default: Date.now,
-  },
-  address: String,
-  phone: String,
-  search: Array,
-  user_id: mongoose.Schema.Types.ObjectId,
-});
+// schema
+const clientSchema = require('../schemas/clientSchema');
+const mappings = require('../schemas/clientSchema').mappings;
 
-const availableRequests = [{
-  fields: '_id'.split(' '),
-  params: 'id'.split(' '),
-}];
+clientSchema.statics.validateCreate = function validateCreate(body = {}) {
+  const createBody = mappings.create(body);
 
-function validateData(query) {
-  const errors = new Response('error');
-  if (!query) {
-    errors.push('query', 'Invalid request.');
-  }
+  const errors = 'name surname address phone user_id'.split(' ').reduce((acc, field) => (!createBody[field] ? acc.concat([{
+    code: field,
+    text: `${field} ingresado no es válido.`,
+  }]) : acc), []);
 
-  if (!query.name) {
-    errors.push('name', 'El nombre ingresado no es válido.');
-  }
+  return errors.length ? Promise.reject({
+    statusCode: 400,
+    messages: errors,
+    type: 'ValidationError',
+  }) : Promise.resolve(createBody);
+};
 
-  if (!query.surname) {
-    errors.push('surname', 'El apellido ingresado no es válido.');
-  }
+clientSchema.statics.validateUpdate = function validateUpdate(body = {}) {
+  const updateBody = mappings.update(body);
 
-  if (!query.address) {
-    errors.push('address', 'La dirección ingresada no es válida.');
-  }
+  const errors = 'name surname address phone'.split(' ').reduce((acc, field) => (!updateBody[field] ? acc.concat([{
+    code: field,
+    text: `${field} ingresado no es válido.`,
+  }]) : acc), []);
 
-  if (!query.phone) {
-    errors.push('phone', 'El teléfono ingresado no es válido.');
-  }
+  return errors.length ? Promise.reject({
+    statusCode: 400,
+    messages: errors,
+    type: 'ValidationError',
+  }) : Promise.resolve(updateBody);
+};
 
-  return errors;
-}
+clientSchema.statics.getNewId = function getNewId({ userId, body = {} }) {
+  const clientId = `${body.name.slice(0, 2).toUpperCase()}${body.surname.slice(0, 2).toUpperCase()}`;
 
-const prepareQuery = terms => (
-  terms.map(term => ({
-    search: {
-      $regex: term,
-      $options: 'i',
-    },
-  }))
-);
+  return this.find({
+    client_id: { $regex: new RegExp(clientId + '[0-9]') },
+    user_id: userId,
+  }).select('client_id').exec()
+
+  .then(clients => (
+    Promise.resolve(`${clientId}${clients.length}`)
+  ));
+};
 
 clientSchema.pre('save', function preSave(next) {
   const searchFields = 'name client_id surname'.split(' ');
@@ -77,234 +62,114 @@ clientSchema.pre('save', function preSave(next) {
 });
 
 clientSchema.methods.getBasicInfo = function getBasicInfo() {
-  return {
-    name: this.name.split(' ')[0].toLowerCase(),
-    name_complete: this.name.toLowerCase(),
-    surname: this.surname.toLowerCase(),
-    created: moment(this.created).format('DD/MM/YYYY HH:mm'),
-    created_from_now: moment(this.created).fromNow(),
-    updated: this.updated,
-    address: this.address,
-    phone: this.phone,
-    id: this._id, // eslint-ignore
-    client_id: this.client_id,
-  };
+  return mappings.info(this);
 };
 
-clientSchema.methods.getInfo = function getInfo(callback) {
-  const result = this.getBasicInfo();
+clientSchema.methods.getInfo = function getInfo() {
+  return Promise.all([
+    this.getLoans({ finished: false })
 
-  Async.waterfall([
-    (wfaCallback) => {
-      this.getLoans(false, (err, loans, extra) => {
-        if (err) return wfaCallback(err);
-        result.loans = loans;
-        result.active_loans = loans.length !== 0;
-        result.loans_depth = extra.total;
-        result.total_depth = extra.total;
+    .then(({ loans, metadata }) => (
+      Promise.resolve({
+        loans,
+        active_loans: loans.length !== 0,
+        loans_depth: metadata.loans_depth,
+        last_payment: metadata.last_payment ? metadata.last_payment.format('DD/MM/YYYY HH:mm') : null,
+        last_payment_from_now: metadata.last_payment ? metadata.last_payment.fromNow() : null,
+        last_loan: metadata.last_loan ? metadata.last_loan.format('DD/MM/YYYY HH:mm') : null,
+        last_loan_from_now: metadata.last_loan ? metadata.last_loan.fromNow() : null,
+        expired_loans: metadata.expired,
+      })
+    )),
 
-        if (extra.last_payment) {
-          result.last_payment = extra.last_payment.format('DD/MM/YYYY HH:mm');
-          result.last_payment_from_now = extra.last_payment.fromNow();
-        }
+    this.getLoans({ finised: true })
 
-        if (extra.last_loan) {
-          result.last_loan = extra.last_loan.format('DD/MM/YYYY HH:mm');
-          result.last_loan_from_now = extra.last_loan.fromNow();
-        }
+    .then(({ loans }) => (
+      Promise.resolve({
+        finished_loans: loans,
+      })
+    )),
 
-        result.expired_loans = extra.expired;
-        return wfaCallback();
-      });
-    },
+    this.getCharges({ finished: false })
 
-    (wfaCallback) => {
-      this.getLoans(true, (err, loans) => {
-        if (err) return wfaCallback(err);
-        result.finished_loans = loans;
+    .then(({ charges, total_depth }) => (
+      Promise.resolve({
+        charges,
+        charges_depth: total_depth,
+      })
+    )),
 
-        return wfaCallback();
-      });
-    },
+    this.getCharges({ finished: true })
 
-    (wfaCallback) => {
-      this.getCharges(false, (err, charges, total) => {
-        if (err) return wfaCallback(err);
-        result.charges = charges;
-        result.total_depth += total;
-        result.charges_depth = total;
+    .then(({ charges }) => (
+      Promise.resolve({
+        paid_charges: charges,
+      })
+    )),
+  ])
 
-        return wfaCallback();
-      });
-    },
-
-    (wfaCallback) => {
-      this.getCharges(true, (err, charges) => {
-        if (err) return wfaCallback(err);
-        result.paid_charges = charges;
-
-        return wfaCallback();
-      });
-    },
-  ], err => (
-    callback(err, result)
+  .then(([activeLoans, finishedLoans, activeCharges, finishedCharges ]) => (
+    Promise.resolve(Object.assign(mappings.info(this), activeLoans, finishedLoans, activeCharges, finishedCharges, {
+      total_depth: (activeLoans.loans_depth || 0) + (activeCharges.charges_depth || 0),
+    }))
   ));
 };
 
-clientSchema.methods.getCharges = function getCharges(paid, callback) {
-  let totalDepth = 0;
-
-  Charge
+clientSchema.methods.getCharges = function getCharges({ finished }) {
+  return Charge
     .find({
       client_id: this.id,
-      paid,
+      paid: finished,
     })
     .sort({ created: -1 })
-    .exec((err, charges) => {
-      if (err) return callback(err);
+    .exec()
 
-      return Async.map(charges, (charge, mapaCallback) => {
-        totalDepth += charge.amount;
-        mapaCallback(null, charge.getInfo());
-      }, (resError, result) => {
-        callback(resError, result, totalDepth);
-      });
-    });
+    .then(charges => (
+      Promise.resolve({
+        charges: charges.map(charge => charge.getInfo()),
+        total_depth: charges.reduce((acc, charge) => (
+          acc + charge.amount
+        ), 0),
+      })
+    ));
 };
 
-clientSchema.methods.getLoans = function getLoans(finished, callback) {
-  const extra = {
-    total: 0,
-    last_payment_holder: moment().subtract(4, 'year'),
-    last_loan_holder: moment().subtract(4, 'year'),
-    last_payment: null,
-    last_loan: null,
-    expired: false,
-  };
-
-  const match = {
-    client_id: this.id,
-    finished,
-  };
-
-  Loan
-    .find(match)
+clientSchema.methods.getLoans = function getLoans(params) {
+  return Loan
+    .find(params ? {
+      client_id: this.id,
+      finished: params.finished,
+    } : {
+      client_id: this.id,
+    })
     .sort({ created: -1 })
-    .exec((err, docs) => {
-      if (err) return callback(err);
+    .exec()
 
-      return Async.map(docs, (loan, mapaCallback) => {
-        const info = loan.getBasicInfo();
-
-        if (!extra.expired) extra.expired = info.expired;
-        if (info.last_payment && moment(info.last_payment).isAfter(extra.last_payment_holder)) {
-          extra.last_payment_holder = moment(info.last_payment);
-          extra.last_payment = moment(info.last_payment);
-        }
-
-        if (moment(info.created, 'DD/MM/YYYY HH:mm').isAfter(extra.last_loan_holder.toDate())) {
-          extra.last_loan_holder = moment(info.created, 'DD/MM/YYYY HH:mm');
-          extra.last_loan = moment(info.created, 'DD/MM/YYYY HH:mm');
-        }
-
-        extra.total += info.current_balance;
-        mapaCallback(null, info);
-      }, (resultError, loans) => {
-        callback(resultError, loans, extra);
-      });
-    });
+    .then(loans => (
+      Promise.resolve({
+        loans: loans.map(loan => loan.getBasicInfo()),
+        metadata: {
+          expired: Boolean(loans.filter(loan => loan.expired)[0]),
+          last_payment: loans.reduce((acc, loan) => {
+            const loanBasicInfo = loan.getBasicInfo();
+            return loanBasicInfo.last_payment && moment(loanBasicInfo.last_payment).isAfter(moment(acc || moment().subtract(4, 'year').toDate())) ? moment(loanBasicInfo.last_payment) : null;
+          }, null),
+          last_loan: loans.length ? moment(loans[loans.length - 1].getBasicInfo().created, 'DD/MM/YYYY HH:mm') : null,
+          loans_depth: loans.reduce((acc, loan) => acc + loan.getBasicInfo().current_balance, 0),
+        },
+      })
+    ));
 };
 
-clientSchema.methods.deleteLoans = function deleteLoans(callback) {
-  Loan.delete(this.id, callback);
-};
+clientSchema.methods.delete = function deleteClient() {
+  return Loan.find({ client_id: this.id })
 
-clientSchema.methods.update = function update(query, callback) {
-  const errors = validateData(query);
+  .remove()
+  .exec()
 
-  if (errors.messages.length === 0) {
-    this.name = query.name;
-    this.surname = query.surname;
-    this.address = query.address;
-    this.phone = query.phone;
-    this.save(callback);
-  } else callback(errors);
-};
-
-clientSchema.methods.delete = function deleteClient(callback) {
-  this.deleteLoans((err) => {
-    if (err) callback(err);
-    else this.remove(callback);
-  });
-};
-
-clientSchema.statics.create = function create(user, query, callback) {
-  const errors = validateData(query);
-
-  if (errors.messages.length === 0) {
-    const clientId = query.name.slice(0, 2).toUpperCase() +
-      query.surname.slice(0, 2).toUpperCase();
-
-    this.find({
-      client_id: { $regex: new RegExp(clientId + '[0-9]') },
-      user_id: user.id,
-    })
-
-    .select('client_id')
-
-    .exec((err, docs) => {
-      if (err) {
-        errors.push('application', 'Processing error.');
-        callback(errors);
-      } else {
-        let number = 1;
-        docs.forEach((doc, index) => {
-          number = index + 2;
-        });
-
-        const newClient = new this({
-          name: query.name,
-          surname: query.surname,
-          address: query.address,
-          phone: query.phone,
-          user_id: user.id,
-          client_id: clientId + number,
-        });
-
-        newClient.save(callback);
-      }
-    });
-  } else callback(errors);
-};
-
-clientSchema.statics.getFromRequest = function getFromRequest(req, res, next) {
-  const query = common.getQueryFromRequest(availableRequests, req);
-  if (!query) return res.status(400).send('Invalid request.');
-  if (req.user) query.user_id = req.user.id;
-
-  return mongoose.model('clients', clientSchema).findOne(query, (err, doc) => {
-    if (err || !doc) return res.status(404).send('Not found.');
-
-    req.client = doc;
-    return next();
-  });
-};
-
-clientSchema.statics.search = function search(searchTerms, userId, limit, skip, callback) {
-  const andQuery = prepareQuery(searchTerms);
-
-  this
-    .find({
-      $and: andQuery,
-    })
-    .where('user_id')
-    .equals(userId)
-    .limit(limit)
-    .skip(skip)
-    .sort({
-      created: -1,
-    })
-    .exec(callback);
+  .then(() => (
+    this.remove()
+  ));
 };
 
 clientSchema.index({

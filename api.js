@@ -5,26 +5,24 @@ const logger = require('morgan');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const moment = require('moment-timezone');
 
 // routes
 const clients = require('./routes/clients');
 const loans = require('./routes/loans');
 const charges = require('./routes/charges');
 const users = require('./routes/users');
+const payments = require('./routes/payments');
 
-/**
- * Load environment variables from .env file, where API keys and passwords are configured.
- */
+moment.locale('es');
+moment.tz.setDefault('America/Mexico_City');
+
 dotenv.load({ path: '.env' });
 
-/**
- * Create Express server.
- */
 const app = express();
 
-/**
- * Connect to MongoDB.
- */
+mongoose.Promise = Promise;
+
 mongoose.connect(`${process.env.MONGODB_PORT_27017_TCP_ADDR}/prestamax` || process.env.MONGOLAB_URI);
 mongoose.connection.on('error', () => {
   console.error('MongoDB Connection Error. Please make sure that MongoDB is running.');
@@ -43,12 +41,10 @@ mongoose.connection.on('connected', () => {
 
   app.use('/api/clients', clients);
   app.use('/api/loans', loans);
+  app.use('/api/loans', payments);
   app.use('/api/charges', charges);
   app.use('/api/users', users);
 
-  /**
-   * Start Express server.
-   */
   app.listen(app.get('port'), () => {
     console.log('Express server listening on port %d in %s mode', app.get('port'), app.get('env'));
   });

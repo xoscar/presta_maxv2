@@ -5,6 +5,8 @@ import React from 'react';
 import UserBase from './base.jsx';
 import Response from '../response/index.jsx';
 
+import { login } from '../../utils/auth.jsx';
+
 export default class Login extends UserBase {
   constructor() {
     super();
@@ -12,8 +14,25 @@ export default class Login extends UserBase {
     this.state = {
       username: '',
       password: '',
-      error: null,
+      response: null,
     };
+  }
+
+  postLogin(event) {
+    event.preventDefault();
+    this.userService.login(this.state)
+
+      .then(({ data }) => (
+        login({ user: data, router: this.context.router })
+      ))
+
+      .catch(err => (
+        this.setState({
+          response: {
+            err,
+          },
+        })
+      ));
   }
 
   render() {
@@ -27,7 +46,7 @@ export default class Login extends UserBase {
             </div>
           </div>
           <div className="row  center-align">
-            { this.state.error ? <Response isError={true} messages={this.state.error} /> : '' }
+            <Response res={this.state.response} onClosingModalError={() => {}}/>
           </div>
           <div className="row">
             <form onSubmit={this.postLogin.bind(this)} className="col s12 m6 offset-m3">
