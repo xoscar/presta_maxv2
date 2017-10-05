@@ -24,11 +24,10 @@ require('materialize-css/dist/js/materialize.min.js');
 
 ReactDOM.render(
   <Router history={hashHistory}>
-    <Route path="/" onEnter={validateToken('/portal')}/>
+    <Route path="/" onEnter={validateToken('/clients')}/>
 
     <Route component={Layout}>
       <IndexRoute component={ClientsHomePage}/>
-      <Route path="/portal" component={ClientsHomePage} onEnter={validateToken()}/>
 
       <Route path="/clients" component={ClientsHomePage} onEnter={validateToken()}/>
       <Route path='/clients/:clientId' component={ClientsProfile} onEnter={validateToken()}/>
@@ -37,6 +36,6 @@ ReactDOM.render(
       <Route path="/loans/:loanId" component={LoansProfile} onEnter={validateToken()}/>
     </Route>
 
-    <Route path="/login" onEnter={validateToken('/portal')} component={Login} />
+    <Route path="/login" onEnter={validateToken('/clients')} component={Login} />
   </Router>
 , document.getElementById('rootNode'));

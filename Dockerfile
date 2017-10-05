@@ -7,3 +7,5 @@ RUN npm install pm2 -g
 WORKDIR /usr/src/app
 
 COPY . .
+
+CMD ["npm", "start"]

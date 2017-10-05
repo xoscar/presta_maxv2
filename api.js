@@ -23,7 +23,7 @@ const app = express();
 
 mongoose.Promise = Promise;
 
-mongoose.connect(`${process.env.MONGODB_PORT_27017_TCP_ADDR}/prestamax` || process.env.MONGOLAB_URI);
+mongoose.connect(process.env.MONGOLAB_URI || `${process.env.MONGODB_PORT_27017_TCP_ADDR}/prestamax`);
 mongoose.connection.on('error', () => {
   console.error('MongoDB Connection Error. Please make sure that MongoDB is running.');
   process.exit(1);
@@ -32,7 +32,7 @@ mongoose.connection.on('error', () => {
 mongoose.connection.on('connected', () => {
   console.log('Connected to MongoDB');
 
-  app.set('port', process.env.API_PORT || 3000);
+  app.set('port', process.env.PORT || 4000);
   app.use(logger('dev'));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));

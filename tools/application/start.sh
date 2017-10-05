@@ -1,14 +1,5 @@
-echo 'Installing backend dependencies';
-npm install
+echo 'Installing dependencies';
+npm i --only=prod
 
-echo 'Installing front end dependencies'
-cd frontend/
-npm install
-
-echo 'Building front end';
-npm run build;
-
-cd ..
-echo 'Starting app and api';
-npm rebuild node-sass
+echo 'Starting API';
 pm2-docker process.yml

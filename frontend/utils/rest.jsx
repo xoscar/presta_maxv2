@@ -19,7 +19,7 @@ export default ({ resource = '', headers = {}, onfailAuth = null }) => {
         error: (err) => {
           try {
             if (err.status === 401 && onfailAuth && redirect) {
-              onfailAuth(url);
+              onfailAuth();
             } else {
               reject({
                 data: JSON.parse(err.responseText),

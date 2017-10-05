@@ -1,0 +1,5 @@
+{
+  "name": "prestamax-api",
+  "description": "The api for prestamax app",
+  "image": "node"
+}
