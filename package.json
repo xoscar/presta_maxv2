@@ -1,0 +1,18 @@
+{
+  "name": "PrestaMax",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "sh tools/application/start.sh",
+    "test": "mocha --reporter spec --timeout 5000"
+  },
+  "devDependencies": {
+    "eslint": "^3.8.1",
+    "eslint-config-airbnb-base": "^10.0.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-security": "^1.2.0"
+  },
+  "engines": {
+    "node": "6.1.0"
+  },
+  "license": "MIT"
+}

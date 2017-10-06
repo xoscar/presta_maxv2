@@ -3,10 +3,3 @@ node_modules
 
 # Hide credentials
 .env
-
-# Ignore javascript bin file
-/public/js/bundle.js
-
-# Ignore css bin file
-
-/public/css/bundle.css

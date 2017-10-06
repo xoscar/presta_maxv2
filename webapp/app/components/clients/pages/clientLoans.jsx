@@ -70,7 +70,7 @@ export default class ClientLoans extends React.Component {
 
   componentWillUnmount() {
     this._mounted = false;
-    return $('.modal-overlay').length && $(`#client_loans_modal_${this.props.client.id}`).modal('close');
+    return $('.modal-overlay').length && $('.modal.open').modal('close');
   }
 
   render() {
