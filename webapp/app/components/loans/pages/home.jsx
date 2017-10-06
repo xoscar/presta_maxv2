@@ -10,6 +10,7 @@ import Heading from '../../heading/heading.jsx';
 
 // fragments
 import Search from '../../search/search.jsx';
+import Loader from '../../loader/loader.jsx';
 
 export default class LoansHomePage extends LoanBase {
   constructor() {
@@ -69,7 +70,7 @@ export default class LoansHomePage extends LoanBase {
   // <NewLoan onCreate={this.search.bind(this, { term: '', page: 0 })}/>
 
   render() {
-    return !this.state.loans ? (<h1>Cargando...</h1>) :
+    return !this.state.loans ? <Loader/> :
     (
       <div>
         <Heading title='Prestamos'>

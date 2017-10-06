@@ -10,6 +10,7 @@ import Response from '../../response/index.jsx';
 import Update from '../update.jsx';
 import Heading from '../../heading/heading.jsx';
 import Actions from './actions.jsx';
+import Loader from '../../loader/loader.jsx';
 
 export default class Profile extends LoanBase {
   constructor() {
@@ -56,7 +57,7 @@ export default class Profile extends LoanBase {
   }
 
   render() {
-    return !this.state.loan ? <h1>Cargando...</h1> :
+    return !this.state.loan ? <Loader/> :
     (
       <div>
         <Actions loan={this.state.loan} onRefresh={this.onRefresh.bind(this)}/>

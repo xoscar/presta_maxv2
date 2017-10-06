@@ -11,6 +11,7 @@ import Response from '../../response/index.jsx';
 import Update from '../update.jsx';
 import Heading from '../../heading/heading.jsx';
 import Actions from './actions.jsx';
+import Loader from '../../loader/loader.jsx';
 
 export default class Profile extends ClientBase {
   constructor() {
@@ -57,7 +58,7 @@ export default class Profile extends ClientBase {
   }
 
   render() {
-    return !this.state.client ? <h1>Cargando...</h1> :
+    return !this.state.client ? <Loader/> :
     (
       <div>
         <Actions client={this.state.client} onRefresh={this.onRefresh.bind(this)}/>

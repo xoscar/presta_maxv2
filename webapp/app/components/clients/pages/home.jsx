@@ -10,6 +10,7 @@ import Heading from '../../heading/heading.jsx';
 
 // fragments
 import Search from '../../search/search.jsx';
+import Loader from '../../loader/loader.jsx';
 
 export default class ClientHomePage extends ClientBase {
   constructor() {
@@ -67,7 +68,7 @@ export default class ClientHomePage extends ClientBase {
   }
 
   render() {
-    return !this.state.clients ? (<h1>Cargando...</h1>) :
+    return !this.state.clients ? <Loader/> :
     (
       <div>
         <Heading title='Clientes'>

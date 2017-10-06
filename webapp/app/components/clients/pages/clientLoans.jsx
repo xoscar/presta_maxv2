@@ -12,6 +12,7 @@ import { getAuth } from '../../../utils/auth.jsx';
 // components
 import { LoanSmallCard } from '../../loans/base.jsx';
 import { PaymentCard } from '../../payments/base.jsx';
+import Loader from '../../loader/loader.jsx';
 
 export default class ClientLoans extends React.Component {
   constructor() {
@@ -69,7 +70,7 @@ export default class ClientLoans extends React.Component {
 
   componentWillUnmount() {
     this._mounted = false;
-    return $('.modal-overlay').length && $(`client_loans_modal_${this.props.client.id}`).modal('close');
+    return $('.modal-overlay').length && $(`#client_loans_modal_${this.props.client.id}`).modal('close');
   }
 
   render() {
@@ -104,7 +105,7 @@ export default class ClientLoans extends React.Component {
       }
       >
         { this.state.response && this.state.response.statusCode >= 400 ? <Response isError={this.state.response.isError} err={this.state.response.err} success={this.state.response.success} /> : '' }
-        { !this.state.loans ? <h3>Cargando...</h3> : (
+        { !this.state.loans ? <Loader/> : (
           <div className="row">
             <div className="col s6">
               <h5>Prestamos</h5>
