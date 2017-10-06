@@ -3,6 +3,5 @@ Dockerfile
 .gitignore
 
 **/app
-**/tools
 **/.git
 **/node_modules
