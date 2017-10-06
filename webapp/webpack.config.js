@@ -1,12 +1,12 @@
 const path = require('path');
 const webpack = require('webpack');
 
-module.exports = {
+module.exports = env => ({
   context: path.join(__dirname),
-  devtool: process.env.NODE_ENV !== 'production' ? 'inline-sourcemap' : null,
-  entry: './app.jsx',
+  devtool: env.NODE_ENV !== 'production' ? 'inline' : false,
+  entry: './app/app.jsx',
   output: {
-    path: path.join(__dirname, '../public'),
+    path: path.join(__dirname, './public'),
     filename: 'bundle.js',
   },
   module: {
@@ -32,14 +32,17 @@ module.exports = {
       loader: 'url-loader?limit=5000',
     }],
   },
-  plugins: process.env.NODE_ENV !== 'production' ? [
+  plugins: env.NODE_ENV !== 'production' ? [
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('test'),
-      'process.env.BASE_URL': JSON.stringify('http://localhost:4000/api'),
+      'process.env.BASE_URL': JSON.stringify('http://localhost:4000'),
     }),
   ] : [
     new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.optimize.UglifyJsPlugin({ mangle: false, sourcemap: false }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('production'),
+      'process.env.BASE_URL': JSON.stringify(env.apiUrl),
+    }),
   ],
-};
+});

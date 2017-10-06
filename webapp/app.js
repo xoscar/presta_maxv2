@@ -7,14 +7,16 @@ const path = require('path');
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
  */
-dotenv.load({ path: '.env' });
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.load({ path: '../.env' });
+}
 
 /**
  * Create Express server.
  */
 const app = express();
 
-app.set('port', process.env.APP_PORT || 3000);
+app.set('port', process.env.PORT || process.env.APP_PORT);
 
 app.use(express.static(path.join(__dirname, '/public'), { maxAge: 31557600000 }));
 

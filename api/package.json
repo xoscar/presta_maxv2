@@ -1,5 +1,5 @@
 {
-  "name": "PrestaMax",
+  "name": "PrestaMaxAPI",
   "version": "0.1.0",
   "scripts": {
     "start": "sh tools/application/start.sh",

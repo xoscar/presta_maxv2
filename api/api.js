@@ -17,7 +17,9 @@ const payments = require('./routes/payments');
 moment.locale('es');
 moment.tz.setDefault('America/Mexico_City');
 
-dotenv.load({ path: '.env' });
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.load({ path: '../.env' });
+}
 
 const app = express();
 
@@ -32,18 +34,18 @@ mongoose.connection.on('error', () => {
 mongoose.connection.on('connected', () => {
   console.log('Connected to MongoDB');
 
-  app.set('port', process.env.PORT || 4000);
+  app.set('port', process.env.PORT || process.env.API_PORT);
   app.use(logger('dev'));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
 
   app.use(cors());
 
-  app.use('/api/clients', clients);
-  app.use('/api/loans', loans);
-  app.use('/api/loans', payments);
-  app.use('/api/charges', charges);
-  app.use('/api/users', users);
+  app.use('/clients', clients);
+  app.use('/loans', loans);
+  app.use('/loans', payments);
+  app.use('/charges', charges);
+  app.use('/users', users);
 
   app.listen(app.get('port'), () => {
     console.log('Express server listening on port %d in %s mode', app.get('port'), app.get('env'));
