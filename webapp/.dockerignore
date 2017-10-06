@@ -1,0 +1,8 @@
+Dockerfile
+.DS_Store
+.gitignore
+
+**/app
+**/tools
+**/.git
+**/node_modules
