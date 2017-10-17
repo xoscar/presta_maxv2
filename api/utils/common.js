@@ -111,6 +111,7 @@ module.exports.search = (model, query, eachItem) => {
       key: 'pageSize',
       default: 12,
     },
+    userId: 'userId',
   });
 
   // get pagination
@@ -125,7 +126,9 @@ module.exports.search = (model, query, eachItem) => {
               $options: 'i',
             },
           })),
-        });
+        })
+        .where('user_id')
+        .equals(mappedQuery.userId);
 
         if (type !== 'count') {
           search.limit(pagination.limit).skip(pagination.skip);
