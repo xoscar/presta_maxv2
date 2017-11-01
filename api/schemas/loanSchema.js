@@ -55,7 +55,7 @@ module.exports.mappings = {
       current_week: { key: 'current_week', transform: () => body.getCurrentWeek() },
       weeks: 'weeks',
       last_payment: { key: 'last_payment', transform: () => body.getLastPayment() },
-      last_payment_from_now: { key: 'last_payment_from_now', transform: () => (body.getLastPayment() ? moment(body.getLastPayment()).fromNow() : null) },
+      last_payment_from_now: { key: 'last_payment_from_now', transform: () => (body.getLastPayment() ? moment(body.getLastPayment().created).fromNow() : null) },
       expired: { key: 'expired', transform: () => body.isExpired() },
       expired_date: { key: 'expired_date', transform: val => moment(val).format('DD/MM/YYYY HH:mm') },
       expired_date_from_now: { key: 'expired_date_from_now', transform: val => moment(val).fromNow() },

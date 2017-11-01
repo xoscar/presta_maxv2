@@ -143,7 +143,7 @@ loanSchema.methods.getInfo = function getInfo(client) {
 
 loanSchema.methods.getLastPayment = function getLastPayment() {
   return this.payments.length !== 0 ? this.payments.sort((a, b) => (
-    moment(a.created).isAfter(b.created) ? 1 : -1
+    moment(a.created).isAfter(b.created) ? -1 : 1
   ))[0] : null;
 };
 

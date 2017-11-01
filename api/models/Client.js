@@ -82,7 +82,7 @@ clientSchema.methods.getInfo = function getInfo() {
       })
     )),
 
-    this.getLoans({ finised: true })
+    this.getLoans({ finished: true })
 
     .then(({ loans }) => (
       Promise.resolve({
