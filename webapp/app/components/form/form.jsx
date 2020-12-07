@@ -1,5 +1,6 @@
 // dependencies
 import React from 'react';
+import PropTypes from 'prop-types';
 
 // components
 import Input from './input.jsx';
@@ -88,9 +89,9 @@ export default class Form extends React.Component {
 }
 
 Form.propTypes = {
-  showMessages: React.PropTypes.bool,
-  inputs: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-  onSubmit: React.PropTypes.func.isRequired,
-  children: React.PropTypes.node,
-  successText: React.PropTypes.string,
+  showMessages: PropTypes.bool,
+  inputs: PropTypes.arrayOf(React.PropTypes.object).isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  children: PropTypes.node,
+  successText: PropTypes.string,
 };

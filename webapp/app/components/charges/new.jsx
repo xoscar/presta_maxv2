@@ -1,5 +1,6 @@
 // dependencies
 import React from 'react';
+import PropTypes from 'prop-types';
 
 // components
 import ChargeBase from './base.jsx';
@@ -57,6 +58,6 @@ export default class New extends ChargeBase {
 }
 
 New.propTypes = {
-  onCreate: React.PropTypes.func.isRequired,
-  client: React.PropTypes.object.isRequired,
+  onCreate: PropTypes.func.isRequired,
+  client: PropTypes.object.isRequired,
 };

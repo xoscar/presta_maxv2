@@ -1,5 +1,6 @@
 // dependencies
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Modal } from 'react-materialize';
 import $ from 'jquery';
 
@@ -72,7 +73,7 @@ export default class ErrorModal extends React.Component {
 }
 
 ErrorModal.propTypes = {
-  onClosingModalError: React.PropTypes.func.isRequired,
-  err: React.PropTypes.object,
+  onClosingModalError: PropTypes.func.isRequired,
+  err: PropTypes.object,
 };
 

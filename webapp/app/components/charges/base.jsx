@@ -1,5 +1,6 @@
 // depedencies
 import React from 'react';
+import PropTypes from 'prop-types';
 
 // models
 import Charge from '../../models/charge.jsx';
@@ -86,8 +87,8 @@ export class Payment extends ChargeBase {
 }
 
 Payment.propTypes = {
-  charge: React.PropTypes.object.isRequired,
-  onPaid: React.PropTypes.func.isRequired,
+  charge: PropTypes.object.isRequired,
+  onPaid: PropTypes.func.isRequired,
 };
 
 export class Delete extends ChargeBase {
@@ -131,8 +132,8 @@ export class Delete extends ChargeBase {
 }
 
 Delete.propTypes = {
-  charge: React.PropTypes.object.isRequired,
-  onDelete: React.PropTypes.func.isRequired,
+  charge: PropTypes.object.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
 export const ChargeCard = ({
@@ -160,7 +161,7 @@ export const ChargeCard = ({
 ));
 
 ChargeCard.propTypes = {
-  charge: React.PropTypes.object.isRequired,
-  onRefresh: React.PropTypes.func,
+  charge: PropTypes.object.isRequired,
+  onRefresh: PropTypes.func,
 };
 

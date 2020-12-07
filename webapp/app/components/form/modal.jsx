@@ -1,5 +1,6 @@
 // dependencies
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Modal } from 'react-materialize';
 
 // components
@@ -119,17 +120,17 @@ export default class ModalForm extends React.Component {
 }
 
 ModalForm.propTypes = {
-  acceptText: React.PropTypes.string,
-  successText: React.PropTypes.string,
-  header: React.PropTypes.string,
-  closeModal: React.PropTypes.bool,
-  keepForm: React.PropTypes.bool,
+  acceptText: PropTypes.string,
+  successText: PropTypes.string,
+  header: PropTypes.string,
+  closeModal: PropTypes.bool,
+  keepForm: PropTypes.bool,
 
-  trigger: React.PropTypes.node,
-  inputs: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+  trigger: PropTypes.node,
+  inputs: PropTypes.arrayOf(PropTypes.object).isRequired,
 
-  onClosingModal: React.PropTypes.func,
-  onSubmit: React.PropTypes.func.isRequired,
-  showMessages: React.PropTypes.bool,
-  children: React.PropTypes.node,
+  onClosingModal: PropTypes.func,
+  onSubmit: PropTypes.func.isRequired,
+  showMessages: PropTypes.bool,
+  children: PropTypes.node,
 };

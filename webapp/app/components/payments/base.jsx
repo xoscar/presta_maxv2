@@ -1,5 +1,6 @@
 // dependencies
 import React from 'react';
+import PropTypes from 'prop-types';
 import ModalForm from '../form/modal.jsx';
 
 // models
@@ -109,8 +110,8 @@ export const PaymentCard = ({
 };
 
 PaymentCard.propTypes = {
-  payment: React.PropTypes.object.isRequired,
-  loan: React.PropTypes.object.isRequired,
-  number: React.PropTypes.number.isRequired,
-  onRefresh: React.PropTypes.func.isRequired,
+  payment: PropTypes.object.isRequired,
+  loan: PropTypes.object.isRequired,
+  number: PropTypes.number.isRequired,
+  onRefresh: PropTypes.func.isRequired,
 };

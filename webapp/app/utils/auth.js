@@ -2,20 +2,8 @@ import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
 
-export const validateToken = (defaultRoute = null) => (
-  (nextState, replace) => (!cookies.get('token') ?
-    nextState.location.pathname === '/login' ? null :
-
-    // if no token send to login
-    replace({
-      pathname: '/login',
-    }) :
-
-    // if there is a default route redirect to that
-    defaultRoute && replace({
-      pathname: defaultRoute,
-    })
-  )
+export const isLoggedIn = () => (
+  Boolean(cookies.get('token'))
 );
 
 export const logout = (router) => {
@@ -24,10 +12,9 @@ export const logout = (router) => {
   return router ? router.push('/login') : location.reload();
 };
 
-export const login = ({ user, router }) => {
+export const login = ({ user }) => {
   cookies.set('token', `token ${user.token}`);
   cookies.set('username', user.username);
-  router.push('/clients');
 };
 
 export const getUser = () => ({

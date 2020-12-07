@@ -1,5 +1,6 @@
 // dependencies
 import React from 'react';
+import PropTypes from 'prop-types';
 
 // components
 import FloattingButton from '../../floattingButton/floattingButton.jsx';
@@ -21,12 +22,12 @@ const Actions = ({
 ));
 
 Actions.propTypes = {
-  onRefresh: React.PropTypes.func.isRequired,
-  client: React.PropTypes.object.isRequired,
+  onRefresh: PropTypes.func.isRequired,
+  client: PropTypes.object.isRequired,
 };
 
 Actions.contextTypes = {
-  router: React.PropTypes.object.isRequired,
+  router: PropTypes.object.isRequired,
 };
 
 export default Actions;

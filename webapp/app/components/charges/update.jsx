@@ -1,5 +1,6 @@
 // dependencies
 import React from 'react';
+import PropTypes from 'prop-types';
 
 // models
 import Charge from '../../models/charge.jsx';
@@ -64,6 +65,6 @@ export default class Edit extends React.Component {
 }
 
 Edit.propTypes = {
-  onEdit: React.PropTypes.func.isRequired,
-  charge: React.PropTypes.object.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  charge: PropTypes.object.isRequired,
 };

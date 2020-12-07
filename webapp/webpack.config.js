@@ -1,22 +1,29 @@
-const path = require('path');
-const webpack = require('webpack');
+const { join } = require('path');
+const { DefinePlugin, optimize } = require('webpack');
+const dotenv = require('dotenv');
 
-module.exports = env => ({
-  context: path.join(__dirname),
-  devtool: env.NODE_ENV !== 'production' ? 'inline' : false,
-  entry: './app/app.jsx',
+dotenv.load({ path: '../.env' });
+
+const { NODE_ENV, API_URL } = process.env;
+
+module.exports = {
+  context: join(__dirname),
+  devtool: 'inline-source-map',
+  entry: './app/app.js',
   output: {
-    path: path.join(__dirname, './public'),
+    path: join(__dirname, './public'),
     filename: 'bundle.js',
   },
+  devServer: {
+    contentBase: join(__dirname, 'public'),
+    historyApiFallback: true,
+  },
   module: {
-    loaders: [{
-      test: /\.jsx?$/,
-      exclude: /(node_modules!bower_components)/,
-      loader: 'babel-loader',
-      query: {
-        presets: ['react', 'es2015', 'stage-0'],
-        plugins: ['react-html-attrs', 'transform-class-properties', 'transform-decorators-legacy'],
+    rules: [{
+      test: /\.(js|jsx)$/,
+      exclude: /node_modules/,
+      use: {
+        loader: 'babel-loader',
       },
     }, {
       test: /\.css$/,
@@ -32,17 +39,17 @@ module.exports = env => ({
       loader: 'url-loader?limit=5000',
     }],
   },
-  plugins: env.NODE_ENV !== 'production' ? [
-    new webpack.DefinePlugin({
+  plugins: NODE_ENV !== 'production' ? [
+    new DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('test'),
       'process.env.BASE_URL': JSON.stringify('http://localhost:4000'),
     }),
   ] : [
-    new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.UglifyJsPlugin({ mangle: false, sourcemap: false }),
-    new webpack.DefinePlugin({
+    new optimize.DedupePlugin(),
+    new optimize.UglifyJsPlugin({ mangle: false, sourcemap: false }),
+    new DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production'),
-      'process.env.BASE_URL': JSON.stringify(env.apiUrl),
+      'process.env.BASE_URL': JSON.stringify(API_URL),
     }),
   ],
-});
+};

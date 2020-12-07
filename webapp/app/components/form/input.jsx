@@ -1,5 +1,6 @@
 // dependencies
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const input = ({
   options,
@@ -21,11 +22,11 @@ const input = ({
 ));
 
 input.propTypes = {
-  options: React.PropTypes.object.isRequired,
-  error: React.PropTypes.string,
-  value: React.PropTypes.any,
+  options: PropTypes.object.isRequired,
+  error: PropTypes.string,
+  value: PropTypes.any,
 
-  onChange: React.PropTypes.func,
+  onChange: PropTypes.func,
 };
 
 export default input;

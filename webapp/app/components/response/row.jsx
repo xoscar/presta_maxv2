@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const responseRow = ({
   backColor,
@@ -13,8 +14,8 @@ const responseRow = ({
 ));
 
 responseRow.propTypes = {
-  message: React.PropTypes.string.isRequired,
-  backColor: React.PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
+  backColor: PropTypes.string.isRequired,
 };
 
 export default responseRow;

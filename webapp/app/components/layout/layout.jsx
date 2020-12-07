@@ -1,12 +1,10 @@
 // dependencies
-import React from 'react';
+import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router';
 import $ from 'jquery';
 
-// libs
-import { logout, getUser } from '../../utils/auth.jsx';
-
-export default class Layout extends React.Component {
+class Layout extends React.Component {
   componentDidMount() {
     $('.dropdown-button').dropdown();
   }
@@ -60,9 +58,11 @@ export default class Layout extends React.Component {
 }
 
 Layout.propTypes = {
-  children: React.PropTypes.node.isRequired,
+  children: PropTypes.element.isRequired,
 };
 
 Layout.contextTypes = {
-  router: React.PropTypes.object.isRequired,
+  router: PropTypes.object.isRequired,
 };
+
+export default Layout;

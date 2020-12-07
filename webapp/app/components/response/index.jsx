@@ -1,5 +1,6 @@
 // dependencies
 import React from 'react';
+import PropTypes from 'prop-types';
 
 // components
 import Row from './row.jsx';
@@ -24,10 +25,10 @@ const response = ({
 };
 
 response.propTypes = {
-  onClosingModalError: React.PropTypes.func.isRequired,
+  onClosingModalError: PropTypes.func.isRequired,
 
-  res: React.PropTypes.object,
-  showMessages: React.PropTypes.bool,
+  res: PropTypes.object,
+  showMessages: PropTypes.bool,
 };
 
 export default response;

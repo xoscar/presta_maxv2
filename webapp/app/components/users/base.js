@@ -1,12 +1,13 @@
 // dependencies
 import React from 'react';
+import PropTypes from 'prop-types';
 import Cookies from 'universal-cookie';
 
 // models
 import User from '../../models/user.jsx';
 
 // libs
-import { getAuth } from '../../utils/auth.jsx';
+import { getAuth } from '../../utils/auth';
 
 export default class Base extends React.Component {
   constructor() {
@@ -33,5 +34,5 @@ export default class Base extends React.Component {
 }
 
 Base.contextTypes = {
-  router: React.PropTypes.object.isRequired,
+  router: PropTypes.object.isRequired,
 };
