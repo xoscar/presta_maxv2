@@ -15,7 +15,9 @@ config({ path: resolve(process.cwd(), '.env.local') });
 config({ path: resolve(process.cwd(), '.env') });
 
 if (!process.env.DATABASE_URL) {
-  console.error('❌ DATABASE_URL is not set. Create .env.local or .env with DATABASE_URL for MongoDB.');
+  console.error(
+    '❌ DATABASE_URL is not set. Create .env.local or .env with DATABASE_URL for MongoDB.'
+  );
   process.exit(1);
 }
 
@@ -56,7 +58,7 @@ async function clearDatabase() {
   await prisma.user.deleteMany();
   console.log('   ✓ Users deleted');
 
-    await prisma.counter.deleteMany();
+  await prisma.counter.deleteMany();
   console.log('   ✓ Counters deleted');
 
   try {

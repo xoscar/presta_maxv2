@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const loan = await prisma.loan.findFirst({
       where: { id, userId: user.id },
-      include: { payments: true, client: true },
+      include: { client: true },
     });
 
     if (!loan) {

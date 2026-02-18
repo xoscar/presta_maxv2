@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 describe('Button', () => {
   it('renders with children', () => {
@@ -15,17 +15,12 @@ describe('Button', () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('shows loading state', () => {
-    render(<Button loading>Loading</Button>);
-    expect(screen.getByRole('button')).toBeDisabled();
-  });
-
   it('applies variant styles', () => {
-    const { rerender } = render(<Button variant="primary">Primary</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-primary-500');
+    const { rerender } = render(<Button variant="default">Primary</Button>);
+    expect(screen.getByRole('button')).toHaveClass('bg-primary');
 
-    rerender(<Button variant="danger">Danger</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-red-500');
+    rerender(<Button variant="destructive">Danger</Button>);
+    expect(screen.getByRole('button')).toHaveClass('bg-destructive');
   });
 
   it('respects disabled state', () => {

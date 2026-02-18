@@ -211,11 +211,11 @@ export const clientService = {
     for (const loan of loansWithPayments) {
       if (loan.payments.length > 0) {
         const sortedPayments = [...loan.payments].sort((a, b) =>
-          isAfter(b.createdAt, a.createdAt) ? 1 : -1
+          isAfter(b.created, a.created) ? 1 : -1
         );
         const lastPayment = sortedPayments[0];
-        if (isAfter(lastPayment.createdAt, lastPaymentDate || fourYearsAgo)) {
-          lastPaymentDate = lastPayment.createdAt;
+        if (isAfter(lastPayment.created, lastPaymentDate || fourYearsAgo)) {
+          lastPaymentDate = lastPayment.created;
         }
       }
     }

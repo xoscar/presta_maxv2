@@ -49,7 +49,9 @@ export const statsService = {
         ? `${loan.client.name} ${loan.client.surname}`.trim()
         : 'Sin cliente';
 
-      const payments = ((loan as { payments?: { amount: number; created?: Date; createdAt?: Date }[] }).payments || []) as { amount: number; created?: Date; createdAt?: Date }[];
+      const payments = ((
+        loan as { payments?: { amount: number; created?: Date; createdAt?: Date }[] }
+      ).payments || []) as { amount: number; created?: Date; createdAt?: Date }[];
       for (const p of payments) {
         const created = p.created ?? p.createdAt;
         const createdDate = created ? new Date(created) : null;

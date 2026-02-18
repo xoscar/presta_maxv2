@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
     });
 
     return NextResponse.next();
-  } catch (error) {
+  } catch (_error: unknown) {
     // Invalid token, clear cookie and redirect
     const response = pathname.startsWith('/api/')
       ? NextResponse.json(

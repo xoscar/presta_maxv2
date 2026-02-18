@@ -13,8 +13,14 @@ const child = spawn(
 
 let out = '';
 let err = '';
-child.stdout.on('data', (d) => { out += d; process.stdout.write(d); });
-child.stderr.on('data', (d) => { err += d; process.stderr.write(d); });
+child.stdout.on('data', (d) => {
+  out += d;
+  process.stdout.write(d);
+});
+child.stderr.on('data', (d) => {
+  err += d;
+  process.stderr.write(d);
+});
 child.on('close', (code) => {
   if (code !== 0) {
     console.error('Exit code:', code);

@@ -37,7 +37,7 @@ export async function GET(
     }
 
     // Ensure payment belongs to this loan
-    const loanHasPayment = (loan.payments || []).some((p: { id: string }) => p.id === paymentId);
+    const loanHasPayment = (loan.payments || []).some((p: { id: string | null }) => p.id === paymentId);
     if (!loanHasPayment) {
       return notFound(
         'payment',
@@ -77,7 +77,7 @@ export async function PATCH(
     }
 
     const existingPayment = await paymentService.findById(paymentId);
-    const loanHasPayment = (loan.payments || []).some((p: { id: string }) => p.id === paymentId);
+    const loanHasPayment = (loan.payments || []).some((p: { id: string | null }) => p.id === paymentId);
 
     if (!existingPayment || !loanHasPayment) {
       return notFound(
@@ -120,7 +120,7 @@ export async function DELETE(
     }
 
     const payment = await paymentService.findById(paymentId);
-    const loanHasPayment = (loan.payments || []).some((p: { id: string }) => p.id === paymentId);
+    const loanHasPayment = (loan.payments || []).some((p: { id: string | null }) => p.id === paymentId);
 
     if (!payment || !loanHasPayment) {
       return notFound(
