@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { Users, DollarSign, ChevronUp, LogOut } from 'lucide-react';
+import { ChangePasswordModal } from '@/components/ChangePasswordModal';
+import { Users, DollarSign, ChevronUp, LogOut, KeyRound } from 'lucide-react';
 
 const navItems = [
   { href: '/clients', label: 'Clientes', icon: Users },
@@ -25,6 +27,7 @@ interface SidebarContentProps {
 
 export function SidebarContent({ username, onLogout, onLinkClick }: SidebarContentProps) {
   const pathname = usePathname();
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   return (
     <div className="flex flex-col h-full">
@@ -83,6 +86,14 @@ export function SidebarContent({ username, onLogout, onLinkClick }: SidebarConte
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-56">
             <DropdownMenuItem
+              data-testid="change-password-button"
+              onClick={() => setChangePasswordOpen(true)}
+              className="cursor-pointer"
+            >
+              <KeyRound className="h-4 w-4 mr-2" />
+              Cambiar contraseña
+            </DropdownMenuItem>
+            <DropdownMenuItem
               data-testid="logout-button"
               onClick={onLogout}
               className="text-destructive focus:text-destructive cursor-pointer"
@@ -93,6 +104,8 @@ export function SidebarContent({ username, onLogout, onLinkClick }: SidebarConte
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <ChangePasswordModal open={changePasswordOpen} onOpenChange={setChangePasswordOpen} />
     </div>
   );
 }

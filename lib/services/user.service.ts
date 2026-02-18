@@ -128,6 +128,60 @@ export const userService = {
   },
 
   /**
+   * Validate change-password body
+   */
+  validateChangePassword(body: Partial<{ currentPassword: string; newPassword: string }> = {}): {
+    currentPassword: string;
+    newPassword: string;
+  } {
+    const errors: Array<{ code: string; text: string }> = [];
+
+    if (!body.currentPassword || String(body.currentPassword).trim() === '') {
+      errors.push({ code: 'currentPassword', text: 'La contraseña actual es requerida.' });
+    }
+
+    if (!body.newPassword || body.newPassword.length < 6) {
+      errors.push({
+        code: 'newPassword',
+        text: 'La nueva contraseña debe tener al menos 6 caracteres.',
+      });
+    }
+
+    if (body.currentPassword && body.newPassword && body.currentPassword === body.newPassword) {
+      errors.push({
+        code: 'newPassword',
+        text: 'La nueva contraseña debe ser distinta a la actual.',
+      });
+    }
+
+    if (errors.length) {
+      throw {
+        statusCode: 400,
+        messages: errors,
+        type: 'ValidationError',
+      } as ValidationError;
+    }
+
+    return {
+      currentPassword: body.currentPassword!,
+      newPassword: body.newPassword!,
+    };
+  },
+
+  /**
+   * Update user password (hashes and saves)
+   */
+  async updatePassword(userId: string, newPassword: string): Promise<User> {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    return prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+  },
+
+  /**
    * Compare password with stored hash
    */
   async comparePassword(user: User, candidatePassword: string): Promise<boolean> {

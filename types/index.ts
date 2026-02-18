@@ -20,6 +20,11 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface ChangePasswordInput {
+  currentPassword: string;
+  newPassword: string;
+}
+
 // ==================== Client Types ====================
 // Legacy interface kept for reference (Prisma uses its own types)
 export interface IClient {

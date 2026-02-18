@@ -33,3 +33,11 @@ export function useLogout() {
     },
   });
 }
+
+// Hook for change-password mutation
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (payload: { currentPassword: string; newPassword: string }) =>
+      authApi.changePassword(payload),
+  });
+}

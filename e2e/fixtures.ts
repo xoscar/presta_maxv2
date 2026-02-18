@@ -22,6 +22,14 @@ export const selectors = {
   sidebar: '[data-testid="sidebar"]',
   userMenu: '[data-testid="user-menu"]',
   logoutButton: '[data-testid="logout-button"]',
+  changePasswordButton: '[data-testid="change-password-button"]',
+
+  // Change password modal
+  changePasswordModal: '[role="dialog"]',
+  currentPasswordInput: 'input[name="currentPassword"]',
+  newPasswordInput: 'input[name="newPassword"]',
+  confirmPasswordInput: 'input[name="confirmPassword"]',
+  changePasswordSubmitButton: 'button[type="submit"]',
 
   // Clients page
   clientsList: '[data-testid="clients-list"]',

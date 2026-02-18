@@ -137,6 +137,33 @@ export const authApi = {
       method: 'POST',
     });
   },
+
+  changePassword: async (payload: { currentPassword: string; newPassword: string }) => {
+    const response = await fetch('/api/users/change-password', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const contentType = response.headers.get('Content-Type');
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+
+    if (!response.ok) {
+      if (contentType?.includes('application/problem+json') && data) {
+        throw new ApiError(data);
+      }
+      throw new ApiError({
+        type: 'about:blank',
+        title: data?.title || 'Error',
+        status: response.status,
+        detail: data?.detail || data?.error || data?.message || 'Error al cambiar contraseña',
+      });
+    }
+
+    return undefined;
+  },
 };
 
 // ==================== Clients API ====================

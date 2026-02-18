@@ -20,7 +20,7 @@ export {
 } from './useLoans';
 
 // Auth hooks
-export { useLogin, useLogout } from './useAuth';
+export { useLogin, useLogout, useChangePassword } from './useAuth';
 
 // Charge hooks
 export { useCreateCharge, useMarkChargePaid, useDeleteCharge, chargeKeys } from './useCharges';
