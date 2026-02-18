@@ -1,7 +1,0 @@
-Dockerfile
-.DS_Store
-.gitignore
-
-**/app
-**/.git
-**/node_modules

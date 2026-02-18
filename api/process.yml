@@ -1,3 +1,0 @@
-apps:
-  - script: './api.js'
-    name: 'API'
