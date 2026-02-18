@@ -20,7 +20,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Check loan ownership
     const loan = await prisma.loan.findFirst({
       where: { id: loanId, userId: user.id },
-      include: { payments: true },
     });
 
     if (!loan) {
@@ -47,10 +46,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id: loanId } = await params;
 
-    // Check loan ownership
+    // Check loan ownership (payments are embedded on loan)
     const loan = await prisma.loan.findFirst({
       where: { id: loanId, userId: user.id },
-      include: { payments: true },
     });
 
     if (!loan) {

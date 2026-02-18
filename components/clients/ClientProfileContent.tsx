@@ -453,7 +453,9 @@ export function ClientProfileContent({ clientId }: Props) {
               name="charge_description"
               label="Descripción (opcional)"
               value={chargeFormData.description}
-              onChange={(e) => setChargeFormData({ ...chargeFormData, description: e.target.value })}
+              onChange={(e) =>
+                setChargeFormData({ ...chargeFormData, description: e.target.value })
+              }
             />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsChargeModalOpen(false)}>

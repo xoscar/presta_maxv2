@@ -1,5 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Aligned with legacy MongoDB structure (created/updated, Int amounts, __v, etc.)
 
 generator client {
   provider = "prisma-client-js"
@@ -10,8 +11,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Embedded payments on Loan (legacy: LoansPayments; DB fields: _id, amount, created)
+// id is stored as string (e.g. UUID), not ObjectId, so we can use UUIDs
+type Payment {
+  id      String?   @map("_id")
+  amount  Int
+  created DateTime  @db.Date
+}
+
 model User {
   id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  v        Int?    @map("__v")
   username String  @unique
   password String
   token    String?
@@ -27,14 +37,15 @@ model User {
 
 model Client {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  v         Int?     @map("__v")
   clientId  String   @map("client_id")
   name      String
   surname   String
   address   String
   phone     String
   search    String[]
-  createdAt DateTime @default(now()) @map("created")
-  updatedAt DateTime @updatedAt @map("updated")
+  createdAt DateTime @default(now()) @map("created") @db.Date
+  updatedAt DateTime @updatedAt @map("updated") @db.Date
 
   userId String @map("user_id") @db.ObjectId
   user   User   @relation(fields: [userId], references: [id])
@@ -48,20 +59,22 @@ model Client {
 
 model Loan {
   id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  v                Int?      @map("__v")
   numberId         Int       @map("number_id")
-  amount           Float
-  weeklyPayment    Float     @map("weekly_payment")
+  amount           Int
+  weeklyPayment    Int       @map("weekly_payment")
   weeks            Int
   description      String?
   clientName       String?   @map("client_name")
   clientIdentifier String?   @map("client_identifier")
   finished         Boolean   @default(false)
-  finishedDate     DateTime? @map("finished_date")
+  finishedDate     DateTime? @map("finished_date") @db.Date
   visible          Boolean   @default(true)
-  expiredDate      DateTime  @map("expired_date")
+  expiredDate      DateTime  @map("expired_date") @db.Date
   search           String[]
-  createdAt        DateTime  @default(now()) @map("created")
-  updatedAt        DateTime  @updatedAt @map("updated")
+  file             String?
+  createdAt        DateTime  @default(now()) @map("created") @db.Date
+  updatedAt        DateTime  @updatedAt @map("updated") @db.Date
 
   payments Payment[]
 
@@ -75,25 +88,15 @@ model Loan {
   @@map("loans")
 }
 
-model Payment {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  amount    Float
-  createdAt DateTime @default(now()) @map("created")
-
-  loanId String @map("loan_id") @db.ObjectId
-  loan   Loan   @relation(fields: [loanId], references: [id], onDelete: Cascade)
-
-  @@map("payments")
-}
-
 model Charge {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  amount         Float
+  v              Int?      @map("__v")
+  amount         Int
   description    String?
   paid           Boolean   @default(false)
-  paidDate       DateTime? @map("paid_date")
-  expirationDate DateTime? @map("expiration_date")
-  createdAt      DateTime  @default(now()) @map("created")
+  paidDate       DateTime? @map("paid_date") @db.Date
+  expirationDate DateTime? @map("expiration_date") @db.Date
+  createdAt      DateTime  @default(now()) @map("created") @db.Date
 
   clientId String @map("client_id") @db.ObjectId
   client   Client @relation(fields: [clientId], references: [id])
@@ -107,8 +110,16 @@ model Charge {
 
 model Counter {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
+  v     Int?   @map("__v")
   name  String @unique
   count Int    @default(1)
 
   @@map("counters")
+}
+
+model Session {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  expires Json?  @map("expires")
+
+  @@map("sessions")
 }

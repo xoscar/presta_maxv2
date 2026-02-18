@@ -1,7 +1,7 @@
 import prisma from '@/lib/prisma';
 import { format, formatDistanceToNow, isAfter, subYears } from 'date-fns';
 import { es } from 'date-fns/locale';
-import type { Client, Loan, Charge, Payment } from '@prisma/client';
+import type { Client, Loan, Charge } from '@prisma/client';
 import type {
   IClientInfo,
   IClientFullInfo,
@@ -10,7 +10,7 @@ import type {
   ILoanInfo,
   IChargeInfo,
 } from '@/types';
-import { loanService } from './loan.service';
+import { loanService, type EmbeddedPayment } from './loan.service';
 import { chargeService } from './charge.service';
 
 export interface ValidationError {
@@ -19,11 +19,11 @@ export interface ValidationError {
   type: string;
 }
 
-// Extended types for clients with relations
-export type ClientWithLoans = Client & { loans: (Loan & { payments: Payment[] })[] };
+// Extended types for clients with relations (payments embedded on Loan)
+export type ClientWithLoans = Client & { loans: (Loan & { payments: EmbeddedPayment[] })[] };
 export type ClientWithCharges = Client & { charges: Charge[] };
 export type ClientWithRelations = Client & {
-  loans: (Loan & { payments: Payment[] })[];
+  loans: (Loan & { payments: EmbeddedPayment[] })[];
   charges: Charge[];
 };
 
@@ -151,19 +151,7 @@ export const clientService = {
    * Delete a client and all related loans and charges
    */
   async deleteClient(id: string): Promise<void> {
-    // First delete all payments for loans belonging to this client
-    const loans = await prisma.loan.findMany({
-      where: { clientId: id },
-      select: { id: true },
-    });
-
-    if (loans.length > 0) {
-      await prisma.payment.deleteMany({
-        where: { loanId: { in: loans.map((l) => l.id) } },
-      });
-    }
-
-    // Delete all loans
+    // Delete all loans (payments are embedded and removed with each loan)
     await prisma.loan.deleteMany({ where: { clientId: id } });
 
     // Delete all charges
@@ -210,20 +198,19 @@ export const clientService = {
 
     const loans = await prisma.loan.findMany({
       where,
-      include: { payments: true },
       orderBy: { createdAt: 'desc' },
     });
 
-    const loansInfo = loans.map((loan) => loanService.toBasicInfo(loan));
+    const loansWithPayments = loans as (Loan & { payments: EmbeddedPayment[] })[];
+    const loansInfo = loansWithPayments.map((loan) => loanService.toBasicInfo(loan));
 
     // Calculate metadata
     const fourYearsAgo = subYears(new Date(), 4);
     let lastPaymentDate: Date | null = null;
 
-    for (const loan of loans) {
-      const loanWithPayments = loan;
-      if (loanWithPayments.payments.length > 0) {
-        const sortedPayments = [...loanWithPayments.payments].sort((a, b) =>
+    for (const loan of loansWithPayments) {
+      if (loan.payments.length > 0) {
+        const sortedPayments = [...loan.payments].sort((a, b) =>
           isAfter(b.createdAt, a.createdAt) ? 1 : -1
         );
         const lastPayment = sortedPayments[0];
@@ -236,9 +223,12 @@ export const clientService = {
     return {
       loans: loansInfo,
       metadata: {
-        expired: loans.some((loan) => loanService.isExpired(loan)),
+        expired: loansWithPayments.some((loan) => loanService.isExpired(loan)),
         last_payment: lastPaymentDate,
-        last_loan: loans.length > 0 ? loans[loans.length - 1].createdAt : null,
+        last_loan:
+          loansWithPayments.length > 0
+            ? loansWithPayments[loansWithPayments.length - 1].createdAt
+            : null,
         loans_depth: loansInfo.reduce((acc, loan) => acc + loan.current_balance, 0),
       },
     };
@@ -315,13 +305,14 @@ export const clientService = {
    * Find client by ID with all relations
    */
   async findByIdWithRelations(id: string): Promise<ClientWithRelations | null> {
-    return prisma.client.findUnique({
+    const result = await prisma.client.findUnique({
       where: { id },
       include: {
-        loans: { include: { payments: true } },
+        loans: true,
         charges: true,
       },
     });
+    return result as ClientWithRelations | null;
   },
 };
 

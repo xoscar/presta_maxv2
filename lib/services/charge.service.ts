@@ -74,7 +74,7 @@ export const chargeService = {
   async create(data: ChargeCreateInput & { user_id: string }): Promise<Charge> {
     return prisma.charge.create({
       data: {
-        amount: Number(data.amount),
+        amount: Math.round(Number(data.amount)),
         description: data.description,
         expirationDate: data.expiration_date ? new Date(data.expiration_date) : undefined,
         clientId: data.client_id,
@@ -95,7 +95,7 @@ export const chargeService = {
     return prisma.charge.update({
       where: { id },
       data: {
-        amount: Number(data.amount),
+        amount: Math.round(Number(data.amount)),
         description: data.description,
         expirationDate: data.expiration_date
           ? new Date(data.expiration_date)

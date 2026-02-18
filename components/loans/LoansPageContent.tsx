@@ -137,7 +137,9 @@ export function LoansPageContent() {
                       <div className="min-w-0">
                         <h3 className="font-semibold">Préstamo #{loan.number_id}</h3>
                         <p className="text-sm text-muted-foreground truncate">
-                          ${loan.amount.toLocaleString()} • {loan.weeks} semanas • {loan.created}
+                          ${loan.amount.toLocaleString()} • {loan.weeks} semanas •{' '}
+                          {loan.payments?.length ?? 0} {loan.payments?.length === 1 ? 'pago' : 'pagos'} •{' '}
+                          {loan.created}
                         </p>
                       </div>
                     </div>

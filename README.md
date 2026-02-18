@@ -62,6 +62,7 @@ npm run db:seed
 ```
 
 This creates:
+
 - An admin user (`admin` / `admin123`)
 - Sample clients with realistic Mexican data
 - Sample loans with payment history
@@ -178,65 +179,69 @@ All API responses follow [RFC 7807 Problem Details](https://datatracker.ietf.org
 
 ### Authentication
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/users/login` | Login and get JWT token |
-| POST | `/api/users/logout` | Logout and clear session |
+| Method | Endpoint            | Description              |
+| ------ | ------------------- | ------------------------ |
+| POST   | `/api/users/login`  | Login and get JWT token  |
+| POST   | `/api/users/logout` | Logout and clear session |
 
 ### Clients
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/clients` | List clients (search, pagination) |
-| POST | `/api/clients` | Create client |
-| GET | `/api/clients/:id` | Get client with loans & charges |
-| PATCH | `/api/clients/:id` | Update client |
-| DELETE | `/api/clients/:id` | Delete client (cascades) |
+| Method | Endpoint           | Description                       |
+| ------ | ------------------ | --------------------------------- |
+| GET    | `/api/clients`     | List clients (search, pagination) |
+| POST   | `/api/clients`     | Create client                     |
+| GET    | `/api/clients/:id` | Get client with loans & charges   |
+| PATCH  | `/api/clients/:id` | Update client                     |
+| DELETE | `/api/clients/:id` | Delete client (cascades)          |
 
 ### Loans
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/loans` | List loans (search, filter, pagination) |
-| POST | `/api/loans` | Create loan |
-| GET | `/api/loans/:id` | Get loan with payments |
-| DELETE | `/api/loans/:id` | Delete loan |
+| Method | Endpoint         | Description                             |
+| ------ | ---------------- | --------------------------------------- |
+| GET    | `/api/loans`     | List loans (search, filter, pagination) |
+| POST   | `/api/loans`     | Create loan                             |
+| GET    | `/api/loans/:id` | Get loan with payments                  |
+| DELETE | `/api/loans/:id` | Delete loan                             |
 
 ### Payments
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/loans/:id/payments` | Add payment to loan |
-| DELETE | `/api/loans/:id/payments/:paymentId` | Delete payment |
+| Method | Endpoint                             | Description         |
+| ------ | ------------------------------------ | ------------------- |
+| POST   | `/api/loans/:id/payments`            | Add payment to loan |
+| DELETE | `/api/loans/:id/payments/:paymentId` | Delete payment      |
 
 ### Charges
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/charges` | Create charge for client |
-| GET | `/api/charges/:id` | Get charge details |
-| DELETE | `/api/charges/:id` | Delete charge |
-| POST | `/api/charges/:id/pay` | Mark charge as paid |
+| Method | Endpoint               | Description              |
+| ------ | ---------------------- | ------------------------ |
+| POST   | `/api/charges`         | Create charge for client |
+| GET    | `/api/charges/:id`     | Get charge details       |
+| DELETE | `/api/charges/:id`     | Delete charge            |
+| POST   | `/api/charges/:id/pay` | Mark charge as paid      |
 
 ## Features
 
 ### Client Management
+
 - Create, edit, and delete clients
 - View client profile with loans and charges
 - Search clients by name or ID
 
 ### Loan Management
+
 - Create loans with amount, weekly payment, and duration
 - Track loan progress and remaining balance
 - Add and remove payments
 - Filter loans by status (active/finished)
 
 ### Charge Management
+
 - Create charges for clients
 - Mark charges as paid
 - Delete charges
 
 ### Authentication
+
 - JWT-based authentication
 - Protected routes with middleware
 - Session management with cookies
@@ -251,10 +256,10 @@ npx shadcn@latest add <component-name>
 
 ### Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | MongoDB connection string |
-| `JWT_SECRET` | Secret key for JWT signing |
+| Variable              | Description                   |
+| --------------------- | ----------------------------- |
+| `DATABASE_URL`        | MongoDB connection string     |
+| `JWT_SECRET`          | Secret key for JWT signing    |
 | `NEXT_PUBLIC_APP_URL` | Public URL of the application |
 
 ## License

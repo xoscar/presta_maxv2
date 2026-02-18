@@ -54,7 +54,10 @@ test.describe('Clients', () => {
     const foundClient = page.locator(selectors.clientCard).filter({ hasText: uniqueName });
     await expect(foundClient).toBeVisible();
 
-    const clearButton = page.locator('input[placeholder*="Buscar"]').locator('..').locator('button');
+    const clearButton = page
+      .locator('input[placeholder*="Buscar"]')
+      .locator('..')
+      .locator('button');
     if (await clearButton.isVisible()) {
       await clearButton.click();
       await page.waitForTimeout(500);

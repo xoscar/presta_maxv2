@@ -73,7 +73,11 @@ export function ClientsPageContent() {
       {/* Header */}
       <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="mt-4 text-2xl font-bold sm:mt-0">Clientes</h1>
-        <Button data-testid="create-client-button" onClick={() => setIsModalOpen(true)} className="sm:shrink-0">
+        <Button
+          data-testid="create-client-button"
+          onClick={() => setIsModalOpen(true)}
+          className="sm:shrink-0"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Cliente
         </Button>
@@ -117,7 +121,12 @@ export function ClientsPageContent() {
                         <User className="h-5 w-5 text-primary" />
                       </div>
                       <div className="min-w-0 flex-1 overflow-hidden">
-                        <h3 className="font-semibold capitalize truncate" title={client.name_complete}>{client.name_complete}</h3>
+                        <h3
+                          className="font-semibold capitalize truncate"
+                          title={client.name_complete}
+                        >
+                          {client.name_complete}
+                        </h3>
                         <p className="text-sm text-muted-foreground truncate">
                           {client.client_id} • {client.phone}
                         </p>

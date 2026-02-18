@@ -9,7 +9,7 @@ import {
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import validator from 'validator';
-import type { Loan, Payment, Client } from '@prisma/client';
+import type { Loan, Client } from '@prisma/client';
 import type {
   ILoanInfo,
   IPaymentInfo,
@@ -24,9 +24,12 @@ export interface ValidationError {
   type: string;
 }
 
-// Extended types for loans with relations
-export type LoanWithPayments = Loan & { payments: Payment[] };
-export type LoanWithClient = Loan & { client: Client | null; payments: Payment[] };
+// Embedded payment (composite type on Loan; id optional for legacy data)
+export type EmbeddedPayment = { id: string | null; amount: number; created: Date }; // DB field is "created"
+
+// Extended types for loans (payments are always embedded on Loan)
+export type LoanWithPayments = Loan & { payments: EmbeddedPayment[] };
+export type LoanWithClient = Loan & { client: Client | null; payments: EmbeddedPayment[] };
 
 export const loanService = {
   /**
@@ -189,8 +192,8 @@ export const loanService = {
     const loan = await prisma.loan.create({
       data: {
         numberId,
-        amount: data.amount,
-        weeklyPayment: data.weekly_payment,
+        amount: Math.round(data.amount),
+        weeklyPayment: Math.round(data.weekly_payment),
         weeks: data.weeks,
         description: data.description,
         clientName: data.client_name,
@@ -200,21 +203,18 @@ export const loanService = {
         clientId: data.client_id,
         userId: data.user_id,
         createdAt: createdDate,
+        payments: [],
       },
-      include: { payments: true },
     });
 
-    return loan;
+    return loan as LoanWithPayments;
   },
 
   /**
    * Update a loan
    */
   async update(id: string, data: LoanUpdateInput): Promise<LoanWithPayments> {
-    const loan = await prisma.loan.findUnique({
-      where: { id },
-      include: { payments: true },
-    });
+    const loan = await prisma.loan.findUnique({ where: { id } });
 
     if (!loan) {
       throw { statusCode: 404, message: 'Loan not found' };
@@ -222,14 +222,14 @@ export const loanService = {
 
     const createdDate = data.created ? new Date(data.created) : loan.createdAt;
     const expiredDate = endOfWeek(addWeeks(endOfWeek(createdDate), data.weeks));
-    const currentBalance = this.getCurrentBalance(loan);
+    const currentBalance = this.getCurrentBalance(loan as LoanWithPayments);
     const finished = currentBalance === 0;
 
-    return prisma.loan.update({
+    const updated = await prisma.loan.update({
       where: { id },
       data: {
-        amount: data.amount,
-        weeklyPayment: data.weekly_payment,
+        amount: Math.round(data.amount),
+        weeklyPayment: Math.round(data.weekly_payment),
         weeks: data.weeks,
         description: data.description,
         expiredDate,
@@ -237,17 +237,15 @@ export const loanService = {
         finishedDate: finished && !loan.finishedDate ? new Date() : loan.finishedDate,
         createdAt: createdDate,
       },
-      include: { payments: true },
     });
+
+    return updated as LoanWithPayments;
   },
 
   /**
-   * Delete a loan and its payments
+   * Delete a loan (payments are embedded and removed with the loan)
    */
   async deleteLoan(id: string): Promise<void> {
-    // First delete all payments
-    await prisma.payment.deleteMany({ where: { loanId: id } });
-    // Then delete the loan
     await prisma.loan.delete({ where: { id } });
   },
 
@@ -270,28 +268,34 @@ export const loanService = {
    * Get current balance of loan
    */
   getCurrentBalance(loan: LoanWithPayments): number {
-    return loan.amount - loan.payments.reduce((acc, payment) => acc + payment.amount, 0);
+    const payments = loan.payments ?? [];
+    return loan.amount - payments.reduce((acc, payment) => acc + payment.amount, 0);
   },
 
   /**
    * Get last payment of loan
    */
-  getLastPayment(loan: LoanWithPayments): Payment | null {
-    if (loan.payments.length === 0) return null;
+  getLastPayment(loan: LoanWithPayments): EmbeddedPayment | null {
+    const payments = loan.payments ?? [];
+    if (payments.length === 0) return null;
 
-    return [...loan.payments].sort((a, b) => (isAfter(a.createdAt, b.createdAt) ? -1 : 1))[0];
+    return [...payments].sort((a, b) => (isAfter(a.created, b.created) ? -1 : 1))[0];
   },
 
   /**
-   * Convert payment to info object
+   * Convert payment to info object (assigns fallback id for legacy payments without id)
    */
-  paymentToInfo(payment: Payment, loanId: string): IPaymentInfo {
+  paymentToInfo(payment: EmbeddedPayment, loanId: string): IPaymentInfo {
+    const createdDate = payment.created ?? (payment as { createdAt?: Date }).createdAt;
+    const id =
+      payment.id ??
+      `legacy-${loanId}-${new Date(createdDate).getTime()}-${Math.random().toString(36).slice(2, 9)}`;
     return {
-      id: payment.id,
+      id,
       loan_id: loanId,
       amount: payment.amount,
-      created: format(payment.createdAt, 'dd/MM/yyyy HH:mm'),
-      created_from_now: formatDistanceToNow(payment.createdAt, { addSuffix: true, locale: es }),
+      created: format(createdDate, 'dd/MM/yyyy HH:mm'),
+      created_from_now: formatDistanceToNow(createdDate, { addSuffix: true, locale: es }),
     };
   },
 
@@ -299,8 +303,9 @@ export const loanService = {
    * Get payments info for a loan
    */
   getPaymentsInfo(loan: LoanWithPayments): IPaymentInfo[] {
-    return [...loan.payments]
-      .sort((a, b) => (isAfter(b.createdAt, a.createdAt) ? 1 : -1))
+    const payments = loan.payments ?? [];
+    return [...payments]
+      .sort((a, b) => (isAfter(b.created, a.created) ? 1 : -1))
       .map((payment) => this.paymentToInfo(payment, loan.id));
   },
 
@@ -322,7 +327,10 @@ export const loanService = {
       weeks: loan.weeks,
       last_payment: lastPayment ? this.paymentToInfo(lastPayment, loan.id) : null,
       last_payment_from_now: lastPayment
-        ? formatDistanceToNow(lastPayment.createdAt, { addSuffix: true, locale: es })
+        ? formatDistanceToNow(
+            lastPayment.created ?? (lastPayment as { createdAt?: Date }).createdAt ?? new Date(0),
+            { addSuffix: true, locale: es }
+          )
         : null,
       expired: this.isExpired(loan),
       expired_date: format(loan.expiredDate, 'dd/MM/yyyy HH:mm'),
@@ -360,20 +368,19 @@ export const loanService = {
    * Find loan by ID with payments
    */
   async findByIdWithPayments(id: string): Promise<LoanWithPayments | null> {
-    return prisma.loan.findUnique({
-      where: { id },
-      include: { payments: true },
-    });
+    const loan = await prisma.loan.findUnique({ where: { id } });
+    return loan as LoanWithPayments | null;
   },
 
   /**
    * Find loan by ID with client and payments
    */
   async findByIdWithClient(id: string): Promise<LoanWithClient | null> {
-    return prisma.loan.findUnique({
+    const loan = await prisma.loan.findUnique({
       where: { id },
-      include: { client: true, payments: true },
+      include: { client: true },
     });
+    return loan as LoanWithClient | null;
   },
 
   /**
@@ -394,8 +401,7 @@ export const loanService = {
         finished,
         finishedDate: finished && !loan.finishedDate ? new Date() : loan.finishedDate,
       },
-      include: { payments: true },
-    });
+    }) as Promise<LoanWithPayments>;
   },
 };
 

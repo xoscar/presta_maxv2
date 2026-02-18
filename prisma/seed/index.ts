@@ -10,12 +10,24 @@
 import { config } from 'dotenv';
 import { resolve } from 'path';
 
-// Load environment variables from .env.local (Next.js convention)
+// Load environment variables: .env.local (Next.js) or .env
 config({ path: resolve(process.cwd(), '.env.local') });
+config({ path: resolve(process.cwd(), '.env') });
 
+if (!process.env.DATABASE_URL) {
+  console.error('❌ DATABASE_URL is not set. Create .env.local or .env with DATABASE_URL for MongoDB.');
+  process.exit(1);
+}
+
+import { randomBytes } from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { generators } from './generators';
+
+/** Generate a 24-char hex string for MongoDB ObjectID (required for embedded payment _id) */
+function objectIdHex(): string {
+  return randomBytes(12).toString('hex');
+}
 
 const prisma = new PrismaClient();
 
@@ -32,10 +44,6 @@ const CONFIG = {
 async function clearDatabase() {
   console.log('🗑️  Clearing database...');
 
-  // Delete in order to respect foreign key constraints
-  await prisma.payment.deleteMany();
-  console.log('   ✓ Payments deleted');
-
   await prisma.charge.deleteMany();
   console.log('   ✓ Charges deleted');
 
@@ -48,8 +56,17 @@ async function clearDatabase() {
   await prisma.user.deleteMany();
   console.log('   ✓ Users deleted');
 
-  await prisma.counter.deleteMany();
+    await prisma.counter.deleteMany();
   console.log('   ✓ Counters deleted');
+
+  try {
+    if ('session' in prisma && typeof (prisma as any).session.deleteMany === 'function') {
+      await (prisma as any).session.deleteMany();
+      console.log('   ✓ Sessions deleted');
+    }
+  } catch {
+    // Session model may not exist in older generated client
+  }
 
   console.log('');
 }
@@ -123,6 +140,59 @@ async function createClient(userId: string, index: number) {
   return client;
 }
 
+function buildPaymentsArray(
+  totalAmount: number,
+  weeklyPayment: number,
+  weeks: number,
+  loanCreatedAt: Date,
+  isFinished: boolean
+): { id: string; amount: number; created: Date }[] {
+  const now = new Date();
+  const weeksSinceLoan = Math.floor(
+    (now.getTime() - loanCreatedAt.getTime()) / (7 * 24 * 60 * 60 * 1000)
+  );
+
+  let paymentsToCreate: number;
+  if (isFinished) {
+    paymentsToCreate = weeks;
+  } else {
+    const maxPayments = Math.min(weeksSinceLoan, weeks);
+    paymentsToCreate = Math.floor(maxPayments * generators.randomFloat(0.5, 1.0));
+  }
+
+  let totalPaid = 0;
+  const payments: { id: string; amount: number; created: Date }[] = [];
+
+  for (let i = 0; i < paymentsToCreate; i++) {
+    const paymentDate = new Date(loanCreatedAt);
+    paymentDate.setDate(paymentDate.getDate() + (i + 1) * 7 + generators.randomInt(-2, 2));
+
+    if (paymentDate > now) continue;
+
+    let paymentAmount: number;
+    if (isFinished && i === paymentsToCreate - 1) {
+      paymentAmount = totalAmount - totalPaid;
+    } else {
+      paymentAmount = weeklyPayment + generators.randomInt(-50, 50);
+    }
+
+    if (totalPaid + paymentAmount > totalAmount) {
+      paymentAmount = totalAmount - totalPaid;
+    }
+
+    if (paymentAmount > 0) {
+      payments.push({
+        id: objectIdHex(),
+        amount: Math.round(paymentAmount),
+        created: paymentDate,
+      });
+      totalPaid += paymentAmount;
+    }
+  }
+
+  return payments;
+}
+
 async function createLoan(
   userId: string,
   clientId: string,
@@ -136,23 +206,23 @@ async function createLoan(
   const weeklyPayment = generators.pagoSemanal(amount, weeks);
   const description = generators.descripcionPrestamo();
 
-  // Determine loan status
   const isFinished = generators.randomBool(CONFIG.finishedLoanProbability);
   const expiredDate = generators.fechaVencimiento(loanCreatedAt, weeks);
   const isExpired = !isFinished && expiredDate < new Date();
 
   let finishedDate: Date | null = null;
   if (isFinished) {
-    // Finished date is sometime between creation and expiration
     const finishEnd = new Date(Math.min(expiredDate.getTime(), Date.now()));
     finishedDate = generators.randomDate(loanCreatedAt, finishEnd);
   }
 
-  const loan = await prisma.loan.create({
+  const payments = buildPaymentsArray(amount, weeklyPayment, weeks, loanCreatedAt, isFinished);
+
+  await prisma.loan.create({
     data: {
       numberId,
-      amount,
-      weeklyPayment,
+      amount: Math.round(amount),
+      weeklyPayment: Math.round(weeklyPayment),
       weeks,
       description,
       clientName,
@@ -166,84 +236,11 @@ async function createLoan(
       clientId,
       createdAt: loanCreatedAt,
       updatedAt: loanCreatedAt,
+      payments,
     },
   });
 
-  // Create payments for this loan
-  await createPayments(loan.id, amount, weeklyPayment, weeks, loanCreatedAt, isFinished);
-
-  return { loan, isFinished, isExpired };
-}
-
-async function createPayments(
-  loanId: string,
-  totalAmount: number,
-  weeklyPayment: number,
-  weeks: number,
-  loanCreatedAt: Date,
-  isFinished: boolean
-) {
-  // Calculate how many payments to create
-  const now = new Date();
-  const weeksSinceLoan = Math.floor(
-    (now.getTime() - loanCreatedAt.getTime()) / (7 * 24 * 60 * 60 * 1000)
-  );
-
-  let paymentsToCreate: number;
-  if (isFinished) {
-    // Finished loans have all payments
-    paymentsToCreate = weeks;
-  } else {
-    // Active loans have random number of payments based on time passed
-    const maxPayments = Math.min(weeksSinceLoan, weeks);
-    // Sometimes clients miss payments, so vary between 50-100% of expected
-    paymentsToCreate = Math.floor(maxPayments * generators.randomFloat(0.5, 1.0));
-  }
-
-  let totalPaid = 0;
-  const payments: { amount: number; createdAt: Date }[] = [];
-
-  for (let i = 0; i < paymentsToCreate; i++) {
-    // Calculate payment date (roughly weekly from loan creation)
-    const paymentDate = new Date(loanCreatedAt);
-    paymentDate.setDate(paymentDate.getDate() + (i + 1) * 7 + generators.randomInt(-2, 2));
-
-    // Don't create future payments
-    if (paymentDate > now) continue;
-
-    // Last payment might be different to finish the loan
-    let paymentAmount: number;
-    if (isFinished && i === paymentsToCreate - 1) {
-      // Final payment covers remaining balance
-      paymentAmount = totalAmount - totalPaid;
-    } else {
-      // Normal weekly payment with slight variation
-      paymentAmount = weeklyPayment + generators.randomInt(-50, 50);
-    }
-
-    // Don't overpay
-    if (totalPaid + paymentAmount > totalAmount) {
-      paymentAmount = totalAmount - totalPaid;
-    }
-
-    if (paymentAmount > 0) {
-      payments.push({ amount: paymentAmount, createdAt: paymentDate });
-      totalPaid += paymentAmount;
-    }
-  }
-
-  // Batch create payments
-  if (payments.length > 0) {
-    await prisma.payment.createMany({
-      data: payments.map((p) => ({
-        amount: p.amount,
-        createdAt: p.createdAt,
-        loanId,
-      })),
-    });
-  }
-
-  return payments.length;
+  return { isFinished, isExpired, paymentCount: payments.length };
 }
 
 async function createCharge(userId: string, clientId: string, clientCreatedAt: Date) {
@@ -264,7 +261,7 @@ async function createCharge(userId: string, clientId: string, clientCreatedAt: D
 
   await prisma.charge.create({
     data: {
-      amount: generators.montoCargo(),
+      amount: Math.round(generators.montoCargo()),
       description: generators.descripcionCargo(),
       paid: isPaid,
       paidDate,
@@ -320,7 +317,7 @@ async function seed() {
       // Loans created after client was created
       const loanCreatedAt = generators.randomDate(client.createdAt, new Date());
 
-      const { isFinished, isExpired } = await createLoan(
+      const { isFinished, isExpired, paymentCount } = await createLoan(
         user.id,
         client.id,
         `${client.name} ${client.surname}`,
@@ -329,6 +326,7 @@ async function seed() {
       );
 
       totalLoans++;
+      totalPayments += paymentCount;
       if (isFinished) finishedLoans++;
       if (isExpired) expiredLoans++;
     }
@@ -348,9 +346,6 @@ async function seed() {
     }
   }
 
-  // Count actual payments
-  totalPayments = await prisma.payment.count();
-
   console.log('\n');
   console.log('📊 Summary:');
   console.log(`   • Clients: ${clientCount}`);
@@ -368,7 +363,8 @@ async function seed() {
 
 seed()
   .catch((error) => {
-    console.error('❌ Seeding failed:', error);
+    console.error('❌ Seeding failed:', error?.message ?? error);
+    if (error?.stack) console.error(error.stack);
     process.exit(1);
   })
   .finally(async () => {

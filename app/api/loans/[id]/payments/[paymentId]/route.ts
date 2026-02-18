@@ -27,11 +27,18 @@ export async function GET(
       return notFound('loan', 'The requested loan was not found.', `/api/loans/${loanId}`);
     }
 
-    const payment = await prisma.payment.findFirst({
-      where: { id: paymentId, loanId },
-    });
-
+    const payment = await paymentService.findById(paymentId);
     if (!payment) {
+      return notFound(
+        'payment',
+        'The requested payment was not found.',
+        `/api/loans/${loanId}/payments/${paymentId}`
+      );
+    }
+
+    // Ensure payment belongs to this loan
+    const loanHasPayment = (loan.payments || []).some((p: { id: string }) => p.id === paymentId);
+    if (!loanHasPayment) {
       return notFound(
         'payment',
         'The requested payment was not found.',
@@ -69,11 +76,10 @@ export async function PATCH(
       return notFound('loan', 'The requested loan was not found.', `/api/loans/${loanId}`);
     }
 
-    const existingPayment = await prisma.payment.findFirst({
-      where: { id: paymentId, loanId },
-    });
+    const existingPayment = await paymentService.findById(paymentId);
+    const loanHasPayment = (loan.payments || []).some((p: { id: string }) => p.id === paymentId);
 
-    if (!existingPayment) {
+    if (!existingPayment || !loanHasPayment) {
       return notFound(
         'payment',
         'The requested payment was not found.',
@@ -113,11 +119,10 @@ export async function DELETE(
       return notFound('loan', 'The requested loan was not found.', `/api/loans/${loanId}`);
     }
 
-    const payment = await prisma.payment.findFirst({
-      where: { id: paymentId, loanId },
-    });
+    const payment = await paymentService.findById(paymentId);
+    const loanHasPayment = (loan.payments || []).some((p: { id: string }) => p.id === paymentId);
 
-    if (!payment) {
+    if (!payment || !loanHasPayment) {
       return notFound(
         'payment',
         'The requested payment was not found.',

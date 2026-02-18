@@ -42,7 +42,6 @@ export async function GET(request: NextRequest) {
     const [loans, total] = await Promise.all([
       prisma.loan.findMany({
         where,
-        include: { payments: true },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -60,6 +59,7 @@ export async function GET(request: NextRequest) {
       hasMore: skip + loans.length < total,
     });
   } catch (error: any) {
+    console.log(error);
     return fromLegacyError(error);
   }
 }

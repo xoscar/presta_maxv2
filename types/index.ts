@@ -246,6 +246,14 @@ export interface SearchQuery {
   limit?: number;
 }
 
+// ==================== Stats Types ====================
+export interface StatsResponse {
+  totalDebt: number;
+  paymentsByClient: Array<{ clientId: string; clientName: string; totalPaid: number }>;
+  loansCountByClient: Array<{ clientId: string; clientName: string; count: number }>;
+  chargesCountByClient: Array<{ clientId: string; clientName: string; count: number }>;
+}
+
 // ==================== Auth Types ====================
 export interface JWTPayload {
   username: string;
