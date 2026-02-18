@@ -71,9 +71,9 @@ export function ClientsPageContent() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Clientes</h1>
-        <Button data-testid="create-client-button" onClick={() => setIsModalOpen(true)}>
+      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="mt-4 text-2xl font-bold sm:mt-0">Clientes</h1>
+        <Button data-testid="create-client-button" onClick={() => setIsModalOpen(true)} className="sm:shrink-0">
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Cliente
         </Button>
@@ -105,25 +105,25 @@ export function ClientsPageContent() {
       ) : (
         <div data-testid="clients-list" className="grid gap-4">
           {clients.map((client: IClientFullInfo) => (
-            <Link key={client.id} href={`/clients/${client.id}`} className="block">
+            <Link key={client.id} href={`/clients/${client.id}`} className="block min-w-0">
               <Card
                 data-testid="client-card"
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+                className="hover:shadow-lg transition-shadow cursor-pointer min-w-0 overflow-hidden"
               >
-                <CardContent className="py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <CardContent className="py-4 min-w-0 overflow-hidden">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+                      <div className="w-10 h-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
                         <User className="h-5 w-5 text-primary" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold capitalize">{client.name_complete}</h3>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <h3 className="font-semibold capitalize truncate" title={client.name_complete}>{client.name_complete}</h3>
+                        <p className="text-sm text-muted-foreground truncate">
                           {client.client_id} • {client.phone}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       {client.active_loans && (
                         <Badge variant={client.expired_loans ? 'destructive' : 'default'}>
                           {client.expired_loans ? 'Vencido' : 'Activo'}

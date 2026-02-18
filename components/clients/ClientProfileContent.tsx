@@ -165,17 +165,17 @@ export function ClientProfileContent({ clientId }: Props) {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-wrap items-center gap-2 mb-6 md:gap-4">
         <Button asChild variant="ghost" size="icon">
           <Link href="/clients">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold capitalize">{client.name_complete}</h1>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-bold capitalize truncate">{client.name_complete}</h1>
           <p className="text-muted-foreground">{client.client_id}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             data-testid="edit-client-button"
             variant="outline"
@@ -197,7 +197,7 @@ export function ClientProfileContent({ clientId }: Props) {
           <CardTitle>Información</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <p className="text-sm text-muted-foreground">Teléfono</p>
               <p className="font-medium">{client.phone}</p>

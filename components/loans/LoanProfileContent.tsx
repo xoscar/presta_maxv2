@@ -92,13 +92,13 @@ export function LoanProfileContent({ loanId }: Props) {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-wrap items-center gap-2 mb-6 md:gap-4">
         <Button asChild variant="ghost" size="icon">
           <Link href="/loans">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold">Préstamo #{loan.number_id}</h1>
           {loan.client && (
             <Link
@@ -109,7 +109,7 @@ export function LoanProfileContent({ loanId }: Props) {
             </Link>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {!loan.finished && (
             <Button data-testid="add-payment-button" onClick={() => setIsPaymentModalOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -151,7 +151,7 @@ export function LoanProfileContent({ loanId }: Props) {
             <Progress value={progressPercent} className="h-3" />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
             <div>
               <p className="text-sm text-muted-foreground">Monto Original</p>
               <p className="text-xl font-semibold">${loan.amount.toLocaleString()}</p>
@@ -174,7 +174,7 @@ export function LoanProfileContent({ loanId }: Props) {
 
           <Separator className="my-4" />
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
             <div>
               <p className="text-sm text-muted-foreground">Fecha de creación</p>
               <p className="font-medium">{loan.created}</p>
@@ -275,7 +275,7 @@ export function LoanProfileContent({ loanId }: Props) {
               required
             />
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
                 variant="outline"

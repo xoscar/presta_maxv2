@@ -52,8 +52,8 @@ export function LoansPageContent() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Préstamos</h1>
+      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="mt-4 text-2xl font-bold sm:mt-0">Préstamos</h1>
       </div>
 
       {/* Filters and Search */}
@@ -113,10 +113,10 @@ export function LoansPageContent() {
                 className="hover:shadow-lg transition-shadow cursor-pointer"
               >
                 <CardContent className="py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center ${
                           loan.finished
                             ? 'bg-green-100 dark:bg-green-900/30'
                             : loan.expired
@@ -134,14 +134,14 @@ export function LoansPageContent() {
                           }`}
                         />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h3 className="font-semibold">Préstamo #{loan.number_id}</h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground truncate">
                           ${loan.amount.toLocaleString()} • {loan.weeks} semanas • {loan.created}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       <div className="flex items-center gap-2 justify-end mb-1">
                         {loan.expired && !loan.finished && (
                           <Badge variant="destructive">Vencido</Badge>
