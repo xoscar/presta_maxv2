@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { loansApi, paymentsApi, type LoansQueryParams } from '@/lib/api';
-import type { LoanCreateInput, PaymentCreateInput } from '@/types';
+import type {
+  LoanCreateInput,
+  LoanUpdateInput,
+  PaymentCreateInput,
+  PaymentUpdateInput,
+} from '@/types';
 import { clientKeys } from './useClients';
 
 // Query keys factory for loans
@@ -45,6 +50,22 @@ export function useCreateLoan() {
   });
 }
 
+// Hook to update a loan
+export function useUpdateLoan() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: LoanUpdateInput }) => loansApi.update(id, data),
+    onSuccess: (updatedLoan) => {
+      queryClient.invalidateQueries({ queryKey: loanKeys.detail(updatedLoan.id) });
+      queryClient.invalidateQueries({ queryKey: loanKeys.lists() });
+      if (updatedLoan.client_id) {
+        queryClient.invalidateQueries({ queryKey: clientKeys.detail(updatedLoan.client_id) });
+      }
+    },
+  });
+}
+
 // Hook to delete a loan
 export function useDeleteLoan() {
   const queryClient = useQueryClient();
@@ -72,6 +93,28 @@ export function useCreatePayment() {
       paymentsApi.create(loanId, data),
     onSuccess: (_, variables) => {
       // Invalidate the loan detail to refetch with new payment
+      queryClient.invalidateQueries({ queryKey: loanKeys.detail(variables.loanId) });
+      queryClient.invalidateQueries({ queryKey: loanKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: clientKeys.all });
+    },
+  });
+}
+
+// Hook to update a payment
+export function useUpdatePayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      loanId,
+      paymentId,
+      data,
+    }: {
+      loanId: string;
+      paymentId: string;
+      data: PaymentUpdateInput;
+    }) => paymentsApi.update(loanId, paymentId, data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: loanKeys.detail(variables.loanId) });
       queryClient.invalidateQueries({ queryKey: loanKeys.lists() });
       queryClient.invalidateQueries({ queryKey: clientKeys.all });

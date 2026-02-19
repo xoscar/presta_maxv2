@@ -143,4 +143,88 @@ test.describe('Loans', () => {
     const paymentSection = page.getByText(/Historial de Pagos/);
     await expect(paymentSection).toBeVisible();
   });
+
+  test('should edit a loan', async ({ page }) => {
+    await page.goto('/loans');
+    await page.waitForLoadState('networkidle');
+
+    const firstLoan = page.locator(selectors.loanCard).first();
+    await firstLoan.click();
+
+    await expect(page).toHaveURL(/\/loans\/[a-zA-Z0-9]+/);
+    await page.waitForLoadState('networkidle');
+
+    const editButton = page.locator(selectors.editLoanButton);
+    const editVisible = await editButton.isVisible();
+    if (!editVisible) {
+      test.skip(true, 'No edit loan button (loan may have no client)');
+      return;
+    }
+
+    await editButton.click();
+
+    const modal = page.locator(selectors.modal);
+    await expect(modal).toBeVisible();
+    await expect(modal.getByRole('heading', { name: 'Editar Préstamo' })).toBeVisible();
+
+    const amountInput = modal.locator('input[name="amount"]');
+    await amountInput.waitFor({ state: 'visible', timeout: 5000 });
+    await amountInput.clear();
+    await amountInput.fill('6000');
+
+    await modal.getByRole('button', { name: 'Guardar' }).click();
+
+    await expect(modal).not.toBeVisible({ timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.getByText(/\$6[,.]?000/).first()).toBeVisible();
+  });
+
+  test('should edit a payment', async ({ page }) => {
+    await page.goto('/loans');
+    await page.waitForLoadState('networkidle');
+
+    const firstLoan = page.locator(selectors.loanCard).first();
+    await firstLoan.click();
+
+    await expect(page).toHaveURL(/\/loans\/[a-zA-Z0-9]+/);
+    await page.waitForLoadState('networkidle');
+
+    const addPaymentButton = page.locator(selectors.addPaymentButton);
+    const addVisible = await addPaymentButton.isVisible();
+    if (!addVisible) {
+      test.skip(true, 'No active loans with add payment button available');
+      return;
+    }
+
+    await addPaymentButton.click();
+    const addModal = page.locator(selectors.modal);
+    await expect(addModal).toBeVisible();
+    const amountInput = addModal.locator('input[name="amount"]');
+    await amountInput.waitFor({ state: 'visible', timeout: 10000 });
+    await amountInput.fill('500');
+    await addModal.locator(selectors.submitButton).click();
+    await expect(addModal).not.toBeVisible({ timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    const editPaymentButtons = page.locator(selectors.editPaymentButton);
+    await expect(editPaymentButtons.first()).toBeVisible({ timeout: 5000 });
+    await editPaymentButtons.first().click();
+
+    const editModal = page.locator(selectors.modal);
+    await expect(editModal).toBeVisible();
+    await expect(editModal.getByRole('heading', { name: 'Editar Pago' })).toBeVisible();
+
+    const editAmountInput = editModal.locator('input[name="amount"]');
+    await editAmountInput.waitFor({ state: 'visible', timeout: 5000 });
+    await editAmountInput.clear();
+    await editAmountInput.fill('600');
+
+    await editModal.getByRole('button', { name: 'Guardar' }).click();
+
+    await expect(editModal).not.toBeVisible({ timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.getByText(/\$600/).first()).toBeVisible();
+  });
 });

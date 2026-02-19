@@ -9,7 +9,9 @@ import type {
   ClientCreateInput,
   ClientUpdateInput,
   LoanCreateInput,
+  LoanUpdateInput,
   PaymentCreateInput,
+  PaymentUpdateInput,
   ChargeCreateInput,
   StatsResponse,
 } from '@/types';
@@ -245,6 +247,13 @@ export const loansApi = {
     });
   },
 
+  update: async (id: string, data: LoanUpdateInput) => {
+    return fetchApi<ILoanFullInfo>(`/api/loans/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
   delete: async (id: string) => {
     return fetchApi<{ success: boolean }>(`/api/loans/${id}`, {
       method: 'DELETE',
@@ -257,6 +266,13 @@ export const paymentsApi = {
   create: async (loanId: string, data: PaymentCreateInput) => {
     return fetchApi<IPaymentInfo>(`/api/loans/${loanId}/payments`, {
       method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (loanId: string, paymentId: string, data: PaymentUpdateInput) => {
+    return fetchApi<IPaymentInfo>(`/api/loans/${loanId}/payments/${paymentId}`, {
+      method: 'PATCH',
       body: JSON.stringify(data),
     });
   },

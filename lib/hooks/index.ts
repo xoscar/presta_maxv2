@@ -13,8 +13,10 @@ export {
   useLoans,
   useLoan,
   useCreateLoan,
+  useUpdateLoan,
   useDeleteLoan,
   useCreatePayment,
+  useUpdatePayment,
   useDeletePayment,
   loanKeys,
 } from './useLoans';

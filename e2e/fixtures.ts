@@ -51,6 +51,8 @@ export const selectors = {
 
   // Payments
   addPaymentButton: '[data-testid="add-payment-button"]',
+  editLoanButton: '[data-testid="edit-loan-button"]',
+  editPaymentButton: '[data-testid^="edit-payment-button-"]',
   paymentForm: '[data-testid="payment-form"]',
 
   // Charges
