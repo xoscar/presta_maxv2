@@ -24,3 +24,6 @@ export { useLogin, useLogout, useChangePassword } from './useAuth';
 
 // Charge hooks
 export { useCreateCharge, useMarkChargePaid, useDeleteCharge, chargeKeys } from './useCharges';
+
+// Stats hooks
+export { useStats, statsKeys } from './useStats';

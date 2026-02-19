@@ -25,6 +25,31 @@ export interface ChangePasswordInput {
   newPassword: string;
 }
 
+// ==================== Stats Types ====================
+export interface StatsByClient {
+  clientId: string;
+  clientName: string;
+}
+
+export interface PaymentsByClient extends StatsByClient {
+  totalPaid: number;
+}
+
+export interface LoansCountByClient extends StatsByClient {
+  count: number;
+}
+
+export interface ChargesCountByClient extends StatsByClient {
+  count: number;
+}
+
+export interface StatsResponse {
+  totalDebt: number;
+  paymentsByClient: PaymentsByClient[];
+  loansCountByClient: LoansCountByClient[];
+  chargesCountByClient: ChargesCountByClient[];
+}
+
 // ==================== Client Types ====================
 // Legacy interface kept for reference (Prisma uses its own types)
 export interface IClient {

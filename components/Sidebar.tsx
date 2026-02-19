@@ -12,11 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { ChangePasswordModal } from '@/components/ChangePasswordModal';
-import { Users, DollarSign, ChevronUp, LogOut, KeyRound } from 'lucide-react';
+import { Users, DollarSign, ChevronUp, LogOut, KeyRound, BarChart3 } from 'lucide-react';
 
 const navItems = [
   { href: '/clients', label: 'Clientes', icon: Users },
   { href: '/loans', label: 'Préstamos', icon: DollarSign },
+  { href: '/dashboard', label: 'Estadísticas', icon: BarChart3 },
 ];
 
 interface SidebarContentProps {

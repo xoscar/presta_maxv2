@@ -11,6 +11,7 @@ import type {
   LoanCreateInput,
   PaymentCreateInput,
   ChargeCreateInput,
+  StatsResponse,
 } from '@/types';
 
 /**
@@ -290,5 +291,21 @@ export const chargesApi = {
     return fetchApi<{ success: boolean }>(`/api/charges/${id}`, {
       method: 'DELETE',
     });
+  },
+};
+
+// ==================== Stats API ====================
+export interface StatsQueryParams {
+  from: string;
+  to: string;
+}
+
+export const statsApi = {
+  get: async (params: StatsQueryParams): Promise<StatsResponse> => {
+    const searchParams = new URLSearchParams({
+      from: params.from,
+      to: params.to,
+    });
+    return fetchApi<StatsResponse>(`/api/stats?${searchParams}`);
   },
 };
