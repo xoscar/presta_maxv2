@@ -12,7 +12,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { ChangePasswordModal } from '@/components/ChangePasswordModal';
-import { Users, DollarSign, ChevronUp, LogOut, KeyRound, BarChart3 } from 'lucide-react';
+import { RestoreBackupModal } from '@/components/RestoreBackupModal';
+import { backupApi } from '@/lib/api';
+import {
+  Users,
+  DollarSign,
+  ChevronUp,
+  LogOut,
+  KeyRound,
+  BarChart3,
+  Download,
+  Upload,
+} from 'lucide-react';
 
 const navItems = [
   { href: '/clients', label: 'Clientes', icon: Users },
@@ -29,6 +40,15 @@ interface SidebarContentProps {
 export function SidebarContent({ username, onLogout, onLinkClick }: SidebarContentProps) {
   const pathname = usePathname();
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [restoreBackupOpen, setRestoreBackupOpen] = useState(false);
+
+  const handleDownloadBackup = async () => {
+    try {
+      await backupApi.downloadBackup();
+    } catch {
+      // Error could be shown via toast; for now rely on API/problem details
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -87,6 +107,22 @@ export function SidebarContent({ username, onLogout, onLinkClick }: SidebarConte
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-56">
             <DropdownMenuItem
+              data-testid="download-backup-button"
+              onClick={handleDownloadBackup}
+              className="cursor-pointer"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Descargar respaldo
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              data-testid="restore-backup-button"
+              onClick={() => setRestoreBackupOpen(true)}
+              className="cursor-pointer"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Restaurar respaldo
+            </DropdownMenuItem>
+            <DropdownMenuItem
               data-testid="change-password-button"
               onClick={() => setChangePasswordOpen(true)}
               className="cursor-pointer"
@@ -107,6 +143,7 @@ export function SidebarContent({ username, onLogout, onLinkClick }: SidebarConte
       </div>
 
       <ChangePasswordModal open={changePasswordOpen} onOpenChange={setChangePasswordOpen} />
+      <RestoreBackupModal open={restoreBackupOpen} onOpenChange={setRestoreBackupOpen} />
     </div>
   );
 }

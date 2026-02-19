@@ -23,6 +23,8 @@ export const selectors = {
   userMenu: '[data-testid="user-menu"]',
   logoutButton: '[data-testid="logout-button"]',
   changePasswordButton: '[data-testid="change-password-button"]',
+  downloadBackupButton: '[data-testid="download-backup-button"]',
+  restoreBackupButton: '[data-testid="restore-backup-button"]',
 
   // Change password modal
   changePasswordModal: '[role="dialog"]',
@@ -30,6 +32,10 @@ export const selectors = {
   newPasswordInput: 'input[name="newPassword"]',
   confirmPasswordInput: 'input[name="confirmPassword"]',
   changePasswordSubmitButton: 'button[type="submit"]',
+
+  // Restore backup modal
+  restoreBackupModal: '[role="dialog"]',
+  restoreBackupFileInput: 'input#restore-file',
 
   // Clients page
   clientsList: '[data-testid="clients-list"]',

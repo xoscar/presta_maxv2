@@ -46,4 +46,3 @@ test.describe('Dashboard', () => {
     await expect(page.getByText('Cargos por cliente')).toBeVisible();
   });
 });
-

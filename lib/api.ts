@@ -309,3 +309,73 @@ export const statsApi = {
     return fetchApi<StatsResponse>(`/api/stats?${searchParams}`);
   },
 };
+
+// ==================== Backup API ====================
+export interface RestoreBackupResponse {
+  success: boolean;
+  clients: number;
+  loans: number;
+  charges: number;
+  message: string;
+}
+
+export const backupApi = {
+  downloadBackup: async (): Promise<void> => {
+    const response = await fetch('/api/backup', { credentials: 'include' });
+    if (!response.ok) {
+      const contentType = response.headers.get('Content-Type');
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
+      if (contentType?.includes('application/problem+json') && data) {
+        throw new ApiError(data);
+      }
+      throw new ApiError({
+        type: 'about:blank',
+        title: data?.title || 'Error',
+        status: response.status,
+        detail: data?.detail || data?.error || data?.message || 'Error al descargar el respaldo',
+      });
+    }
+    const blob = await response.blob();
+    const disposition = response.headers.get('Content-Disposition');
+    const match = disposition?.match(/filename="?([^";\n]+)"?/);
+    const filename = match ? match[1].trim() : 'prestamax-backup.zip';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+
+  restoreBackup: async (file: File): Promise<RestoreBackupResponse> => {
+    const formData = new FormData();
+    formData.set('file', file);
+
+    const response = await fetch('/api/backup/restore', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+      headers: {
+        Accept: 'application/json, application/problem+json',
+      },
+    });
+
+    const contentType = response.headers.get('Content-Type');
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (isProblemDetails(contentType, data)) {
+        throw new ApiError(data);
+      }
+      throw new ApiError({
+        type: 'about:blank',
+        title: data?.title || 'Error',
+        status: response.status,
+        detail: data?.detail || data?.error || data?.message || 'Error al restaurar el respaldo',
+      });
+    }
+
+    return data as RestoreBackupResponse;
+  },
+};
