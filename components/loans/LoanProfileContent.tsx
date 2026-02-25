@@ -147,6 +147,14 @@ export function LoanProfileContent({ loanId }: Props) {
     );
   };
 
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/loans');
+    }
+  };
+
   if (isLoading) {
     return <PageLoader />;
   }
@@ -161,10 +169,8 @@ export function LoanProfileContent({ loanId }: Props) {
     <div>
       {/* Header */}
       <div className="flex flex-wrap items-center gap-2 mb-6 md:gap-4">
-        <Button asChild variant="ghost" size="icon">
-          <Link href="/loans">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
+        <Button variant="ghost" size="icon" onClick={handleBack} aria-label="Regresar">
+          <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold">Préstamo #{loan.number_id}</h1>

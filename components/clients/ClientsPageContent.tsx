@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Button,
@@ -31,6 +31,7 @@ export function ClientsPageContent() {
     address: '',
     phone: '',
   });
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   // React Query hooks
   const {
@@ -48,6 +49,12 @@ export function ClientsPageContent() {
   const clients = clientsData?.data ?? [];
   const totalPages = clientsData ? Math.ceil(clientsData.total / clientsData.limit) : 1;
 
+  useEffect(() => {
+    if (clientsData && !hasLoadedOnce) {
+      setHasLoadedOnce(true);
+    }
+  }, [clientsData, hasLoadedOnce]);
+
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
@@ -64,7 +71,7 @@ export function ClientsPageContent() {
     });
   };
 
-  if (isLoading && clients.length === 0) {
+  if (isLoading && !hasLoadedOnce) {
     return <PageLoader />;
   }
 

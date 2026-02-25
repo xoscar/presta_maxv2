@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Button,
@@ -19,6 +19,7 @@ export function LoansPageContent() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<'all' | 'active' | 'finished'>('active');
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   // React Query hook
   const {
@@ -35,6 +36,12 @@ export function LoansPageContent() {
   const loans = loansData?.data ?? [];
   const totalPages = loansData ? Math.ceil(loansData.total / loansData.limit) : 1;
 
+  useEffect(() => {
+    if (loansData && !hasLoadedOnce) {
+      setHasLoadedOnce(true);
+    }
+  }, [loansData, hasLoadedOnce]);
+
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
@@ -45,7 +52,7 @@ export function LoansPageContent() {
     setPage(1);
   };
 
-  if (isLoading && loans.length === 0) {
+  if (isLoading && !hasLoadedOnce) {
     return <PageLoader />;
   }
 
@@ -140,6 +147,12 @@ export function LoansPageContent() {
                           ${loan.amount.toLocaleString()} • {loan.weeks} semanas •{' '}
                           {loan.payments?.length ?? 0}{' '}
                           {loan.payments?.length === 1 ? 'pago' : 'pagos'} • {loan.created}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate mt-0.5">
+                          Pago semanal: ${loan.weekly_payment.toLocaleString()}
+                          {loan.last_payment_from_now != null
+                            ? ` • Último pago: ${loan.last_payment_from_now}`
+                            : ' • Sin pagos aún'}
                         </p>
                       </div>
                     </div>
