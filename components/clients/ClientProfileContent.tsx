@@ -518,7 +518,14 @@ function LoanCard({ loan }: { loan: ILoanInfo }) {
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            ${loan.amount.toLocaleString()} • {loan.weeks} semanas • {loan.created}
+            ${loan.amount.toLocaleString()} • {loan.weeks} semanas • {loan.payments?.length ?? 0}{' '}
+            {loan.payments?.length === 1 ? 'pago' : 'pagos'} • {loan.created}
+          </p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Pago semanal: ${loan.weekly_payment.toLocaleString()}
+            {loan.last_payment_from_now != null
+              ? ` • Último pago: ${loan.last_payment_from_now}`
+              : ' • Sin pagos aún'}
           </p>
         </div>
         <div className="text-right">
